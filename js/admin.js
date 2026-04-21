@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.3.1";
+const APP_VERSION = "v3.4.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.4.0",
+        date: "2026-04-21",
+        title: "🧠 Avanceret AI & Fejlrettelse",
+        desc: "AI'en er nu opgraderet til at lave spørgsmål på svendeprøve-niveau med realistiske svarmuligheder. Desuden er import-funktionen gjort robust, så den automatisk fixer fejl i AI-koden."
+    },
     {
         version: "v3.3.1",
         date: "2026-04-21",
@@ -361,18 +367,37 @@ window.generateAiPrompt = () => {
 
     if (!topic) { alert("Skriv et emne."); return; }
 
-    const prompt = `Som tømrer-ekspert, lav en JSON quiz om "${topic}" til "${catTitle}". 
-JSON format:
+    const prompt = `Som tømrer-ekspert og faglærer, lav en seriøs JSON quiz om "${topic}" til kategorien "${catTitle}". 
+
+KRAV TIL KVALITET:
+- Sværhedsgrad: Svendeprøve-niveau (teknisk funderet).
+- Spørgsmål: Skal teste forståelse, regler (f.eks. fra Træ-fakta, BR18, Arbejdstilsynet) eller praktisk udførelse.
+- Svarmuligheder: Lav 3-4 muligheder pr. spørgsmål.
+- Distraktorer (forkerte svar): Skal være yderst realistiske og teknisk plausible, ikke banale. De skal kræve faglig viden at gennemskue.
+- Rationale: Hvert spørgsmål SKAL have en 'rationale' (en kort faglig forklaring på max 2 sætninger, der bekræfter hvorfor det rigtige svar er korrekt).
+
+JSON STRUKTUR (VIGTIG):
 {
   "id": "${topic.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}",
   "categoryId": "${catId}",
   "title": "${topic}",
   "description": "Faglig quiz om ${topic}.",
-  "moodKeywords": "${topic}",
-  "moodImageLock": ${Math.floor(Math.random() * 5000)},
-  "questions": [...]
+  "moodKeywords": "meget-præcise-engelske-tekniske-termer-her",
+  "questions": [
+    {
+      "question": "Spørgsmålstekst her?",
+      "options": ["Svar 1", "Svar 2", "Svar 3"],
+      "correctIndex": 0,
+      "rationale": "Faglig forklaring her."
+    }
+  ]
 }
-VIGTIGT: moodKeywords skal KUN indeholde meget præcise tekniske engelske termer for emnet (f.eks. 'black-mold' eller 'timber-decay'). Ingen generelle ord som 'carpenter'. KUN JSON i svaret.`;
+
+REGLER FOR BILLED-SØGEORD (moodKeywords):
+- KUN engelske, tekniske termer (f.eks. 'roof-truss-installation', 'safety-harness-anchor'). 
+- Ingen generelle ord som 'carpenter' eller 'construction'.
+
+SVAR KUN MED RÅ JSON.`;
 
     document.getElementById('prompt-text').textContent = prompt;
     document.getElementById('ai-prompt-result').style.display = 'block';
@@ -382,17 +407,39 @@ window.importAiQuiz = () => {
     const raw = document.getElementById('ai-import-json').value;
     try {
         const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-        const data = JSON.parse(cleaned);
+        let data = JSON.parse(cleaned);
+
+        // Robusthed: Håndter hvis AI bruger forkerte feltnavne
+        if (data.questions && Array.isArray(data.questions)) {
+            data.questions = data.questions.map(q => {
+                // Flyt 'answers' til 'options' hvis nødvendigt
+                if (!q.options && q.answers) q.options = q.answers;
+                // Flyt 'correctAnswer' til 'correctIndex' hvis nødvendigt
+                if (q.correctIndex === undefined && q.correctAnswer !== undefined) q.correctIndex = q.correctAnswer;
+                // Sørg for at 'options' eksisterer som et array for at undgå .map fejl senere
+                if (!q.options) q.options = ["Fejl: Ingen svarmuligheder fundet"];
+                if (q.correctIndex === undefined) q.correctIndex = 0;
+                if (!q.rationale) q.rationale = "";
+                return q;
+            });
+        } else {
+            throw new Error("JSON indeholder ikke et gyldigt 'questions' array.");
+        }
+
         if (data.moodImageUrl && data.moodImageUrl.includes('loremflickr')) {
             delete data.moodImageUrl; 
         }
         if (!data.moodImageLock) data.moodImageLock = Math.floor(Math.random() * 5000);
+        
         pushToHistory();
         localDbCopy.quizzes.push(data);
-        alert("Quiz oprettet! Den bruger nu vores nye intelligente billed-finder.");
+        alert("Quiz oprettet med succes!");
         window.switchTab('edit');
         renderAdminContent();
-    } catch(e) { alert("Fejl i koden: " + e.message); }
+    } catch(e) { 
+        alert("Fejl i koden: " + e.message + "\n\nTjek at du har kopieret hele koden korrekt fra ChatGPT."); 
+        console.error("AI Import Fejl:", e);
+    }
 };
 
 window.toggleEditQuiz = (idx, forceOpen = false) => {
