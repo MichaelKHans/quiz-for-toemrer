@@ -90,8 +90,8 @@ async function renderDashboard() {
             const translated = window.translateKeywords(quiz.title);
             const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
-            const imageUrl = `https://source.unsplash.com/featured/300x300/?${finalKeywords}&sig=${lockValue}`;
+            // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
+            const imageUrl = `https://images.weserv.nl/?url=loremflickr.com/300/300/${finalKeywords}%3Flock%3D${lockValue}&w=300&h=300&fit=cover`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
@@ -243,8 +243,8 @@ function renderQuestion() {
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
-        const imageUrl = activeImageUrl || `https://source.unsplash.com/featured/800x1200/?${finalKeywords}&sig=${lockValue}`;
+        // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
+        const imageUrl = activeImageUrl || `https://images.weserv.nl/?url=loremflickr.com/800/1200/${finalKeywords}%3Flock%3D${lockValue}&w=800&h=1200&fit=cover`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
     }

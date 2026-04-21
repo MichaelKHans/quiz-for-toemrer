@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.8.0";
+const APP_VERSION = "v3.9.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.9.0",
+        date: "2026-04-21",
+        title: "🛡️ Netværks-sikret Billedvisning (v3.9.0)",
+        desc: "Implementeret en Proxy-tjeneste (Weserv), der henter billeder udenom dit lokale netværks blokering. Dette skulle endelig løse de sorte bokse."
+    },
     {
         version: "v3.8.0",
         date: "2026-04-21",
@@ -235,8 +241,8 @@ function renderAdminContent() {
                         const cleanFn = window.cleanKeywords || ((s) => s);
                         const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
-                        // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
-                        const previewUrl = quiz.moodImageUrl || `https://source.unsplash.com/featured/320x240/?${finalKeywords}&sig=${lockValue}`;
+                        // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
+                        const previewUrl = quiz.moodImageUrl || `https://images.weserv.nl/?url=loremflickr.com/320/240/${finalKeywords}%3Flock%3D${lockValue}&w=320&h=240&fit=cover`;
                         
                         return `
                         <div class="admin-item-expanded">
