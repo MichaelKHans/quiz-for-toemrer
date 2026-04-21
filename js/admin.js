@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.3.0";
+const APP_VERSION = "v3.3.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.3.1",
+        date: "2026-04-21",
+        title: "Tvungen Versions-opdatering",
+        desc: "Denne opdatering sikrer, at alle brugere ser de nyeste funktioner og den korrekte logbog med det samme uden cache-problemer."
+    },
     {
         version: "v3.3.0",
         date: "2026-04-21",
