@@ -190,26 +190,28 @@ window.translateKeywords = function(input) {
 };
 
 window.cleanKeywords = function(input) {
-    if (!input) return "carpentry,tools";
+    if (!input) return "tools,carpentry";
     
-    // 1. Erstat alt der ikke er bogstaver eller tal med kommaer
-    // Vi tillader kun simple karakterer for at sikre 100% URL stabilitet
-    let clean = input.replace(/[^a-zA-Z0-9]/g, ',');
+    // 1. Manuel oversættelse af danske bogstaver (bedre end at slette dem)
+    let clean = input.toLowerCase()
+        .replace(/æ/g, 'ae')
+        .replace(/ø/g, 'oe')
+        .replace(/å/g, 'aa');
+        
+    // 2. Erstat alt der ikke er a-z eller 0-9 med kommaer
+    clean = clean.replace(/[^a-z0-9]/g, ',');
     
-    // 2. Split til dele, rens hver del, fjern meget korte eller tomme dele
+    // 3. Rens array for tomme og korte ord
     let tags = clean.split(',')
-        .map(s => s.trim().toLowerCase())
+        .map(s => s.trim())
         .filter(s => s.length > 2);
         
-    // 3. Begræns til de 2 mest relevante søgeord for højeste hitrate
-    let finalTags = tags.slice(0, 2);
+    // 4. Billed-tjenester elsker de første 1-2 vigtigste ord
+    let finalTags = tags.length > 0 ? tags.slice(0, 2) : ["tools"];
     
-    // 4. Hvis ingen tags blev fundet (pga. specialtegn), brug en sikker standard
-    if (finalTags.length === 0) return "carpentry";
-    
-    // 5. Returnér som rå komma-separeret liste (LoremFlickr kræver bogstavelige kommaer!)
+    // 5. Returnér rå komma-separeret liste (LoremFlickr kræver bogstavelige kommaer!)
     const result = finalTags.join(',');
-    console.log("Image Search Tags (v3.6.0):", result);
+    console.log("Image Search Tags (v3.7.0):", result);
     return result;
 };
 

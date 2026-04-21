@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.6.0";
+const APP_VERSION = "v3.7.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.7.0",
+        date: "2026-04-21",
+        title: "🛡️ Stabiliseret Billed-motor (v3.7.0)",
+        desc: "Genskabt billedvisning ved at rette URL-formatering og tilføje support for danske tegn. Fixet preview-vindue i admin-panelet."
+    },
     {
         version: "v3.6.0",
         date: "2026-04-21",
@@ -252,8 +258,8 @@ function renderAdminContent() {
                                     
                                     <div style="flex: 0 0 250px;">
                                         <label>Stemningsbillede Preview</label>
-                                        <div class="mood-preview-container" style="position:relative; margin-bottom: 0.5rem;">
-                                            <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; border-radius: 8px; border: 1px solid var(--accent); box-shadow: 0 0 10px var(--accent-glow);">
+                                        <div class="mood-preview-container" style="position:relative; margin-bottom: 0.5rem; min-height: 150px; background: #000; border: 1px solid var(--accent); border-radius: 8px;">
+                                            <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;">
                                             <button class="btn btn-secondary btn-small" style="width: 100%; margin-top: 0.5rem;" onclick="refreshImage(${idx})">🔄 Prøv et andet billede</button>
                                         </div>
                                         <label>Søgeord (Engelsk)</label>
