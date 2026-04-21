@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.4.5";
+const APP_VERSION = "v3.5.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.5.0",
+        date: "2026-04-21",
+        title: "🌟 Endelig Stabilisering",
+        desc: "Genskabt den oprindelige stabile billedvisning med moderne forbedringer. Understøtter nu alle danske tegn i søgninger."
+    },
     {
         version: "v3.4.5",
         date: "2026-04-21",
