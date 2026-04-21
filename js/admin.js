@@ -301,7 +301,7 @@ function renderAdminContent() {
         
         <div class="admin-footer">
             <button class="btn btn-secondary" onclick="closeAdmin()">Gå tilbage (Annuller)</button>
-            <button class="btn btn-primary" onclick="saveAdminChanges()">Gem alle ændringer lokalt</button>
+            <button class="btn btn-primary" onclick="saveAdminChanges()">Gem alle ændringer i skyen ☁️</button>
         </div>
     `;
     
