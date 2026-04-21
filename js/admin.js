@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.2.5";
+const APP_VERSION = "v3.3.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.3.0",
+        date: "2026-04-21",
+        title: "Cloud-synk & Dashboard Design",
+        desc: "Systemet kører nu 100% i skyen (Firebase). Desuden har alle quiz-kort på forsiden fået flotte baggrundsbilleder i hjørnerne."
+    },
     {
         version: "v3.2.5",
         date: "2024-04-21",
