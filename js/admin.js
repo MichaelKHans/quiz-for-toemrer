@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.4.2";
+const APP_VERSION = "v3.4.5";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.4.5",
+        date: "2026-04-21",
+        title: "💎 Diamant-sikring af Billeder",
+        desc: "Billed-motoren er nu gjort ekstremt robust. Den rydder automatisk op i søgeord og bruger kun de mest stabile tags for at sikre, at der altid er billeder."
+    },
     {
         version: "v3.4.2",
         date: "2026-04-21",

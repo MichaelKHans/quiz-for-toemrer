@@ -191,8 +191,23 @@ window.translateKeywords = function(input) {
 
 window.cleanKeywords = function(input) {
     if (!input) return "construction,carpentry";
-    // Erstat alle bindestreger med kommaer og fjern dobbelte tegn
-    return input.replace(/-/g, ',').split(',').map(s => s.trim()).filter(s => s).join(',');
+    
+    // 1. Erstat bindestreger og andre tegn med kommaer
+    // 2. Fjern alt der ikke er bogstaver, tal eller kommaer (vigtigt for URL stabilitet)
+    let clean = input.replace(/[-_&]/g, ',').replace(/[^a-zA-Z0-9,]/g, '');
+    
+    // 3. Split til array, rens hver del, fjern tomme
+    let tags = clean.split(',')
+        .map(s => s.trim().toLowerCase())
+        .filter(s => s.length > 2); // Spring meget korte ord over
+        
+    // 4. BEGRÆNSNING: Brug kun de første 2 tags. 
+    // LoremFlickr fejler ofte hvis der er for mange tags på én gang.
+    let finalTags = tags.slice(0, 2);
+    
+    const result = finalTags.length > 0 ? finalTags.join(',') : "construction";
+    console.log("Image Search Tags:", result);
+    return result;
 };
 
 function renderQuestion() {
