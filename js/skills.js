@@ -87,9 +87,10 @@ async function renderDashboard() {
                 `;
             }
 
-            const translated = translateKeywords(quiz.title);
+            const translated = window.translateKeywords(quiz.title);
+            const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            const imageUrl = `https://loremflickr.com/300/300/${translated || 'carpenter,construction'}/all?lock=${lockValue}`;
+            const imageUrl = `https://loremflickr.com/300/300/${finalKeywords}?lock=${lockValue}`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
@@ -188,6 +189,12 @@ window.translateKeywords = function(input) {
     return foundTerms.length > 0 ? foundTerms.join(',') : result;
 };
 
+window.cleanKeywords = function(input) {
+    if (!input) return "construction,carpentry";
+    // Erstat alle bindestreger med kommaer og fjern dobbelte tegn
+    return input.replace(/-/g, ',').split(',').map(s => s.trim()).filter(s => s).join(',');
+};
+
 function renderQuestion() {
     const question = currentQuiz.questions[currentQuestionIndex];
     isAnswered = false;
@@ -211,7 +218,7 @@ function renderQuestion() {
         }
 
         // Simpel men effektiv søgning. Vi undgår /all da det ofte giver 0 resultater.
-        const finalKeywords = translated || "construction,carpentry";
+        const finalKeywords = window.cleanKeywords(translated);
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;

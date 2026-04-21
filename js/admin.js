@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.4.1";
+const APP_VERSION = "v3.4.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.4.2",
+        date: "2026-04-21",
+        title: "🛡️ Stabilisering af Billed-motor",
+        desc: "Endelig fix af billeder! Jeg har fjernet de filtre der blokerede for visning og forbedret rensningen af søgeord."
+    },
     {
         version: "v3.4.1",
         date: "2026-04-21",
@@ -196,7 +202,8 @@ function renderAdminContent() {
                         const translateFn = window.translateKeywords || ((s) => s);
                         const translated = translateFn(displayKeywords);
                         // LoremFlickr virker bedst med kommaer, ikke bindestreger
-                        const finalKeywords = (translated || "construction,carpentry").replace(/-/g, ',');
+                        const cleanFn = window.cleanKeywords || ((s) => s);
+                        const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
                         const previewUrl = quiz.moodImageUrl || `https://loremflickr.com/320/240/${finalKeywords}?lock=${lockValue}`;
                         
