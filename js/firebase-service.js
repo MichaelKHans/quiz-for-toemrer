@@ -4,6 +4,7 @@ import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9
 const firebaseConfig = {
   apiKey: "AIzaSyB8WoEWReTrIMLwx3tqWCsbQHEstZL_SZA",
   authDomain: "toemrer-quiz.firebaseapp.com",
+  databaseURL: "https://toemrer-quiz-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "toemrer-quiz",
   storageBucket: "toemrer-quiz.firebasestorage.app",
   messagingSenderId: "886942173921",
