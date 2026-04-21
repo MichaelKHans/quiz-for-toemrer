@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.5.0";
+const APP_VERSION = "v3.6.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.6.0",
+        date: "2026-04-21",
+        title: "🚀 Ultimativ Billed-fix (v3.6.0)",
+        desc: "Løst en kritisk fejl i kodningen af søgeord. Billeder burde nu være tilbage på alle sider og i admin-panelet."
+    },
     {
         version: "v3.5.0",
         date: "2026-04-21",
