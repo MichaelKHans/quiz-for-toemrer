@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.9.0";
+const APP_VERSION = "v3.9.5";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.9.5",
+        date: "2026-04-21",
+        title: "💾 Image Lock Funktion (v3.9.5)",
+        desc: "Du kan nu gemme et bestemt billede permanent ved hjælp af den nye 'Gem dette billede' knap i editoren."
+    },
     {
         version: "v3.9.0",
         date: "2026-04-21",
@@ -273,7 +279,10 @@ function renderAdminContent() {
                                         <label>Stemningsbillede Preview</label>
                                         <div class="mood-preview-container" style="position:relative; margin-bottom: 0.5rem; min-height: 150px; background: #000; border: 1px solid var(--accent); border-radius: 8px;">
                                             <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;">
-                                            <button class="btn btn-secondary btn-small" style="width: 100%; margin-top: 0.5rem;" onclick="refreshImage(${idx})">🔄 Prøv et andet billede</button>
+                                            <div style="display: flex; gap: 0.2rem; margin-top: 0.5rem;">
+                                                <button class="btn btn-secondary btn-small" style="flex: 1;" onclick="refreshImage(${idx})">🔄 Nyt Billede</button>
+                                                <button class="btn btn-success btn-small" style="flex: 1.2;" onclick="lockImage(${idx})">💾 Gem dette</button>
+                                            </div>
                                         </div>
                                         <label>Søgeord (Engelsk)</label>
                                         <input type="text" value="${quiz.moodKeywords || ''}" placeholder="f.eks. roof, timber" onchange="updateQuiz(${idx}, 'moodKeywords', this.value)">
@@ -563,6 +572,47 @@ window.exportDatabase = () => {
     a.href = URL.createObjectURL(blob);
     a.download = 'database.js';
     a.click();
+};
+
+window.refreshImage = function(idx) {
+    const quiz = localDbCopy.quizzes[idx];
+    // Vi fjerner et evt. låst link for at rulle terningerne igen
+    quiz.moodImageUrl = "";
+    quiz.moodImageLock = Math.floor(Math.random() * 1000000);
+    renderAdminContent();
+    // Scroll tilbage til det pågældende element efter re-render
+    setTimeout(() => {
+        const el = document.getElementById(`edit-quiz-${idx}`);
+        if(el) {
+            el.style.display = 'block';
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 100);
+};
+
+window.lockImage = function(idx) {
+    const imgEl = document.getElementById(`preview-img-${idx}`);
+    if (!imgEl) return;
+    
+    pushToHistory();
+    const quiz = localDbCopy.quizzes[idx];
+    quiz.moodImageUrl = imgEl.src;
+    
+    // Vis feedback
+    const btn = event.target;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "✅ Gemt!";
+    btn.style.backgroundColor = "var(--success)";
+    
+    window.QuizMemory.saveCustomDatabase(localDbCopy);
+    saveDbToCloud(localDbCopy);
+    
+    setTimeout(() => {
+        btn.innerHTML = oldText;
+        btn.style.backgroundColor = "";
+        renderAdminContent();
+        document.getElementById(`edit-quiz-${idx}`).style.display = 'block';
+    }, 1500);
 };
 
 document.addEventListener('keydown', (e) => {
