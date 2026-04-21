@@ -957,3 +957,23 @@ h1 {
     line-height: 1.5;
     color: var(--text-secondary);
 }
+
+/* Visibility fix for icon buttons (DELETE buttons) */
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-icon:hover {
+    color: var(--incorrect);
+    background: hsla(0, 80%, 60%, 0.1);
+}

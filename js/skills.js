@@ -107,6 +107,16 @@ async function renderDashboard() {
 
         // Genindlæs kategori-knapper for at sikre aktiv tilstand er korrekt
         renderCategorySelector(data.categories);
+
+        // Tilføj versionsmærkat i bunden (v4.0.0)
+        let tag = document.getElementById('version-tag');
+        if (!tag) {
+            tag = document.createElement('div');
+            tag.id = 'version-tag';
+            tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
+            document.body.appendChild(tag);
+        }
+        tag.textContent = 'v4.0.0';
     }
 }
 
@@ -212,7 +222,7 @@ window.cleanKeywords = function(input) {
     
     // 5. Returnér rå komma-separeret liste (LoremFlickr kræver bogstavelige kommaer!)
     const result = finalTags.join(',');
-    console.log("Image Search Tags (v3.7.0):", result);
+    console.log("Image Search Tags (v4.0.0):", result);
     return result;
 };
 

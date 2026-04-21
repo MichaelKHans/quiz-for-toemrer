@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.9.5";
+const APP_VERSION = "v4.0.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v4.0.0",
+        date: "2026-04-21",
+        title: "💎 UX Stabilisering & Kontrast-fix (v4.0.0)",
+        desc: "Endelig løsning på 'hoppende' sider i admin-panelet. Panelet husker nu din scroll-position, og slette-knapperne er gjort tydelige."
+    },
     {
         version: "v3.9.5",
         date: "2026-04-21",
@@ -110,6 +116,7 @@ const UPDATE_LOG = [
 let localDbCopy = null;
 let historyStack = [];
 let redoStack = [];
+let activeQuizIdx = null; // HUSKER hvilken quiz der er åben
 
 function initAdmin() {
     // Vi behøver ikke åbne panelet automatisk ved load
@@ -190,6 +197,7 @@ window.redo = function() {
 
 function renderAdminContent() {
     const container = document.getElementById('admin-content-inner');
+    const scrollPos = container ? container.scrollTop : 0;
     
     let html = `
         <div class="admin-tabs">
@@ -385,6 +393,15 @@ function renderAdminContent() {
     `;
     
     container.innerHTML = html;
+    
+    // Genskab scroll position
+    if (container) container.scrollTop = scrollPos;
+
+    // Genskab åben quiz hvis muligt
+    if (activeQuizIdx !== null) {
+        const el = document.getElementById(`edit-quiz-${activeQuizIdx}`);
+        if (el) el.style.display = 'block';
+    }
 }
 
 window.refreshImage = (idx) => {
@@ -506,8 +523,14 @@ window.importAiQuiz = () => {
 
 window.toggleEditQuiz = (idx, forceOpen = false) => {
     const el = document.getElementById(`edit-quiz-${idx}`);
-    if (forceOpen) el.style.display = 'block';
-    else el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    if (forceOpen) {
+        el.style.display = 'block';
+        activeQuizIdx = idx;
+    } else {
+        const isOpening = el.style.display === 'none';
+        el.style.display = isOpening ? 'block' : 'none';
+        activeQuizIdx = isOpening ? idx : null;
+    }
 };
 
 function getCategoryTitle(id) {
