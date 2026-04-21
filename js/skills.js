@@ -89,7 +89,7 @@ async function renderDashboard() {
 
             const translated = translateKeywords(quiz.title);
             const lockValue = quiz.moodImageLock || quiz.id;
-            const imageUrl = `https://loremflickr.com/300/300/${translated || 'carpentry'}?lock=${lockValue}`;
+            const imageUrl = `https://loremflickr.com/300/300/${translated || 'carpenter,construction'}/all?lock=${lockValue}`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
