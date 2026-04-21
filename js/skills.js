@@ -151,7 +151,7 @@ function updatePointsDisplay() {
 /**
  * Hjælpefunktion til at oversætte danske fagord til engelske søgeord.
  */
-function translateKeywords(input) {
+window.translateKeywords = function(input) {
     if (!input) return "";
     
     const dictionary = {
@@ -186,7 +186,7 @@ function translateKeywords(input) {
     });
 
     return foundTerms.length > 0 ? foundTerms.join(',') : result;
-}
+};
 
 function renderQuestion() {
     const question = currentQuiz.questions[currentQuestionIndex];

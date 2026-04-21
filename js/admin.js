@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.4.0";
+const APP_VERSION = "v3.4.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.4.1",
+        date: "2026-04-21",
+        title: "📸 Stabilisering af Billeder",
+        desc: "Rettet en fejl hvor nogle billeder ikke blev vist, og optimeret AI'en til at finde mere relevante billeder."
+    },
     {
         version: "v3.4.0",
         date: "2026-04-21",
@@ -187,8 +193,10 @@ function renderAdminContent() {
                             const titleMatch = quiz.title.match(/\(([^)]+)\)/);
                             displayKeywords = titleMatch ? titleMatch[1] : quiz.title;
                         }
-                        const translated = typeof translateKeywords !== 'undefined' ? translateKeywords(displayKeywords) : displayKeywords;
-                        const finalKeywords = translated || "construction,carpentry";
+                        const translateFn = window.translateKeywords || ((s) => s);
+                        const translated = translateFn(displayKeywords);
+                        // LoremFlickr virker bedst med kommaer, ikke bindestreger
+                        const finalKeywords = (translated || "construction,carpentry").replace(/-/g, ',');
                         const lockValue = quiz.moodImageLock || quiz.id;
                         const previewUrl = quiz.moodImageUrl || `https://loremflickr.com/320/240/${finalKeywords}?lock=${lockValue}`;
                         
@@ -382,7 +390,7 @@ JSON STRUKTUR (VIGTIG):
   "categoryId": "${catId}",
   "title": "${topic}",
   "description": "Faglig quiz om ${topic}.",
-  "moodKeywords": "meget-præcise-engelske-tekniske-termer-her",
+  "moodKeywords": "simple-english-tags-here",
   "questions": [
     {
       "question": "Spørgsmålstekst her?",
@@ -394,8 +402,9 @@ JSON STRUKTUR (VIGTIG):
 }
 
 REGLER FOR BILLED-SØGEORD (moodKeywords):
-- KUN engelske, tekniske termer (f.eks. 'roof-truss-installation', 'safety-harness-anchor'). 
-- Ingen generelle ord som 'carpenter' eller 'construction'.
+- KUN engelske ord (f.eks. 'roofing,tools' eller 'safety,scaffolding'). 
+- Brug komma imellem ordene. Max 2-3 ord.
+- Ingen tekniske koder eller lange streger.
 
 SVAR KUN MED RÅ JSON.`;
 
