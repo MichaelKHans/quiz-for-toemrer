@@ -90,7 +90,8 @@ async function renderDashboard() {
             const translated = window.translateKeywords(quiz.title);
             const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            const imageUrl = `https://loremflickr.com/300/300/${finalKeywords}?lock=${lockValue}`;
+            // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
+            const imageUrl = `https://source.unsplash.com/featured/300x300/?${finalKeywords}&sig=${lockValue}`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
@@ -242,7 +243,8 @@ function renderQuestion() {
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        const imageUrl = activeImageUrl || `https://loremflickr.com/800/1200/${finalKeywords}?lock=${lockValue}`;
+        // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
+        const imageUrl = activeImageUrl || `https://source.unsplash.com/featured/800x1200/?${finalKeywords}&sig=${lockValue}`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
     }

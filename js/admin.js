@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v3.7.0";
+const APP_VERSION = "v3.8.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v3.8.0",
+        date: "2026-04-21",
+        title: "🌍 Globalt Billed-skift (v3.8.0)",
+        desc: "Migreret fra LoremFlickr til Unsplash Source. Dette løser problemet hvor visse netværk blokerede for billeder."
+    },
     {
         version: "v3.7.0",
         date: "2026-04-21",
@@ -229,7 +235,8 @@ function renderAdminContent() {
                         const cleanFn = window.cleanKeywords || ((s) => s);
                         const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
-                        const previewUrl = quiz.moodImageUrl || `https://loremflickr.com/320/240/${finalKeywords}?lock=${lockValue}`;
+                        // SKIFT: Fra LoremFlickr til Unsplash Source pga. netværksblokering
+                        const previewUrl = quiz.moodImageUrl || `https://source.unsplash.com/featured/320x240/?${finalKeywords}&sig=${lockValue}`;
                         
                         return `
                         <div class="admin-item-expanded">
