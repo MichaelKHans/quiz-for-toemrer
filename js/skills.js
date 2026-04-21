@@ -87,11 +87,16 @@ async function renderDashboard() {
                 `;
             }
 
+            const translated = translateKeywords(quiz.title);
+            const lockValue = quiz.moodImageLock || quiz.id;
+            const imageUrl = `https://loremflickr.com/300/300/${translated || 'carpentry'}?lock=${lockValue}`;
+
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
-                    <h3>${quiz.title}</h3>
-                    <p>${quiz.description}</p>
-                    <div class="card-footer">
+                    <div class="card-mood-bg" style="background-image: url('${imageUrl}')"></div>
+                    <h3 style="position: relative; z-index: 2;">${quiz.title}</h3>
+                    <p style="position: relative; z-index: 2;">${quiz.description}</p>
+                    <div class="card-footer" style="position: relative; z-index: 2;">
                         ${footerContent}
                     </div>
                 </a>
