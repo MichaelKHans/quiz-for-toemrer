@@ -1,0 +1,346 @@
+import { getDbFromCloud } from './firebase-service.js';
+
+async function loadDatabase() {
+    // 1. Tjek skyen først (Vigtigst for synkronisering)
+    const cloudDb = await getDbFromCloud();
+    if (cloudDb) {
+        console.log("Database indlæst fra Firebase!");
+        return cloudDb;
+    }
+
+    // 2. Tjek om der findes en lokal 'admin' version (backup)
+    const customDb = window.QuizMemory.getCustomDatabase();
+    if (customDb) return customDb;
+
+    // 3. Brug standard-databasen hvis alt andet svigter
+    if (window.QUIZ_DATABASE) {
+        return window.QUIZ_DATABASE;
+    } else {
+        console.error('Database ikke fundet!');
+        return { quizzes: [], categories: [] };
+    }
+}
+
+/**
+ * DASHBOARD LOGIK
+ */
+let currentCategory = 'all';
+
+async function initDashboard() {
+    const data = await loadDatabase();
+    renderCategorySelector(data.categories);
+    renderDashboard();
+}
+
+function renderCategorySelector(categories) {
+    const container = document.getElementById('category-selector');
+    if (!container) return;
+
+    const allBtn = `<button class="category-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="filterCategory('all')">Alle</button>`;
+    const categoryBtns = categories.map(cat => `
+        <button class="category-btn ${currentCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')">${cat.title}</button>
+    `).join('');
+
+    container.innerHTML = allBtn + categoryBtns;
+}
+
+window.filterCategory = function(id) {
+    currentCategory = id;
+    renderDashboard();
+}
+
+function renderStars(count) {
+    let starsHtml = '';
+    for (let i = 1; i <= 3; i++) {
+        starsHtml += `<span class="star ${i > count ? 'empty' : ''}">★</span>`;
+    }
+    return `<div class="stars-container">${starsHtml}</div>`;
+}
+
+async function renderDashboard() {
+    const data = await loadDatabase();
+    const scores = window.QuizMemory.getScores();
+    const progress = window.QuizMemory.getProgressSummary(data.quizzes.length);
+
+    // Opdater progress bar
+    const bar = document.getElementById('progress-bar');
+    const label = document.getElementById('progress-label');
+    if (bar && label) {
+        bar.style.width = `${progress.percentage}%`;
+        label.textContent = `Samlet fremgang: ${progress.completed} ud af ${progress.total} quizzer`;
+    }
+
+    const grid = document.getElementById('quiz-grid');
+    if (grid) {
+        const filteredQuizzes = currentCategory === 'all' 
+            ? data.quizzes 
+            : data.quizzes.filter(q => q.categoryId === currentCategory);
+
+        grid.innerHTML = filteredQuizzes.map(quiz => {
+            const scoreData = scores[quiz.id];
+            let footerContent = '<span class="badge badge-default">Ikke startet</span>';
+            
+            if (scoreData) {
+                footerContent = `
+                    ${renderStars(scoreData.stars)}
+                    <span class="badge badge-success">${scoreData.points} point</span>
+                `;
+            }
+
+            return `
+                <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
+                    <h3>${quiz.title}</h3>
+                    <p>${quiz.description}</p>
+                    <div class="card-footer">
+                        ${footerContent}
+                    </div>
+                </a>
+            `;
+        }).join('');
+
+        // Genindlæs kategori-knapper for at sikre aktiv tilstand er korrekt
+        renderCategorySelector(data.categories);
+    }
+}
+
+/**
+ * QUIZ ENGINE LOGIK
+ */
+let currentQuiz = null;
+let currentQuestionIndex = 0;
+let totalPoints = 0;
+let questionAttempts = 0;
+let isAnswered = false;
+
+async function initQuiz() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const quizId = urlParams.get('id');
+    
+    if (!quizId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const data = await loadDatabase();
+    currentQuiz = data.quizzes.find(q => q.id === quizId);
+
+    if (!currentQuiz) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    document.getElementById('quiz-title').textContent = currentQuiz.title;
+    renderQuestion();
+}
+
+function updatePointsDisplay() {
+    const tracker = document.getElementById('points-tracker');
+    if (tracker) {
+        tracker.innerHTML = `
+            <span class="points-label">Point</span>
+            <span class="points-value">${totalPoints}</span>
+        `;
+    }
+}
+
+/**
+ * Hjælpefunktion til at oversætte danske fagord til engelske søgeord.
+ */
+function translateKeywords(input) {
+    if (!input) return "";
+    
+    const dictionary = {
+        'skimmel': 'mold',
+        'svamp': 'fungi',
+        'hussvamp': 'dry-rot,fungi',
+        'skimmelsvamp': 'mold',
+        'tagspær': 'roof,trusses',
+        'faldsikring': 'harness,safety',
+        'stillads': 'scaffolding',
+        'byggeplads': 'construction',
+        'beskyttelse': 'safety',
+        'værktøj': 'tools',
+        'tømrer': 'carpentry',
+        'sikkerhed': 'safety',
+        'logistik': 'logistics',
+        'alternaria': 'mold',
+        'cladosporium': 'mold',
+        'korkhat': 'fungi,rot',
+        'hvid tømmersvamp': 'fungi,decay',
+        'gul tømmersvamp': 'fungi,decay'
+    };
+
+    let result = input.toLowerCase().trim();
+    
+    // Tjek for ord i input og oversæt dem
+    let foundTerms = [];
+    Object.keys(dictionary).forEach(da => {
+        if (result.includes(da)) {
+            foundTerms.push(dictionary[da]);
+        }
+    });
+
+    return foundTerms.length > 0 ? foundTerms.join(',') : result;
+}
+
+function renderQuestion() {
+    const question = currentQuiz.questions[currentQuestionIndex];
+    isAnswered = false;
+    questionAttempts = 0;
+
+    // Opdater stemningsbillede (hvis vi er på split-screen layoutet)
+    const moodBg = document.getElementById('quiz-mood-bg');
+    if (moodBg) {
+        let userKeywords = currentQuiz.moodKeywords || "";
+        if (!userKeywords) {
+            const titleMatch = currentQuiz.title.match(/\(([^)]+)\)/);
+            userKeywords = titleMatch ? titleMatch[1] : currentQuiz.title;
+        }
+
+        const translated = translateKeywords(userKeywords);
+        
+        // NYT: Tjek for dårlige links
+        let activeImageUrl = currentQuiz.moodImageUrl;
+        if (activeImageUrl && activeImageUrl.includes('loremflickr') && (activeImageUrl.includes('carpenter') || activeImageUrl.includes('construction'))) {
+            activeImageUrl = null;
+        }
+
+        // Simpel men effektiv søgning. Vi undgår /all da det ofte giver 0 resultater.
+        const finalKeywords = translated || "construction,carpentry";
+        
+        // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
+        const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
+        const imageUrl = activeImageUrl || `https://loremflickr.com/800/1200/${finalKeywords}?lock=${lockValue}`;
+        
+        moodBg.style.backgroundImage = `url('${imageUrl}')`;
+    }
+
+    const container = document.getElementById('quiz-content');
+    container.innerHTML = `
+        <div id="points-tracker" class="points-tracker"></div>
+        <div class="question-box fade-in">
+            <div class="quiz-progress-text">Spørgsmål ${currentQuestionIndex + 1} af ${currentQuiz.questions.length}</div>
+            <h2 class="question-text">${question.question}</h2>
+            <div class="options-list" id="options-list">
+                ${question.options.map((option, index) => `
+                    <button class="option-btn" data-index="${index}" onclick="handleAnswer(${index})">${option}</button>
+                `).join('')}
+            </div>
+            <div id="rationale" class="rationale-box"></div>
+        </div>
+    `;
+    updatePointsDisplay();
+}
+
+window.handleAnswer = function(index) {
+    if (isAnswered) return;
+
+    const question = currentQuiz.questions[currentQuestionIndex];
+    const isCorrect = (index === question.correctIndex);
+    const rationaleBox = document.getElementById('rationale');
+    const optionBtns = document.querySelectorAll('.option-btn');
+    const selectedBtn = document.querySelector(`.option-btn[data-index="${index}"]`);
+
+    questionAttempts++;
+
+    if (isCorrect) {
+        isAnswered = true;
+        const awarded = questionAttempts === 1 ? 3 : 1;
+        totalPoints += awarded;
+        updatePointsDisplay();
+
+        selectedBtn.classList.add('correct');
+        optionBtns.forEach(btn => btn.disabled = true);
+
+        showFeedback(true, awarded, question.rationale);
+    } else {
+        selectedBtn.classList.add('incorrect');
+        selectedBtn.disabled = true;
+
+        if (questionAttempts === 1) {
+            // Første fejl - prøv igen
+            showFeedback(false, 0, "Det var ikke korrekt. Prøv en gang til!", true);
+        } else {
+            // Anden fejl - slut
+            isAnswered = true;
+            optionBtns.forEach(btn => {
+                btn.disabled = true;
+                if (parseInt(btn.dataset.index) === question.correctIndex) {
+                    btn.classList.add('correct');
+                }
+            });
+            showFeedback(false, 0, question.rationale);
+        }
+    }
+};
+
+function showFeedback(isCorrect, points, text, tryAgain = false) {
+    const rationaleBox = document.getElementById('rationale');
+    let header = "";
+    let boxClass = "";
+
+    if (tryAgain) {
+        header = "Prøv igen!";
+        boxClass = "try-again";
+    } else if (isCorrect) {
+        header = points === 3 ? "Perfekt! +3 point" : "Godt svaret! +1 point";
+        boxClass = "correct";
+    } else {
+        header = "Ikke helt rigtigt... 0 point";
+        boxClass = "incorrect";
+    }
+
+    rationaleBox.innerHTML = `
+        <div class="rationale-header">${header}</div>
+        <div class="rationale-text">${text}</div>
+        ${!tryAgain ? `
+            <div class="rationale-action">
+                <button class="btn btn-primary" onclick="nextStep()">
+                    ${currentQuestionIndex === currentQuiz.questions.length - 1 ? 'Se Resultat' : 'Næste Spørgsmål'}
+                </button>
+            </div>
+        ` : ''}
+    `;
+    rationaleBox.className = `rationale-box visible ${boxClass}`;
+}
+
+window.nextStep = function() {
+    if (currentQuestionIndex < currentQuiz.questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+    } else {
+        showResults();
+    }
+};
+
+function showResults() {
+    const maxPossible = currentQuiz.questions.length * 3;
+    window.QuizMemory.saveScore(currentQuiz.id, totalPoints, maxPossible);
+    const scoreData = window.QuizMemory.getScores()[currentQuiz.id];
+
+    const container = document.getElementById('quiz-content');
+    container.innerHTML = `
+        <div class="results-screen fade-in">
+            <div class="score-circle">
+                <div class="score-num">${totalPoints}</div>
+                <div class="score-total">af ${maxPossible}</div>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                ${renderStars(scoreData.stars)}
+            </div>
+            <h2>${scoreData.stars === 3 ? 'Helt suverænt!' : 'Godt klaret!'}</h2>
+            <p class="subtitle">Du har optjent ${totalPoints} point i quizzen om ${currentQuiz.title}.</p>
+            <div class="controls" style="justify-content: center; margin-top: 3rem;">
+                <a href="index.html" class="btn btn-primary">Tilbage til Dashboard</a>
+            </div>
+        </div>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('quiz-grid')) {
+        initDashboard();
+    } else if (document.getElementById('quiz-content')) {
+        initQuiz();
+    }
+});

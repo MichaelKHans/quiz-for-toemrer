@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tømrer Quiz | Uddannelsen</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="split-layout">
+        <div class="split-image" id="quiz-mood-bg">
+            <!-- Stemningsbillede indsættes her via JS -->
+        </div>
+        
+        <div class="split-content">
+            <div class="container quiz-container" style="margin: 0; max-width: 100%; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+                <header>
+                    <h1 id="quiz-title">Quiz</h1>
+                    <a href="index.html" class="btn btn-secondary" style="margin-top: 1rem; text-decoration: none; font-size: 0.9rem;">
+                        &larr; Afbryd og vend tilbage
+                    </a>
+                </header>
+
+                <main id="quiz-content">
+                    <!-- Interaktiv quiz indhold indlæses her -->
+                    <div style="text-align: center; padding: 3rem;">
+                        <p>Indlæser spørgsmål...</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="js/database.js"></script>
+    <script src="js/memory.js"></script>
+    <script type="module" src="js/skills.js"></script>
+
+</body>
+</html>

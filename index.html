@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tømrer Quiz | Uddannelsen</title>
+    <meta name="description" content="Læringsplatform for tømrerstuderende om arbejdsmiljø og svampe.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tømrer Quiz</h1>
+            <p class="subtitle">Test din faglige viden og hold dig opdateret på tømrerfaget</p>
+        </header>
+
+        <section class="progress-section">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span class="progress-label" id="progress-label">Henter din fremgang...</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+            </div>
+        </section>
+
+        <nav id="category-selector" class="category-selector">
+            <!-- Kategorier indlæses her -->
+        </nav>
+
+        <main id="quiz-grid" class="quiz-grid">
+
+            <!-- Quiz cards indlæses dynamisk her -->
+        </main>
+    </div>
+
+    <!-- Admin Trigger (Hængelås) -->
+    <div class="admin-trigger" onclick="tryLogin()" title="Lærer Login">
+        🔒
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="admin-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tømrer Quiz - Panel (Underviser)</h2>
+                <button class="btn-icon" onclick="closeAdmin()">✖</button>
+            </div>
+            <div class="modal-body" id="admin-content-inner">
+                <!-- Admin indhold indlæses her -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/database.js"></script>
+    <script src="js/admin-memory.js"></script>
+    <script type="module" src="js/skills.js"></script>
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
