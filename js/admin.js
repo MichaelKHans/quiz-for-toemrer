@@ -10,6 +10,12 @@ const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
     {
+        version: "v4.2.0",
+        date: "2026-04-22",
+        title: "📸 Dansk Billed-søgning (v4.2.0)",
+        desc: "Tilføjet et nyt værktøj i editoren: 'Søgeord (Dansk)'. Skriv på dansk, og systemet oversætter automatisk til engelsk via en indbygget fagordbog over tømrer-begreber."
+    },
+    {
         version: "v4.1.0",
         date: "2026-04-22",
         title: "☁️ Universal Cloud-synkronisering (v4.1.0)",
