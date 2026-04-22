@@ -298,8 +298,8 @@ function renderAdminContent() {
                         const cleanFn = window.cleanKeywords || ((s) => s);
                         const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
-                        // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
-                        const encodedUrl = encodeURIComponent(`loremflickr.com/320/240/${finalKeywords}?lock=${lockValue}`);
+                        // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
+                        const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
                         const previewUrl = quiz.moodImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=320&h=240&fit=cover`;
                         
                         return `

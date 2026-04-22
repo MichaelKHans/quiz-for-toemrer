@@ -93,8 +93,8 @@ async function renderDashboard() {
             const translated = window.translateKeywords(quiz.title);
             const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
-            const encodedUrl = encodeURIComponent(`loremflickr.com/300/300/${finalKeywords}?lock=${lockValue}`);
+            // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
+            const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
             const imageUrl = `https://images.weserv.nl/?url=${encodedUrl}&w=300&h=300&fit=cover`;
 
             return `
@@ -318,8 +318,8 @@ function renderQuestion() {
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
-        const encodedUrl = encodeURIComponent(`loremflickr.com/800/1200/${finalKeywords}?lock=${lockValue}`);
+        // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
+        const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
         const imageUrl = activeImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=1200&fit=cover`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
