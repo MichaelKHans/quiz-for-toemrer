@@ -375,12 +375,15 @@ function renderAdminContent() {
                 <div class="ai-step">
                     <h3>Trin 1: Fortæl AI hvad du vil have</h3>
                     <p class="step-guide">Skriv emnet for din nye quiz nedenfor. AI'en vil foreslå både spørgsmål og passende tekniske søgeord til billeder.</p>
-                    <div class="ai-input-group" style="align-items: center;">
-                        <input type="text" id="ai-topic" placeholder="F.eks. Faldsikring, Tagspær eller Stillads" style="flex: 2;">
-                        <select id="ai-category" style="flex: 1;">
-                            ${localDbCopy.categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('')}
-                        </select>
-                        <button class="btn btn-secondary btn-small" onclick="quickAddCategory()" title="Opret ny kategori her">+ Ny</button>
+                    <div class="ai-input-group" style="flex-direction: column; align-items: stretch; gap: 0.5rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="ai-topic" placeholder="Hovedemne (f.eks. Faldsikring)" style="flex: 2;">
+                            <select id="ai-category" style="flex: 1;">
+                                ${localDbCopy.categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('')}
+                            </select>
+                            <button class="btn btn-secondary btn-small" onclick="quickAddCategory()" title="Opret ny kategori her">+ Ny kat.</button>
+                        </div>
+                        <textarea id="ai-requirements" placeholder="Specifikke ønsker eller scenarier... (f.eks. 'Fokusér på regler for stillads over 2 meter' eller 'Lav et scenarie om en byggeplads i regnvejr')" style="min-height: 80px;"></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="generateAiPrompt()">✨ Opret AI-Kommando</button>
                 </div>
@@ -491,12 +494,15 @@ window.switchTab = (tabId) => {
 
 window.generateAiPrompt = () => {
     const topic = document.getElementById('ai-topic').value;
+    const requirements = document.getElementById('ai-requirements').value;
     const catId = document.getElementById('ai-category').value;
     const catTitle = localDbCopy.categories.find(c => c.id === catId).title;
 
     if (!topic) { alert("Skriv et emne."); return; }
 
     const prompt = `Som tømrer-ekspert og faglærer, lav en seriøs JSON quiz om "${topic}" til kategorien "${catTitle}". 
+
+${requirements ? `SPECIFIKKE KRAV/SCENARIE:\n${requirements}\n` : ''}
 
 KRAV TIL KVALITET:
 - Sværhedsgrad: Svendeprøve-niveau (teknisk funderet).
@@ -562,6 +568,8 @@ window.importAiQuiz = () => {
             delete data.moodImageUrl; 
         }
         if (!data.moodImageLock) data.moodImageLock = Math.floor(Math.random() * 5000);
+        
+        if (!data.moodKeywordsDanish) data.moodKeywordsDanish = "";
         
         pushToHistory();
         localDbCopy.quizzes.push(data);
