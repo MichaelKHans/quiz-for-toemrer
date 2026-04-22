@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.0.0";
+const APP_VERSION = "v4.1.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v4.1.0",
+        date: "2026-04-22",
+        title: "☁️ Universal Cloud-synkronisering (v4.1.0)",
+        desc: "Løst problemet med synkronisering mellem computere. Alt indhold (spørgsmål og billeder) hentes nu direkte fra skyen hver gang, hvilket eliminerer fejl pga. lokal hukommelse."
+    },
     {
         version: "v4.0.0",
         date: "2026-04-21",
@@ -138,32 +144,42 @@ window.tryLogin = function() {
 };
 
 async function showAdminPanel() {
+    const container = document.getElementById('admin-content-inner');
+    container.innerHTML = `
+        <div style="padding: 2rem; text-align: center;">
+            <div class="loader" style="margin-bottom: 1rem;">⌛</div>
+            <p>Henter nyeste date fra skyen...</p>
+        </div>
+    `;
     document.getElementById('admin-modal').style.display = 'flex';
+    
     // Opdater overskrift med version
     const titleEl = document.querySelector('#admin-modal h2');
     if (titleEl) titleEl.textContent = `Tømrer Quiz - Panel (Underviser) - ${APP_VERSION}`;
     
-    localDbCopy = window.QuizMemory.getCustomDatabase() || JSON.parse(JSON.stringify(window.QUIZ_DATABASE));
+    try {
+        const cloudDb = await getDbFromCloud();
+        if (cloudDb) {
+            localDbCopy = cloudDb;
+            console.log("Admin: Data hentet fra Firebase.");
+        } else {
+            console.warn("Admin: Ingen data i skyen, bruger standard.");
+            localDbCopy = JSON.parse(JSON.stringify(window.QUIZ_DATABASE));
+        }
+    } catch (error) {
+        console.error("Admin: Fejl ved hentning fra skyen:", error);
+        localDbCopy = JSON.parse(JSON.stringify(window.QUIZ_DATABASE));
+    }
     
-    // AUTO-MIGRATION: Opdater gamle quizzer med nye metadata fra master-databasen hvis de mangler
+    // AUTO-MIGRATION logic (hvis der er nye felter i den statiske DB)
     if (window.QUIZ_DATABASE) {
-        let migrated = false;
         localDbCopy.quizzes.forEach(quiz => {
             const masterQuiz = window.QUIZ_DATABASE.quizzes.find(mq => mq.id === quiz.id);
             if (masterQuiz) {
-                if (!quiz.moodKeywords && masterQuiz.moodKeywords) {
-                    quiz.moodKeywords = masterQuiz.moodKeywords;
-                    migrated = true;
-                }
-                if (!quiz.moodImageLock && masterQuiz.moodImageLock) {
-                    quiz.moodImageLock = masterQuiz.moodImageLock;
-                    migrated = true;
-                }
+                if (!quiz.moodKeywords && masterQuiz.moodKeywords) quiz.moodKeywords = masterQuiz.moodKeywords;
+                if (!quiz.moodImageLock && masterQuiz.moodImageLock) quiz.moodImageLock = masterQuiz.moodImageLock;
             }
         });
-        if (migrated) {
-            console.log("Migration: Gamle quizzer opdateret med nye billed-metadata.");
-        }
     }
 
     historyStack = [];
@@ -197,7 +213,10 @@ window.redo = function() {
 
 function renderAdminContent() {
     const container = document.getElementById('admin-content-inner');
-    const scrollPos = container ? container.scrollTop : 0;
+    if (!container) return;
+
+    // Gem scroll position og quiz-status FØR innerHTML
+    const scrollPos = container.scrollTop;
     
     let html = `
         <div class="admin-tabs">
@@ -394,22 +413,24 @@ function renderAdminContent() {
     
     container.innerHTML = html;
     
-    // Genskab scroll position
-    if (container) container.scrollTop = scrollPos;
-
     // Genskab åben quiz hvis muligt
     if (activeQuizIdx !== null) {
         const el = document.getElementById(`edit-quiz-${activeQuizIdx}`);
         if (el) el.style.display = 'block';
     }
+
+    // Genskab scroll position ROBUST (vent til browseren er klar)
+    requestAnimationFrame(() => {
+        container.scrollTop = scrollPos;
+    });
 }
 
 window.refreshImage = (idx) => {
     pushToHistory();
-    const newLock = Math.floor(Math.random() * 10000);
-    localDbCopy.quizzes[idx].moodImageLock = newLock;
+    const quiz = localDbCopy.quizzes[idx];
+    quiz.moodImageUrl = ""; // Nulstil URL for at tvinge nyt billede via keywords
+    quiz.moodImageLock = Math.floor(Math.random() * 1000000);
     renderAdminContent();
-    toggleEditQuiz(idx, true);
 };
 
 window.quickAddCategory = () => {
@@ -552,7 +573,6 @@ window.addQuestion = (idx) => { pushToHistory(); localDbCopy.quizzes[idx].questi
 window.saveAdminChanges = async () => {
     const success = await saveDbToCloud(localDbCopy);
     if (success) {
-        window.QuizMemory.saveCustomDatabase(localDbCopy); 
         alert("Gemt i skyen! Alle lærere og elever kan nu se ændringerne.");
         location.reload();
     } else {
@@ -597,21 +617,7 @@ window.exportDatabase = () => {
     a.click();
 };
 
-window.refreshImage = function(idx) {
-    const quiz = localDbCopy.quizzes[idx];
-    // Vi fjerner et evt. låst link for at rulle terningerne igen
-    quiz.moodImageUrl = "";
-    quiz.moodImageLock = Math.floor(Math.random() * 1000000);
-    renderAdminContent();
-    // Scroll tilbage til det pågældende element efter re-render
-    setTimeout(() => {
-        const el = document.getElementById(`edit-quiz-${idx}`);
-        if(el) {
-            el.style.display = 'block';
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }, 100);
-};
+// FJERN DUPLIKERET REFRESHIMAGE OG BRUG DEN KONSOLIDEREDE FOROVEN
 
 window.lockImage = function(idx) {
     const imgEl = document.getElementById(`preview-img-${idx}`);
@@ -627,14 +633,12 @@ window.lockImage = function(idx) {
     btn.innerHTML = "✅ Gemt!";
     btn.style.backgroundColor = "var(--success)";
     
-    window.QuizMemory.saveCustomDatabase(localDbCopy);
     saveDbToCloud(localDbCopy);
     
     setTimeout(() => {
         btn.innerHTML = oldText;
         btn.style.backgroundColor = "";
         renderAdminContent();
-        document.getElementById(`edit-quiz-${idx}`).style.display = 'block';
     }, 1500);
 };
 

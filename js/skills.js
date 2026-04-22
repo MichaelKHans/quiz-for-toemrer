@@ -1,19 +1,22 @@
 import { getDbFromCloud } from './firebase-service.js';
 
 async function loadDatabase() {
-    // 1. Tjek skyen først (Vigtigst for synkronisering)
-    const cloudDb = await getDbFromCloud();
-    if (cloudDb) {
-        console.log("Database indlæst fra Firebase!");
-        return cloudDb;
+    // 1. Tjek skyen (Vigtigst for synkronisering)
+    try {
+        const cloudDb = await getDbFromCloud();
+        if (cloudDb) {
+            console.log("Database indlæst fra Firebase!");
+            return cloudDb;
+        }
+    } catch (e) {
+        console.error("Fejl ved hentning fra skyen:", e);
     }
 
-    // 2. Tjek om der findes en lokal 'admin' version (backup)
-    const customDb = window.QuizMemory.getCustomDatabase();
-    if (customDb) return customDb;
+    // 2. Vi bruger IKKE længere localStorage til indhold (kun til elev-progress)
 
-    // 3. Brug standard-databasen hvis alt andet svigter
+    // 3. Brug standard-databasen hvis alt andet svigter (offline backup)
     if (window.QUIZ_DATABASE) {
+        console.warn("Bruger statisk database fallback.");
         return window.QUIZ_DATABASE;
     } else {
         console.error('Database ikke fundet!');
@@ -116,7 +119,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.0.0';
+        tag.textContent = 'v4.1.0';
     }
 }
 

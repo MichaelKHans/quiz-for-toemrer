@@ -53,18 +53,19 @@ function getProgressSummary(totalQuizzes) {
 const ADMIN_DATA_KEY = 'quiz_hub_admin_data';
 
 /**
- * Henter den brugerdefinerede database fra læreren (hvis den findes).
+ * Henter den brugerdefinerede database (DEPRECATED - Vi bruger nu Firebase)
  */
 function getCustomDatabase() {
-    const data = localStorage.getItem(ADMIN_DATA_KEY);
-    return data ? JSON.parse(data) : null;
+    // Vi bruger ikke længere localStorage til indhold
+    return null;
 }
 
 /**
- * Gemmer lærerens rettelser lokalt.
+ * Gemmer lærerens rettelser (DEPRECATED - Vi bruger nu Firebase)
  */
 function saveCustomDatabase(data) {
-    localStorage.setItem(ADMIN_DATA_KEY, JSON.stringify(data));
+    // Vi gemmer ikke længere indhold lokalt
+    console.log("Memory: Quiz-indhold gemmes ikke længere lokalt (kun i skyen).");
 }
 
 window.QuizMemory = {

@@ -2,6 +2,25 @@
 
 Her trackes alle ændringer, forbedringer og rettelser foretaget i projektet.
 
+## [v4.1.0] - 2026-04-22
+### 🚀 Tilføjet
+- **Ren Cloud-synkronisering:** Quiz-indhold hentes nu udelukkende fra Firebase. Lokal lagring bruges nu kun til elevernes egne resultater.
+- **Admin Loading State:** Tilføjet visuel indikator ("Henter data..."), når admin-panelet åbnes, så man altid ved, at man redigerer den nyeste version.
+
+### 🔧 Rettet
+- **Synkroniserings-fejl:** Løst problem hvor rettelser foretaget på én computer ikke dukkede op på en anden pga. lokal caching.
+- **Image Lock Sync:** URL'er til de låste billeder gemmes nu direkte i skyen og synkroniseres på tværs af alle enheder.
+- **Scroll-hukommelse:** Fikset fejl hvor admin-panelet "hoppede" eller nulstillede scroll-positionen ved rettelser eller billed-skift. Bruger nu `requestAnimationFrame` for stabil visning.
+
+---
+
+## [v4.0.0] - 2026-04-21
+### 🚀 Tilføjet
+- **UX Stabilisering:** Implementeret scroll-hukommelse i admin-panelet, så man ikke mister sin position ved rettelser.
+- **Visuel Kontrast:** Forbedret synlighed af knapper og slette-funktioner.
+
+---
+
 ## [v3.4.0] - 2026-04-21
 ### 🚀 Tilføjet
 - **Power AI Prompt:** Ny kommando til ChatGPT der tvinger den til at lave quizzer på svendeprøve-niveau.
