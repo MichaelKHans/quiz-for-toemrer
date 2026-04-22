@@ -298,9 +298,8 @@ function renderAdminContent() {
                         const cleanFn = window.cleanKeywords || ((s) => s);
                         const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
-                        // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
-                        const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
-                        const previewUrl = quiz.moodImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=320&h=240&fit=cover`;
+                        // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
+                        const previewUrl = quiz.moodImageUrl || `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
                         
                         return `
                         <div class="admin-item-expanded">

@@ -93,9 +93,8 @@ async function renderDashboard() {
             const translated = window.translateKeywords(quiz.title);
             const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
-            const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
-            const imageUrl = `https://images.weserv.nl/?url=${encodedUrl}&w=300&h=300&fit=cover`;
+            // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
+            const imageUrl = `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
@@ -318,9 +317,8 @@ function renderQuestion() {
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        // ULTIMATIV SYNKRONISERING: Vi bruger altid 1200x800 som base for at undgå 'forskellige' billeder
-        const encodedUrl = encodeURIComponent(`loremflickr.com/1200/800/${finalKeywords}?lock=${lockValue}`);
-        const imageUrl = activeImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=1200&fit=cover`;
+        // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
+        const imageUrl = activeImageUrl || `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
     }
