@@ -93,8 +93,9 @@ async function renderDashboard() {
             const translated = window.translateKeywords(quiz.title);
             const finalKeywords = window.cleanKeywords(translated);
             const lockValue = quiz.moodImageLock || quiz.id;
-            // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
-            const imageUrl = `https://images.weserv.nl/?url=loremflickr.com/300/300/${finalKeywords}%3Flock%3D${lockValue}&w=300&h=300&fit=cover`;
+            // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
+            const encodedUrl = encodeURIComponent(`loremflickr.com/300/300/${finalKeywords}?lock=${lockValue}`);
+            const imageUrl = `https://images.weserv.nl/?url=${encodedUrl}&w=300&h=300&fit=cover`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
@@ -119,7 +120,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.2.0';
+        tag.textContent = 'v4.3.2';
     }
 }
 
@@ -317,8 +318,9 @@ function renderQuestion() {
         
         // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
         const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
-        const imageUrl = activeImageUrl || `https://images.weserv.nl/?url=loremflickr.com/800/1200/${finalKeywords}%3Flock%3D${lockValue}&w=800&h=1200&fit=cover`;
+        // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
+        const encodedUrl = encodeURIComponent(`loremflickr.com/800/1200/${finalKeywords}?lock=${lockValue}`);
+        const imageUrl = activeImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=800&h=1200&fit=cover`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
     }
