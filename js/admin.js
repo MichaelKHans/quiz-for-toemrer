@@ -5,15 +5,21 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.3.0";
+const APP_VERSION = "v4.3.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
     {
+        version: "v4.3.1",
+        date: "2026-04-22",
+        title: "🤖 AI-Scenarier & Billed-synergi (v4.3.1)",
+        desc: "Tilføjet felt til specifikke krav/scenarier i AI-generatoren. AI'en vælger nu både danske og engelske søgeord, der matcher emnet perfekt."
+    },
+    {
         version: "v4.3.0",
         date: "2026-04-22",
-        title: "🤖 AI Billed-Intelligens & Katte-sikring (v4.3.0)",
-        desc: "AI'en vælger nu selv de rigtige billed-søgeord. Samtidig er 'katte-billeder' fjernet pga. nye robuste fallback-mekanismer."
+        title: "📸 Katte-sikring & Robust Billedsøgning (v4.3.0)",
+        desc: "Implementeret automatiske sikkerheds-tags og fallbacks for at undgå 'katte-billeder' ved svære søgeord."
     },
     {
         version: "v4.2.0",

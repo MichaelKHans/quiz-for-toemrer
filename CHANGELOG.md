@@ -2,6 +2,18 @@
 
 Her trackes alle ændringer, forbedringer og rettelser foretaget i projektet.
 
+## [v4.3.1] - 2026-04-22
+### 🚀 Tilføjet
+- **AI-Scenarier:** Nyt felt i AI-generatoren til specifikke ønsker og scenarier, hvilket giver langt mere præcise og fagrelevante quizzer.
+- **Billed-synergi:** AI'en foreslår nu automatisk søgeord i både dansk og engelsk, der passer til emnet.
+
+## [v4.3.0] - 2026-04-22
+### 🚀 Tilføjet
+- **Katte-sikring:** Implementeret avancerede fallbacks i billedmotoren. Hvis et specifikt ord ikke findes, vises generelle bygge-billeder fremfor den klassiske "kat".
+- **Bredere Søgealgoritme:** Billedsøgningen bruger nu op til 4 tags for at sikre bedre match.
+
+---
+
 ## [v4.2.0] - 2026-04-22
 ### 🚀 Tilføjet
 - **Dansk Billed-søgning:** Nyt felt i editoren der automatisk oversætter danske ord til engelsk for at finde relevante billeder.
