@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.2.0";
+const APP_VERSION = "v4.3.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v4.3.0",
+        date: "2026-04-22",
+        title: "🤖 AI Billed-Intelligens & Katte-sikring (v4.3.0)",
+        desc: "AI'en vælger nu selv de rigtige billed-søgeord. Samtidig er 'katte-billeder' fjernet pga. nye robuste fallback-mekanismer."
+    },
     {
         version: "v4.2.0",
         date: "2026-04-22",
@@ -505,7 +511,8 @@ JSON STRUKTUR (VIGTIG):
   "categoryId": "${catId}",
   "title": "${topic}",
   "description": "Faglig quiz om ${topic}.",
-  "moodKeywords": "simple-english-tags-here",
+  "moodKeywords": "skriv-engelske-tags-here (f.eks. stairs,carpentry)",
+  "moodKeywordsDanish": "skriv-danske-tags-her (f.eks. trapper)",
   "questions": [
     {
       "question": "Spørgsmålstekst her?",
@@ -516,10 +523,11 @@ JSON STRUKTUR (VIGTIG):
   ]
 }
 
-REGLER FOR BILLED-SØGEORD (moodKeywords):
-- KUN engelske ord (f.eks. 'roofing,tools' eller 'safety,scaffolding'). 
+REGLER FOR BILLED-SØGEORD:
+- find ord der matcher emnet perfekt.
+- moodKeywords: KUN engelsk. 
+- moodKeywordsDanish: KUN dansk.
 - Brug komma imellem ordene. Max 2-3 ord.
-- Ingen tekniske koder eller lange streger.
 
 SVAR KUN MED RÅ JSON.`;
 
