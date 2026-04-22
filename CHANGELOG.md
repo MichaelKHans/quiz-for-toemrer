@@ -2,6 +2,14 @@
 
 Her trackes alle ændringer, forbedringer og rettelser foretaget i projektet.
 
+## [v4.2.0] - 2026-04-22
+### 🚀 Tilføjet
+- **Dansk Billed-søgning:** Nyt felt i editoren der automatisk oversætter danske ord til engelsk for at finde relevante billeder.
+- **Massiv Fagordbog:** Tilføjet over 50 tømrer-faglige termer (trapper, vinduer, byggeplads, isolering mv.) til den interne oversætter.
+- **Dansk Hukommelse:** Systemet gemmer nu dine danske søgeord, så du altid kan se hvad du søgte på sidst.
+
+---
+
 ## [v4.1.0] - 2026-04-22
 ### 🚀 Tilføjet
 - **Ren Cloud-synkronisering:** Quiz-indhold hentes nu udelukkende fra Firebase. Lokal lagring bruges nu kun til elevernes egne resultater.

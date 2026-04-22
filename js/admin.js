@@ -5,7 +5,7 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.1.0";
+const APP_VERSION = "v4.2.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -313,6 +313,10 @@ function renderAdminContent() {
                                         </div>
                                         <label>Søgeord (Engelsk)</label>
                                         <input type="text" value="${quiz.moodKeywords || ''}" placeholder="f.eks. roof, timber" onchange="updateQuiz(${idx}, 'moodKeywords', this.value)">
+                                        
+                                        <label>Søgeord (Dansk - Automatisk oversætter)</label>
+                                        <input type="text" value="${quiz.moodKeywordsDanish || ''}" placeholder="f.eks. tagspær, trapper" onchange="translateAndSetKeywords(${idx}, this.value)">
+                                        
                                         <input type="hidden" value="${quiz.moodImageLock || ''}" id="mood-lock-${idx}">
                                     </div>
                                 </div>
@@ -430,6 +434,20 @@ window.refreshImage = (idx) => {
     const quiz = localDbCopy.quizzes[idx];
     quiz.moodImageUrl = ""; // Nulstil URL for at tvinge nyt billede via keywords
     quiz.moodImageLock = Math.floor(Math.random() * 1000000);
+    renderAdminContent();
+};
+
+window.translateAndSetKeywords = (idx, danishVal) => {
+    pushToHistory();
+    localDbCopy.quizzes[idx].moodKeywordsDanish = danishVal;
+    
+    // Brug den globale translateKeywords funktion fra skills.js
+    const englishVal = window.translateKeywords(danishVal);
+    localDbCopy.quizzes[idx].moodKeywords = englishVal;
+    
+    // Nulstil låst URL så previewet opdateres med de nye keywords
+    localDbCopy.quizzes[idx].moodImageUrl = "";
+    
     renderAdminContent();
 };
 

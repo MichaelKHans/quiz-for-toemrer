@@ -119,7 +119,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.1.0';
+        tag.textContent = 'v4.2.0';
     }
 }
 
@@ -170,35 +170,90 @@ window.translateKeywords = function(input) {
     if (!input) return "";
     
     const dictionary = {
-        'skimmel': 'mold',
-        'svamp': 'fungi',
-        'hussvamp': 'dry-rot,fungi',
-        'skimmelsvamp': 'mold',
+        // Konstruktion
         'tagspær': 'roof,trusses',
+        'hanebåndsspær': 'roof,attic,truss',
+        'lægter': 'battens,roofing',
+        'bjælker': 'beams,timber',
+        'rem': 'sill,plate,timber',
+        'stolper': 'posts,timber',
+        'skillerum': 'partition,wall',
+        'gips': 'drywall,plasterboard',
+        'isolering': 'insulation,mineral-wool',
+        'dampspær': 'vapor-barrier',
+        'undertag': 'roofing,underlayment',
+        
+        // Elementer
+        'trapper': 'stairs,staircase',
+        'vinduer': 'windows,glazing',
+        'døre': 'doors,entryway',
+        'kvist': 'dormer,roof',
+        'tag': 'roof,construction',
+        'skur': 'shed,wooden',
+        'terrasse': 'deck,patio,wood',
+        'gulv': 'flooring,timber',
+        'lofter': 'ceiling,interior',
+        
+        // Generelt & Plads
+        'byggeplads': 'construction,site',
+        'værktøj': 'hand-tools,carpentry',
+        'maskiner': 'power-tools,carpentry',
+        'sikkerhed': 'safety,equipment',
         'faldsikring': 'harness,safety',
         'stillads': 'scaffolding',
-        'byggeplads': 'construction',
-        'beskyttelse': 'safety',
-        'værktøj': 'tools',
-        'tømrer': 'carpentry',
-        'sikkerhed': 'safety',
-        'logistik': 'logistics',
-        'alternaria': 'mold',
-        'cladosporium': 'mold',
-        'korkhat': 'fungi,rot',
-        'hvid tømmersvamp': 'fungi,decay',
-        'gul tømmersvamp': 'fungi,decay'
+        'kran': 'crane,construction',
+        'lift': 'aerial-lift,cherry-picker',
+        'hjelm': 'hard-hat,safety',
+        'handsker': 'gloves,safety',
+        
+        // Materialer
+        'træ': 'wood,timber',
+        'beton': 'concrete',
+        'stål': 'steel,beams',
+        'mursten': 'bricks,masonry',
+        'søm': 'nails,carpentry',
+        'skruer': 'screws,carpentry',
+        'beslag': 'brackets,metal',
+        'vinkelbeslag': 'angle-bracket',
+        'lim': 'wood-glue',
+        
+        // Fugt & Svamp
+        'skimmel': 'mold,fungus',
+        'svamp': 'fungi,decay',
+        'hussvamp': 'dry-rot,fungi',
+        'skimmelsvamp': 'mold',
+        'fugt': 'moisture,wet',
+        'råd': 'rot,decay',
+        
+        // Andre fagord
+        'tømrer': 'carpenter,carpentry',
+        'snedker': 'joiner,woodworking',
+        'murer': 'masonry',
+        'elektriker': 'electrician',
+        'vvs': 'plumbing',
+        'tegning': 'blueprint,architectural',
+        'opmåling': 'measuring,surveying',
+        'logistik': 'logistics,shipping'
     };
 
     let result = input.toLowerCase().trim();
     
     // Tjek for ord i input og oversæt dem
     let foundTerms = [];
-    Object.keys(dictionary).forEach(da => {
-        if (result.includes(da)) {
-            foundTerms.push(dictionary[da]);
+    
+    // Split input i ord for at tjekke hvert ord individuelt
+    const inputWords = result.split(/[\s,]+/);
+    
+    inputWords.forEach(word => {
+        if (dictionary[word]) {
+            foundTerms.push(dictionary[word]);
         }
     });
+
+    // Hvis ingen ord blev fundet i ordbogen, tjek om hele strengen er en nøgle
+    if (foundTerms.length === 0 && dictionary[result]) {
+        foundTerms.push(dictionary[result]);
+    }
 
     return foundTerms.length > 0 ? foundTerms.join(',') : result;
 };
