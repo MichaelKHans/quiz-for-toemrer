@@ -5,10 +5,16 @@
 
 import { saveDbToCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.3.1";
+const APP_VERSION = "v4.3.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v4.3.2",
+        date: "2026-04-22",
+        title: "📸 Katte-FIX & URL Optimering (v4.3.2)",
+        desc: "Løst problem med for mange søgeord (AND-logik), der tvang katte frem. Nu bruges færre, men mere præcise ord samt korrekt URL-kodning."
+    },
     {
         version: "v4.3.1",
         date: "2026-04-22",
@@ -292,8 +298,9 @@ function renderAdminContent() {
                         const cleanFn = window.cleanKeywords || ((s) => s);
                         const finalKeywords = cleanFn(translated);
                         const lockValue = quiz.moodImageLock || quiz.id;
-                        // ULTIMATIV FIX: Brug Weserv Proxy til at hente billeder udenom netværks-blokering
-                        const previewUrl = quiz.moodImageUrl || `https://images.weserv.nl/?url=loremflickr.com/320/240/${finalKeywords}%3Flock%3D${lockValue}&w=320&h=240&fit=cover`;
+                        // ULTIMATIV FIX: Brug Weserv Proxy med korrekt encoding for at undgå katte
+                        const encodedUrl = encodeURIComponent(`loremflickr.com/320/240/${finalKeywords}?lock=${lockValue}`);
+                        const previewUrl = quiz.moodImageUrl || `https://images.weserv.nl/?url=${encodedUrl}&w=320&h=240&fit=cover`;
                         
                         return `
                         <div class="admin-item-expanded">

@@ -275,16 +275,18 @@ window.cleanKeywords = function(input) {
         .map(s => s.trim())
         .filter(s => s.length > 2);
         
-    // 4. Billed-tjenester elsker de første par vigtigste ord + vores sikkerheds-tags
-    // Vi tilføjer altid fag-tags for at undgå at få vist katte (LoremFlickr's fallback)
-    let finalTags = tags.length > 0 ? tags.slice(0, 4) : ["tools"];
+    // 4. Billed-tjenester (LoremFlickr) bruger AND-logik ved kommaer.
+    // Hvis vi sender for mange tags, finder den intet og viser en kat.
+    // Vi begrænser os til de 2 vigtigste ord.
+    let finalTags = tags.length > 0 ? tags.slice(0, 2) : ["carpentry"];
     
-    // Tilføj altid sikkerhedstags hvis de ikke allerede er der
-    if (!finalTags.includes('carpentry')) finalTags.push('carpentry');
-    if (!finalTags.includes('construction')) finalTags.push('construction');
+    // Hvis vi kun har ét tag, tilføjer vi 'construction' som et ekstra (stadig ret specifikt)
+    if (finalTags.length === 1 && finalTags[0] !== 'carpentry') {
+        finalTags.push('carpentry');
+    }
     
     const result = finalTags.join(',');
-    console.log("Image Search Tags (v4.3.0):", result);
+    console.log("Image Search Tags (v4.3.2):", result);
     return result;
 };
 
