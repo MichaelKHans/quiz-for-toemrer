@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.9.3";
+const APP_VERSION = "v4.9.4";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -817,18 +817,19 @@ window.cleanupSessions = async () => {
     if (!confirm("Vil du SLETTE alle live-sessioner fra databasen? Dette kan ikke fortrydes og fjerner straks 'Deltag' knappen for alle elever.")) return;
     
     try {
+        console.log("Forsøger at slette alle sessioner i Firebase...");
         const liveRef = window.ref(window.db, 'live_sessions');
-        await window.set(liveRef, null); // Sletter alt under live_sessions
+        await window.set(liveRef, null); 
         alert("Live-sessioner er nulstillet!");
     } catch (e) {
         console.error("Fejl ved rydning:", e);
-        alert("Fejl ved rydning af sessioner.");
+        alert("Fejl ved rydning: " + e.message);
     }
 };
 
 window.initiateLiveSession = async (quizIdx) => {
     try {
-        // Automatisk oprydning før ny session
+        console.log("Forsøger at rydde op og oprette ny session i Firebase...");
         const liveRef = window.ref(window.db, 'live_sessions');
         await window.set(liveRef, null);
 

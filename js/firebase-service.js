@@ -100,4 +100,7 @@ window.listenToAllSessions = listenToAllSessions;
 window.db = db;
 window.ref = ref;
 window.onValue = onValue;
+window.set = set;
+window.get = get;
+window.update = update;
 window.serverTimestamp = serverTimestamp;
