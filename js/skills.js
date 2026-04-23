@@ -524,6 +524,9 @@ async function renderStudentGameView(session) {
         return;
     }
 
+    const symbols = ['▲', '◆', '●', '■'];
+    const letters = ['A', 'B', 'C', 'D'];
+
     container.innerHTML = `
         <div class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
         <div class="live-student-game fade-in">
@@ -532,7 +535,10 @@ async function renderStudentGameView(session) {
             </div>
             <div class="options-grid">
                 ${question.options.map((opt, i) => `
-                    <button class="btn btn-large opt-${i}" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
+                    <button class="btn btn-large opt-${i}" onclick="submitLiveAnswer(${qIdx}, ${i})">
+                        <span class="symbol">${symbols[i]}</span>
+                        <span class="letter">${letters[i]}</span>
+                    </button>
                 `).join('')}
             </div>
         </div>
@@ -561,9 +567,6 @@ window.submitLiveAnswer = async (qIdx, answerIdx) => {
     });
     const quiz = data.quizzes.find(q => q.id === session.quizId);
     const isCorrect = answerIdx === quiz.questions[qIdx].correctIndex;
-
-    if (isCorrect) audioCorrect.play();
-    else audioIncorrect.play();
 
     // Kahoot-scoring: 500 basis point + op til 500 point for hastighed (max 1000)
     const timeLimit = 20;

@@ -5,8 +5,35 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.9.6";
+const APP_VERSION = "v5.0.0";
 const ADMIN_PASSWORD = "tømrer123";
+
+// Live Audio System (Teacher side)
+const liveAudio = {
+    music: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/live_bg.mp3'),
+    correct: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/correct.mp3'),
+    incorrect: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/incorrect.mp3'),
+    isMuted: false,
+    volume: 0.5
+};
+liveAudio.music.loop = true;
+
+window.toggleLiveMusic = () => {
+    liveAudio.isMuted = !liveAudio.isMuted;
+    if (liveAudio.isMuted) {
+        liveAudio.music.pause();
+    } else {
+        liveAudio.music.play().catch(e => console.log("Audio play blocked"));
+    }
+    renderAdminContent(); // Update UI
+};
+
+window.setLiveVolume = (val) => {
+    liveAudio.volume = val;
+    liveAudio.music.volume = val;
+    liveAudio.correct.volume = val;
+    liveAudio.incorrect.volume = val;
+};
 
 const UPDATE_LOG = [
     {
@@ -882,6 +909,10 @@ function renderLobbyUI(pin, title) {
                     <p>PIN:</p>
                     <div class="pin-code-compact">${pin}</div>
                 </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn btn-secondary btn-small" onclick="toggleLiveMusic()">${liveAudio.isMuted ? '🔇' : '🔊'}</button>
+                    <input type="range" min="0" max="1" step="0.1" value="${liveAudio.volume}" onchange="setLiveVolume(this.value)" style="width: 60px;">
+                </div>
                 <div class="player-status" style="font-size: 1.2rem; font-weight: bold; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 8px;">
                     👥 <span id="player-count-val">0</span>
                 </div>
@@ -941,6 +972,12 @@ function renderTeacherGameView(session) {
     const answerCount = players.filter(p => p.answers && p.answers[qIdx]).length;
 
     const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
+    const symbols = ['▲', '◆', '●', '■'];
+    const letters = ['A', 'B', 'C', 'D'];
+    const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+
+    // Start musik hvis ikke mutet
+    if (!liveAudio.isMuted) liveAudio.music.play().catch(() => {});
 
     container.innerHTML = `
         <div class="teacher-game-dashboard fade-in">
@@ -950,6 +987,7 @@ function renderTeacherGameView(session) {
                     <h2 style="margin:0; font-size: 1.2rem;">${quiz.title}</h2>
                 </div>
                 <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-secondary btn-small" onclick="toggleLiveMusic()">${liveAudio.isMuted ? '🔇' : '🔊'}</button>
                     <div class="pin-display-compact" style="padding: 0.3rem 0.8rem; scale: 0.8;">
                         <p>PIN:</p>
                         <div class="pin-code-compact" style="font-size: 1.4rem;">${session.pin}</div>
@@ -959,8 +997,16 @@ function renderTeacherGameView(session) {
             </div>
             
             <div class="current-question-display" style="display: flex; flex-direction: column;">
-                <h1 style="font-size: 2.2rem; margin-bottom: 1.5rem; line-height: 1.2;">${question.question}</h1>
-                <div class="image-box" style="flex-grow: 1; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); position: relative;">
+                <h1 style="font-size: 1.8rem; margin-bottom: 1rem; line-height: 1.2;">${question.question}</h1>
+                <div class="teacher-options-preview" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                    ${question.options.map((opt, i) => `
+                        <div style="background: ${colors[i]}; color: white; padding: 0.8rem; border-radius: 8px; display: flex; align-items: center; gap: 1rem; font-weight: bold; font-size: 0.9rem;">
+                            <span style="font-size: 1.2rem;">${symbols[i]}</span>
+                            <span>${opt}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="image-box" style="flex-grow: 1; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); position: relative; min-height: 200px;">
                     <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
                 </div>
             </div>
