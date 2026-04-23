@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.0";
+const APP_VERSION = "v5.1.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -966,10 +966,10 @@ window.stopLiveSession = async () => {
 function renderTeacherGameView(session) {
     const container = document.getElementById('admin-content-inner');
     const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
-    const qIdx = session.currentQuestion;
+    const qIdx = session.currentQuestionIndex || 0;
     const question = quiz.questions[qIdx];
     const players = session.players ? Object.values(session.players) : [];
-    const answerCount = players.filter(p => p.answers && p.answers[qIdx]).length;
+    const answerCount = players.filter(p => p && p.answer !== undefined).length;
 
     const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
     const symbols = ['▲', '◆', '●', '■'];
