@@ -325,71 +325,83 @@ function renderAdminContent() {
                                     <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
                                 </div>
                             </div>
-                            <div id="edit-quiz-${idx}" class="edit-form" style="display:none;">
-                                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-                                    <div style="flex: 1; min-width: 300px;">
-                                        <label>Titel</label>
-                                        <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)">
-                                        <label>Beskrivelse</label>
-                                        <textarea onchange="updateQuiz(${idx}, 'description', this.value)">${quiz.description}</textarea>
-                                        <label>Kategori</label>
-                                        <select onchange="updateQuiz(${idx}, 'categoryId', this.value)">
-                                            ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
-                                        </select>
-                                    </div>
-                                    
-                                    <div style="flex: 0 0 250px;">
-                                        <label>Stemningsbillede Preview</label>
-                                        <div class="mood-preview-container" style="position:relative; margin-bottom: 0.5rem; min-height: 150px; background: #000; border: 1px solid var(--accent); border-radius: 8px;">
-                                            <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;">
-                                            <div style="display: flex; gap: 0.2rem; margin-top: 0.5rem;">
-                                                <button class="btn btn-secondary btn-small" style="flex: 1;" onclick="refreshImage(${idx})">🔄 Nyt Billede</button>
-                                                <button class="btn btn-success btn-small" style="flex: 1.2;" onclick="lockImage(${idx})">💾 Gem dette</button>
+                            <div id="edit-quiz-${idx}" class="edit-form" style="display:none; padding: 1.2rem; border-top: 1px solid var(--card-border);">
+                                <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
+                                    <!-- VENSTRE KOLONNE: INFO -->
+                                    <div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.8rem;">
+                                            <div>
+                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Quiz Titel</label>
+                                                <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" style="padding: 0.4rem 0.6rem;">
+                                            </div>
+                                            <div>
+                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Kategori</label>
+                                                <select onchange="updateQuiz(${idx}, 'categoryId', this.value)" style="padding: 0.4rem 0.6rem;">
+                                                    ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
+                                                </select>
                                             </div>
                                         </div>
-                                        <label>Søgeord (Engelsk)</label>
-                                        <input type="text" value="${quiz.moodKeywords || ''}" placeholder="f.eks. roof, timber" onchange="updateQuiz(${idx}, 'moodKeywords', this.value)">
-                                        
-                                        <label>Søgeord (Dansk - Automatisk oversætter)</label>
-                                        <input type="text" value="${quiz.moodKeywordsDanish || ''}" placeholder="f.eks. tagspær, trapper" onchange="translateAndSetKeywords(${idx}, this.value)">
-                                        
-                                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed var(--card-border);">
-                                            <label style="margin-top:0;">Overstyr med direkte Billed-URL (Valgfrit)</label>
-                                            <input type="text" placeholder="https://..." value="${quiz.moodImageUrl || ''}" onchange="updateQuiz(${idx}, 'moodImageUrl', this.value)" style="font-size: 0.8rem; opacity: 0.8;">
-                                        </div>
-                                        
-                                        <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                                <h4 style="margin:0;">Spørgsmål (${quiz.questions.length})</h4>
-                                                <button class="btn ${activeQuestionsIdx === idx ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="toggleQuestions(${idx})">
-                                                    ${activeQuestionsIdx === idx ? 'Skjul Spørgsmål 🔼' : 'Rediger Spørgsmål 🔽'}
-                                                </button>
-                                            </div>
 
-                                            <div id="questions-container-${idx}" style="display: ${activeQuestionsIdx === idx ? 'block' : 'none'}; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
-                                                <button class="btn btn-secondary btn-small" style="margin-bottom: 1rem;" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
-                                                <div class="admin-questions">
-                                                    ${quiz.questions.map((q, qIdx) => `
-                                                        <div class="admin-question-edit">
-                                                            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
-                                                                <strong>Spørgsmål ${qIdx + 1}</strong>
-                                                                <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})">Fjern 🗑️</button>
-                                                            </div>
-                                                            <input type="text" placeholder="Spørgsmål" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)">
-                                                            <div class="admin-options-edit">
-                                                                ${q.options.map((opt, oIdx) => `
-                                                                    <div style="display:flex; gap:0.5rem; align-items:center;">
-                                                                        <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
-                                                                        <input type="text" placeholder="Svarmulighed ${oIdx+1}" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
-                                                                    </div>
-                                                                `).join('')}
-                                                            </div>
-                                                            <label>Rationale (forklaring der vises efter svar)</label>
-                                                            <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)">${q.rationale}</textarea>
-                                                        </div>
-                                                    `).join('')}
-                                                </div>
+                                        <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Beskrivelse (Kort)</label>
+                                        <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="min-height: 50px; padding: 0.5rem; font-size: 0.85rem; margin-bottom: 0.8rem;">${quiz.description}</textarea>
+                                        
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                            <div>
+                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Søgeord (Dansk → Auto-Engelsk)</label>
+                                                <input type="text" value="${quiz.moodKeywordsDanish || ''}" placeholder="f.eks. tagspær" onchange="translateAndSetKeywords(${idx}, this.value)" style="padding: 0.4rem 0.6rem;">
                                             </div>
+                                            <div>
+                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Aktive Engelske Keywords</label>
+                                                <input type="text" value="${quiz.moodKeywords || ''}" onchange="updateQuiz(${idx}, 'moodKeywords', this.value)" style="padding: 0.4rem 0.6rem; opacity: 0.8;">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- HØJRE KOLONNE: BILLEDE & URL -->
+                                    <div style="background: rgba(255,255,255,0.03); padding: 0.8rem; border-radius: 10px; border: 1px solid var(--card-border);">
+                                        <div class="mood-preview-container" style="position:relative; margin-bottom: 0.6rem; background: #000; border-radius: 6px; overflow: hidden; border: 1px solid var(--accent);">
+                                            <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; height: 110px; object-fit: cover;">
+                                            <div style="display: flex; gap: 0.2rem; padding: 0.3rem; background: rgba(0,0,0,0.6);">
+                                                <button class="btn btn-secondary btn-small" style="flex: 1; font-size: 0.7rem; padding: 0.3rem;" onclick="refreshImage(${idx})">🔄 Nyt</button>
+                                                <button class="btn btn-success btn-small" style="flex: 1.2; font-size: 0.7rem; padding: 0.3rem;" onclick="lockImage(${idx})">💾 Gem</button>
+                                            </div>
+                                        </div>
+                                        <label style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 0.2rem; display: block;">Direkte Billed-URL (Overstyr)</label>
+                                        <input type="text" placeholder="https://..." value="${quiz.moodImageUrl || ''}" onchange="updateQuiz(${idx}, 'moodImageUrl', this.value)" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.2);">
+                                    </div>
+                                </div>
+
+                                <!-- SPØRGSMÅL (Collapsible) -->
+                                <div style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h4 style="margin:0; font-size: 1rem;">Spørgsmål (${quiz.questions.length})</h4>
+                                        <button class="btn ${activeQuestionsIdx === idx ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="toggleQuestions(${idx})">
+                                            ${activeQuestionsIdx === idx ? 'Skjul Spørgsmål 🔼' : 'Rediger Spørgsmål 🔽'}
+                                        </button>
+                                    </div>
+
+                                    <div id="questions-container-${idx}" style="display: ${activeQuestionsIdx === idx ? 'block' : 'none'}; margin-top: 1rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                        <button class="btn btn-secondary btn-small" style="margin-bottom: 1rem;" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
+                                        <div class="admin-questions">
+                                            ${quiz.questions.map((q, qIdx) => `
+                                                <div class="admin-question-edit">
+                                                    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                                                        <strong>Spørgsmål ${qIdx + 1}</strong>
+                                                        <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})">Fjern 🗑️</button>
+                                                    </div>
+                                                    <input type="text" placeholder="Spørgsmål" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)">
+                                                    <div class="admin-options-edit">
+                                                        ${q.options.map((opt, oIdx) => `
+                                                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                                                <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
+                                                                <input type="text" placeholder="Svarmulighed ${oIdx+1}" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
+                                                            </div>
+                                                        `).join('')}
+                                                    </div>
+                                                    <label>Rationale (forklaring der vises efter svar)</label>
+                                                    <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)">${q.rationale}</textarea>
+                                                </div>
+                                            `).join('')}
                                         </div>
                                     </div>
                                 </div>
