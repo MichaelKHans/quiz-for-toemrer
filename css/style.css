@@ -1341,17 +1341,60 @@ body.live-mode-active .container {
     border: 2px solid var(--accent);
 }
 
-.pin-input-large {
+.icon-selector {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.icon-item {
+    font-size: 2rem;
+    padding: 10px;
+    background: #333;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-item.selected {
+    background: var(--accent);
+    border-color: white;
+    transform: scale(1.1);
+}
+
+.name-input-field {
     width: 100%;
     background: #333;
     border: 1px solid #444;
     color: white;
-    font-size: 2.5rem;
-    text-align: center;
+    font-size: 1.2rem;
     padding: 1rem;
     border-radius: 10px;
-    margin: 1.5rem 0;
-    letter-spacing: 5px;
+    margin-bottom: 1rem;
+}
+
+/* ADMIN LOBBY PLAYER BUBBLE UPGRADE */
+.player-bubble {
+    background: rgba(255,255,255,0.1);
+    padding: 0.8rem 1.2rem;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.player-icon-small {
+    font-size: 1.4rem;
 }
 
 .live-student-waiting {

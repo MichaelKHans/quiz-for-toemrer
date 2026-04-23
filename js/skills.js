@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.6";
+const APP_VERSION = "v5.2.0";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -58,17 +58,70 @@ window.validatePinJoin = async () => {
         }
         
         document.querySelector('.pin-modal-overlay').remove();
-        await window.set(window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}/name`), "Elev");
-        renderStudentGameView(session);
+        showProfileModal(activeLivePin);
     } catch (e) {
         console.error("Join error:", e);
     }
 };
 
+window.showProfileModal = (pin) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'pin-modal-overlay fade-in';
+    const icons = ['🔨', '🪚', '📏', '🏠', '👷', '🪵'];
+    let selectedIcon = icons[0];
+
+    overlay.innerHTML = `
+        <div class="pin-modal-card">
+            <h2 style="color: white; margin-bottom: 1rem;">DIN PROFIL</h2>
+            <input type="text" id="player-name-field" class="name-input-field" placeholder="Indtast dit navn" maxlength="15">
+            <p style="color: #aaa; font-size: 0.8rem; margin: 1rem 0 0.5rem 0;">Vælg et ikon:</p>
+            <div class="icon-selector">
+                ${icons.map((icon, i) => `
+                    <div class="icon-item ${i===0?'selected':''}" onclick="selectProfileIcon(this, '${icon}')">${icon}</div>
+                `).join('')}
+            </div>
+            <button class="btn btn-accent" style="width: 100%; margin-top: 1rem;" onclick="finalizeProfile('${pin}')">KLAR! 🚀</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    window.selectProfileIcon = (el, icon) => {
+        document.querySelectorAll('.icon-item').forEach(item => item.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedIcon = icon;
+    };
+
+    window.finalizeProfile = async (pin) => {
+        const nameInput = document.getElementById('player-name-field');
+        const name = nameInput.value.trim() || "Anonym Elev";
+        
+        try {
+            await window.set(window.ref(window.db, `live_sessions/${pin}/players/${myPlayerId}`), {
+                name: name,
+                icon: selectedIcon,
+                points: 0,
+                joinedAt: Date.now()
+            });
+            overlay.remove();
+            
+            // Vis venteskærm
+            document.body.innerHTML = `
+                <div class="kahoot-waiting">
+                    <div style="font-size: 5rem;">${selectedIcon}</div>
+                    <h1>DU ER MED, ${name.toUpperCase()}!</h1>
+                    <p>Kig op på storskærmen...</p>
+                </div>
+            `;
+        } catch (e) {
+            console.error("Profile save error:", e);
+        }
+    };
+};
+
 function initHardLink() {
     if (!window.ref || !window.onValue) return;
 
-    console.log("Hard-Link Live System Active (v5.1.6)");
+    console.log("Hard-Link Live System Active (v5.2.0)");
     
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
         const sessions = snap.val();

@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.6";
+const APP_VERSION = "v5.2.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -935,11 +935,14 @@ function updateLobbyPlayerList(session) {
     const countVal = document.getElementById('player-count-val');
     const startBtn = document.getElementById('start-btn');
     if (!list) return;
-    const players = session.players ? Object.values(session.players) : [];
-    if (countVal) countVal.textContent = players.length;
     if (players.length > 0) {
         startBtn.disabled = false;
-        list.innerHTML = players.map(p => `<div class="player-bubble fade-in">${p.name}</div>`).join('');
+        list.innerHTML = players.map(p => `
+            <div class="player-bubble fade-in">
+                <span class="player-icon-small">${p.icon || '👤'}</span>
+                <span>${p.name}</span>
+            </div>
+        `).join('');
     } else {
         startBtn.disabled = true;
         list.innerHTML = `<p class="waiting-msg">Venter på spillere...</p>`;
