@@ -1047,25 +1047,29 @@ h1 {
 .pin-display-compact {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 1rem;
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid var(--accent);
-    border-radius: 8px;
+    gap: 1.5rem;
+    padding: 0.8rem 2rem;
+    background: rgba(0, 255, 163, 0.1);
+    border: 3px solid #00ffa3;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0, 255, 163, 0.3);
 }
 
 .pin-display-compact p {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     margin: 0;
-    opacity: 0.8;
+    font-weight: bold;
+    color: #00ffa3;
+    text-transform: uppercase;
 }
 
 .pin-code-compact {
-    font-size: 2rem;
+    font-size: 4.5rem;
     font-weight: 900;
-    color: var(--accent);
-    letter-spacing: 0.1em;
+    color: #00ffa3;
+    letter-spacing: 0.15em;
     font-family: 'Outfit', sans-serif;
+    text-shadow: 0 0 15px rgba(0, 255, 163, 0.5);
 }
 
 .lobby-main {
