@@ -243,13 +243,13 @@ function renderAdminContent() {
     const scrollPos = container.scrollTop;
     
     let html = `
-        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 1rem;">
             <div>
                 <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold</button>
                 <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
                 <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
             </div>
-            <button class="btn btn-primary btn-small" style="box-shadow: 0 0 15px var(--accent-glow);" onclick="saveAdminChanges()">☁️ Gem alle ændringer</button>
+            <button class="btn btn-primary btn-small" style="background: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow);" onclick="saveAdminChanges()">☁️ Gem alle ændringer</button>
         </div>
 
         <div id="tab-edit" class="tab-content active">
