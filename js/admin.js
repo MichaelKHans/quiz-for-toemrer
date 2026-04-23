@@ -243,10 +243,13 @@ function renderAdminContent() {
     const scrollPos = container.scrollTop;
     
     let html = `
-        <div class="admin-tabs">
-            <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold</button>
-            <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
-            <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
+        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div>
+                <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold</button>
+                <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
+                <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
+            </div>
+            <button class="btn btn-primary btn-small" style="box-shadow: 0 0 15px var(--accent-glow);" onclick="saveAdminChanges()">☁️ Gem alle ændringer</button>
         </div>
 
         <div id="tab-edit" class="tab-content active">
@@ -302,9 +305,16 @@ function renderAdminContent() {
                             <div class="admin-item-header">
                                 <div>
                                     <span class="admin-cat-tag">${getCategoryTitle(quiz.categoryId)}</span>
+                                    <span class="status-badge ${quiz.isHidden ? 'status-hidden' : 'status-visible'}">
+                                        ${quiz.isHidden ? '🚫 Skjult' : '👁️ Synlig'}
+                                    </span>
                                     <strong>${quiz.title}</strong>
                                 </div>
-                                <div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <button class="btn ${quiz.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
+                                            onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">
+                                        ${quiz.isHidden ? 'Gør Synlig' : 'Skjul'}
+                                    </button>
                                     <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})">Rediger</button>
                                     <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
                                 </div>
