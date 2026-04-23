@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.9.4";
+const APP_VERSION = "v4.9.5";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -873,25 +873,27 @@ function renderLobbyUI(pin, title) {
     const container = document.getElementById('admin-content-inner');
     container.innerHTML = `
         <div class="live-lobby-container fade-in">
-            <div class="lobby-header" style="margin-bottom: 3rem;">
-                <span class="live-badge">TØMRER-LIVE LOBBY</span>
-                <h1 style="font-size: 3.5rem;">${title}</h1>
-                <div class="pin-display">
-                    <p>Deltag på forsiden med koden:</p>
-                    <div class="pin-code">${pin}</div>
+            <div class="lobby-header">
+                <div style="display: flex; flex-direction: column;">
+                    <span class="live-badge" style="margin:0; width: fit-content; scale: 0.8;">TØMRER-LIVE</span>
+                    <h1 title="${title}">${title}</h1>
+                </div>
+                <div class="pin-display-compact">
+                    <p>PIN:</p>
+                    <div class="pin-code-compact">${pin}</div>
+                </div>
+                <div class="player-status" style="font-size: 1.2rem; font-weight: bold; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 8px;">
+                    👥 <span id="player-count-val">0</span>
                 </div>
             </div>
             <div class="lobby-main">
-                <div class="player-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 id="player-count">Spillere klar (0)</h2>
-                    <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
-                </div>
                 <div id="player-list" class="player-grid">
                     <p class="waiting-msg">Venter på spillere...</p>
                 </div>
             </div>
-            <div class="lobby-actions" style="margin-top: 3rem;">
+            <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
+                <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
             </div>
         </div>
     `;
@@ -899,11 +901,11 @@ function renderLobbyUI(pin, title) {
 
 function updateLobbyPlayerList(session) {
     const list = document.getElementById('player-list');
-    const countEl = document.getElementById('player-count');
+    const countVal = document.getElementById('player-count-val');
     const startBtn = document.getElementById('start-btn');
     if (!list) return;
     const players = session.players ? Object.values(session.players) : [];
-    countEl.textContent = `Spillere klar (${players.length})`;
+    if (countVal) countVal.textContent = players.length;
     if (players.length > 0) {
         startBtn.disabled = false;
         list.innerHTML = players.map(p => `<div class="player-bubble fade-in">${p.name}</div>`).join('');
@@ -941,35 +943,51 @@ function renderTeacherGameView(session) {
     const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
 
     container.innerHTML = `
-        <div class="live-teacher-view fade-in" style="height: 100vh; display: flex; flex-direction: column; padding: 2rem;">
-            <div class="game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <div class="pin-small" style="font-size: 1.5rem; font-weight: bold; background: var(--accent); color: black; padding: 0.5rem 1.5rem; border-radius: 30px;">PIN: ${session.pin}</div>
-                <h1 style="font-size: 2.5rem; margin: 0; color: var(--accent);">${quiz.title}</h1>
-                <div class="player-status" style="font-size: 1.5rem;">👥 ${players.length}</div>
+        <div class="teacher-game-dashboard fade-in">
+            <div class="game-info-bar">
+                <div style="display: flex; gap: 2rem; align-items: center;">
+                    <span class="live-badge" style="margin:0; scale: 0.8;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
+                    <h2 style="margin:0; font-size: 1.2rem;">${quiz.title}</h2>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="pin-display-compact" style="padding: 0.3rem 0.8rem; scale: 0.8;">
+                        <p>PIN:</p>
+                        <div class="pin-code-compact" style="font-size: 1.4rem;">${session.pin}</div>
+                    </div>
+                    <div class="player-status" style="font-size: 1rem; font-weight: bold;">👥 ${players.length}</div>
+                </div>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem; flex-grow: 1; align-items: center;">
-                <div class="question-main">
-                    <h1 style="font-size: 4rem; margin-bottom: 2rem; line-height: 1.1;">${question.question}</h1>
-                    <div class="image-box" style="width: 100%; height: 450px; border-radius: 20px; overflow: hidden; border: 4px solid var(--accent);">
-                        <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
+            <div class="current-question-display" style="display: flex; flex-direction: column;">
+                <h1 style="font-size: 2.2rem; margin-bottom: 1.5rem; line-height: 1.2;">${question.question}</h1>
+                <div class="image-box" style="flex-grow: 1; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); position: relative;">
+                    <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
+                </div>
+            </div>
+            
+            <div class="answer-stats-panel">
+                <div style="text-align: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1;">${answerCount}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">SVAR MODTAGET</div>
                 </div>
                 
-                <div class="stats-sidebar" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; text-align: center;">
-                    <div style="font-size: 5rem; font-weight: 900; color: var(--accent);">${answerCount}</div>
-                    <div style="font-size: 1.5rem; opacity: 0.7;">SVAR MODTAGET</div>
-                    <div class="progress-bar-bg" style="margin: 2rem 0;">
-                        <div class="progress-bar-fill" style="width: ${(answerCount/Math.max(1, players.length))*100}%"></div>
-                    </div>
-                    
-                    <div style="margin-top: 5rem;">
-                        ${qIdx < quiz.questions.length - 1 
-                            ? `<button class="btn btn-primary btn-large" style="width: 100%;" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">NÆSTE SPØRGSMÅL ➡️</button>`
-                            : `<button class="btn btn-success btn-large" style="width: 100%;" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
-                        }
-                    </div>
+                <div class="player-stats-list">
+                    <h4 style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 0.5rem; text-transform: uppercase;">Spiller-status</h4>
+                    ${players.map(p => `
+                        <div class="player-stat-row">
+                            <span>${p.name}</span>
+                            <span class="stat-status ${p.answers && p.answers[qIdx] ? 'answered' : ''}"></span>
+                        </div>
+                    `).join('')}
                 </div>
+            </div>
+
+            <div class="lobby-actions-fixed" style="grid-column: 1 / -1;">
+                <button class="btn btn-secondary btn-small" onclick="stopLiveSession()">Afbryd</button>
+                ${qIdx < quiz.questions.length - 1 
+                    ? `<button class="btn btn-primary" style="padding: 0.6rem 2rem;" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">NÆSTE SPØRGSMÅL ➡️</button>`
+                    : `<button class="btn btn-success" style="padding: 0.6rem 2rem;" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
+                }
             </div>
         </div>
     `;
