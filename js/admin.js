@@ -525,8 +525,8 @@ window.translateAndSetKeywords = (idx, danishVal) => {
     const englishVal = window.translateKeywords(danishVal);
     localDbCopy.quizzes[idx].moodKeywords = englishVal;
     
-    // Nulstil låst URL så previewet opdateres med de nye keywords
-    localDbCopy.quizzes[idx].moodImageUrl = "";
+    // VI SLETTER IKKE LÆNGERE BILLEDET AUTOMATISK HER.
+    // Læreren bestemmer selv, hvornår der skal hentes et nyt billede ved at trykke "Nyt Billede".
     
     renderAdminContent();
 };
