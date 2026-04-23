@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB8WoEWReTrIMLwx3tqWCsbQHEstZL_SZA",
@@ -100,3 +100,4 @@ window.listenToAllSessions = listenToAllSessions;
 window.db = db;
 window.ref = ref;
 window.onValue = onValue;
+window.serverTimestamp = serverTimestamp;

@@ -44,7 +44,9 @@ async function initDashboard() {
                 });
             }
             const btn = document.getElementById('live-join-btn');
-            if (btn) btn.style.display = activeFound ? 'block' : 'none';
+            if (btn) {
+                btn.style.display = activeFound ? 'block' : 'none';
+            }
         });
     }
 
@@ -149,7 +151,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.3.2';
+        tag.textContent = 'v4.9.0';
     }
 }
 
@@ -494,13 +496,14 @@ async function joinLiveSession(pin, name) {
     if (window.addPlayerToSession) {
         await window.addPlayerToSession(pin, currentPlayerId, name);
         
-        if (studentSessionUnsubscribe) studentSessionUnsubscribe();
         studentSessionUnsubscribe = window.listenToSession(pin, (session) => {
             if (!session) return;
             if (session.status === 'playing') {
                 renderStudentGameView(session);
             } else if (session.status === 'finished') {
                 renderStudentPodium(session);
+            } else if (session.status === 'lobby') {
+                // Stay in lobby
             }
         });
     }
@@ -519,10 +522,10 @@ async function renderStudentGameView(session) {
     const player = session.players[currentPlayerId];
     if (player.answers && player.answers[qIdx]) {
         container.innerHTML = `
-            <div class="live-student-waiting fade-in" style="text-align:center; padding: 5rem 2rem; color: white;">
-                <div style="font-size: 6rem; margin-bottom: 1rem;">🚀</div>
+            <div class="live-student-waiting fade-in">
+                <div class="waiting-icon">🚀</div>
                 <h2>Svar sendt!</h2>
-                <p style="font-size: 1.2rem;">Kig op på læreren!</p>
+                <p>Kig op på læreren!</p>
             </div>
         `;
         return;
@@ -530,20 +533,27 @@ async function renderStudentGameView(session) {
 
     container.innerHTML = `
         <div class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
-        <div class="live-student-game fade-in" style="width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
-            <div style="text-align:center; margin-bottom: 3rem;">
-                <h1 style="color: white; font-size: 2.5rem;">${question.question}</h1>
+        <div class="live-student-game fade-in">
+            <div class="live-question-header">
+                <h1>${question.question}</h1>
             </div>
-            <div class="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1rem; flex-grow: 1; max-height: 60vh;">
+            <div class="options-grid">
                 ${question.options.map((opt, i) => `
-                    <button class="btn btn-large opt-${i}" style="border: none; color: white;" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
+                    <button class="btn btn-large opt-${i}" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
                 `).join('')}
             </div>
         </div>
     `;
 
-    // Start lokal nedtælling (standard 20 sek)
-    startStudentTimer(20);
+    // Start lokal nedtælling (standard 20 sek eller synkroniseret)
+    const timeLimit = 20;
+    const now = Date.now();
+    const startTime = session.questionStartTime || now;
+    const elapsed = (now - startTime) / 1000;
+    const remaining = Math.max(0, timeLimit - elapsed);
+    
+    window.currentQuestionStartTime = startTime;
+    startStudentTimer(remaining);
 }
 
 function startStudentTimer(seconds) {
@@ -568,16 +578,24 @@ window.submitLiveAnswer = async (qIdx, answerIdx) => {
     if (isCorrect) audioCorrect.play();
     else audioIncorrect.play();
 
+    // Kahoot-scoring: 500 basis point + op til 500 point for hastighed (max 1000)
+    const timeLimit = 20;
+    const now = Date.now();
+    const startTime = session.questionStartTime || now;
+    const elapsed = (now - startTime) / 1000;
+    const speedBonus = Math.max(0, Math.floor(500 * (1 - (elapsed / timeLimit))));
+    const pointsAwarded = isCorrect ? (500 + speedBonus) : 0;
+
     const updates = {};
     updates[`players/${currentPlayerId}/answers/${qIdx}`] = {
         answer: answerIdx,
         isCorrect: isCorrect,
-        time: Date.now()
+        time: now,
+        points: pointsAwarded
     };
+    
     // Giv point hvis rigtigt
-    if (isCorrect) {
-        updates[`players/${currentPlayerId}/points`] = (session.players[currentPlayerId].points || 0) + 100;
-    }
+    updates[`players/${currentPlayerId}/points`] = (session.players[currentPlayerId].points || 0) + pointsAwarded;
     
     await window.updateSession(currentStudentPin, updates);
 };
@@ -588,21 +606,20 @@ function renderStudentPodium(session) {
     const myRank = players.findIndex(p => p.name === session.players[currentPlayerId].name) + 1;
 
     container.innerHTML = `
-        <div class="podium-screen fade-in" style="text-align:center; color: white; padding: 3rem;">
+        <div class="podium-screen fade-in">
             <h1>QUIZ SLUT!</h1>
-            <div style="font-size: 5rem; margin: 2rem 0;">${myRank === 1 ? '🏆' : '👏'}</div>
+            <div class="podium-emoji">${myRank === 1 ? '🏆' : '👏'}</div>
             <h2>Du fik en ${myRank}. plads!</h2>
-            <p style="font-size: 1.5rem;">Point: ${session.players[currentPlayerId].points || 0}</p>
+            <p class="podium-points">Point: ${session.players[currentPlayerId].points || 0}</p>
             <button class="btn btn-primary" style="margin-top: 3rem;" onclick="location.reload()">Tilbage til start</button>
         </div>
     `;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Opdater versionstag
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        const APP_VERSION = "v4.8.3";
+        const APP_VERSION = "v4.9.0";
         if (tag) tag.textContent = APP_VERSION;
     }, 500);
 

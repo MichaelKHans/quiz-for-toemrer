@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.8.3";
+const APP_VERSION = "v4.9.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -889,7 +889,11 @@ function updateLobbyPlayerList(session) {
 }
 
 window.startLiveGame = async (pin) => {
-    await window.updateSession(pin, { status: 'playing', currentQuestion: 0 });
+    await window.updateSession(pin, { 
+        status: 'playing', 
+        currentQuestion: 0,
+        questionStartTime: window.serverTimestamp()
+    });
 };
 
 window.stopLiveSession = async () => {
@@ -947,7 +951,10 @@ function renderTeacherGameView(session) {
 }
 
 window.nextLiveQuestion = async (pin, currentIdx) => {
-    await window.updateSession(pin, { currentQuestion: currentIdx + 1 });
+    await window.updateSession(pin, { 
+        currentQuestion: currentIdx + 1,
+        questionStartTime: window.serverTimestamp()
+    });
 };
 
 function renderPodium(session) {
