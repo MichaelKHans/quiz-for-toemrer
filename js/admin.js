@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.4.2";
+const APP_VERSION = "v4.4.3";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
