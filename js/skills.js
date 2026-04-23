@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.5";
+const APP_VERSION = "v5.1.6";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -17,26 +17,48 @@ async function loadDatabase() {
 // --- HARD-LINK LIVE SYSTEM v5.1.5 ---
 let activeLivePin = null;
 
-window.startJoinProcess = async () => {
-    const pin = prompt("Indtast 6-cifret PIN:");
+window.startJoinProcess = () => {
+    // Fjern eksisterende modal hvis den findes
+    const old = document.querySelector('.pin-modal-overlay');
+    if (old) old.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'pin-modal-overlay fade-in';
+    overlay.innerHTML = `
+        <div class="pin-modal-card">
+            <h2 style="color: white; margin: 0;">INDTAST PIN</h2>
+            <p style="color: #aaa; font-size: 0.8rem; margin-top: 0.5rem;">Få koden fra læreren</p>
+            <input type="number" id="pin-input-field" class="pin-input-large" placeholder="000000" pattern="[0-9]*" inputmode="numeric">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.pin-modal-overlay').remove()">Annuller</button>
+                <button class="btn btn-accent" style="flex: 2;" onclick="validatePinJoin()">DELTAG 🚀</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => document.getElementById('pin-input-field').focus(), 100);
+};
+
+window.validatePinJoin = async () => {
+    const input = document.getElementById('pin-input-field');
+    const pin = input.value.trim();
     if (!pin) return;
+
+    activeLivePin = pin;
+    console.log("Validerer PIN:", activeLivePin);
     
-    activeLivePin = pin.trim();
-    console.log("Deltager i session:", activeLivePin);
-    
-    // Tjek databasen for denne session
     try {
         const snap = await window.get(window.ref(window.db, `live_sessions/${activeLivePin}`));
         const session = snap.val();
         if (!session) {
-            alert("Ugyldig PIN!");
+            alert("Ugyldig PIN! Prøv igen.");
+            input.value = "";
+            input.focus();
             return;
         }
         
-        // Registrer spilleren
+        document.querySelector('.pin-modal-overlay').remove();
         await window.set(window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}/name`), "Elev");
-        
-        // Skift UI
         renderStudentGameView(session);
     } catch (e) {
         console.error("Join error:", e);
@@ -46,7 +68,7 @@ window.startJoinProcess = async () => {
 function initHardLink() {
     if (!window.ref || !window.onValue) return;
 
-    console.log("Hard-Link Live System Active (v5.1.5)");
+    console.log("Hard-Link Live System Active (v5.1.6)");
     
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
         const sessions = snap.val();
@@ -169,13 +191,16 @@ async function renderDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('quiz-grid')) {
         initDashboard();
-        // Aktiver Deltag-knap
+        
         const joinBtn = document.getElementById('live-join-btn');
         if (joinBtn) {
-            joinBtn.onclick = () => {
-                console.log("Deltag trykket - starter join proces");
+            const handleJoin = (e) => {
+                e.preventDefault();
+                console.log("Deltag aktiveret!");
                 window.startJoinProcess();
             };
+            joinBtn.addEventListener('click', handleJoin);
+            joinBtn.addEventListener('touchstart', handleJoin, {passive: false});
         }
     }
 });
