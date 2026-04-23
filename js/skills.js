@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.3";
+const APP_VERSION = "v5.1.5";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -14,18 +14,44 @@ async function loadDatabase() {
     return window.QUIZ_DATABASE || { quizzes: [], categories: [] };
 }
 
-// --- HARD-LINK LIVE SYSTEM v5.1.0 ---
+// --- HARD-LINK LIVE SYSTEM v5.1.5 ---
 let activeLivePin = null;
+
+window.startJoinProcess = async () => {
+    const pin = prompt("Indtast 6-cifret PIN:");
+    if (!pin) return;
+    
+    activeLivePin = pin.trim();
+    console.log("Deltager i session:", activeLivePin);
+    
+    // Tjek databasen for denne session
+    try {
+        const snap = await window.get(window.ref(window.db, `live_sessions/${activeLivePin}`));
+        const session = snap.val();
+        if (!session) {
+            alert("Ugyldig PIN!");
+            return;
+        }
+        
+        // Registrer spilleren
+        await window.set(window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}/name`), "Elev");
+        
+        // Skift UI
+        renderStudentGameView(session);
+    } catch (e) {
+        console.error("Join error:", e);
+    }
+};
 
 function initHardLink() {
     if (!window.ref || !window.onValue) return;
 
-    console.log("Hard-Link Live System Active (v5.1.0)");
+    console.log("Hard-Link Live System Active (v5.1.5)");
     
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
         const sessions = snap.val();
         
-        // 1. Styr synlighed af "Deltag" knappen (skal køre for alle elever)
+        // 1. Styr synlighed af "Deltag" knappen
         const hasActiveSession = sessions && Object.values(sessions).some(s => s && (s.status === 'lobby' || s.status === 'playing'));
         const joinBtn = document.getElementById('live-join-btn');
         if (joinBtn) joinBtn.style.display = hasActiveSession ? 'block' : 'none';
@@ -35,7 +61,7 @@ function initHardLink() {
             return;
         }
 
-        // 2. EMERGENCY ADMIN CHECK - blokerer kun overskrivelse af skærmen
+        // 2. EMERGENCY ADMIN CHECK
         const isAdmin = document.getElementById('admin-modal') || 
                         document.querySelector('.admin-trigger') ||
                         window.location.href.includes('admin');
@@ -48,18 +74,15 @@ function initHardLink() {
         if (activeSession) {
             if (activeLivePin !== activeSession.pin) {
                 activeLivePin = activeSession.pin;
-                renderKahootUI(activeSession);
+                renderStudentGameView(activeSession);
             }
         } else {
-            // Hvis vi var i kahoot mode men ingen session er aktiv mere
-            if (document.body.classList.contains('kahoot-mode')) {
-                location.reload();
-            }
+            if (document.body.classList.contains('kahoot-mode')) location.reload();
         }
     });
 }
 
-function renderKahootUI(session) {
+function renderStudentGameView(session) {
     document.body.className = 'kahoot-mode';
     document.body.innerHTML = `
         <div class="kahoot-grid">
@@ -73,21 +96,11 @@ function renderKahootUI(session) {
 
 window.submitLiveAnswer = async (char, index) => {
     if (!activeLivePin) return;
-    
-    // Deaktiver knapper
     const btns = document.querySelectorAll('.kahoot-grid button');
-    btns.forEach(b => {
-        b.disabled = true;
-        b.style.opacity = "0.2";
-    });
+    btns.forEach(b => { b.disabled = true; b.style.opacity = "0.2"; });
 
-    console.log(`Sender svar ${char} til session ${activeLivePin}`);
-    
     try {
-        const playerRef = window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}`);
         await window.set(window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}/answer`), index);
-        await window.set(window.ref(window.db, `live_sessions/${activeLivePin}/players/${myPlayerId}/name`), "Elev");
-        
         document.body.innerHTML = `
             <div class="kahoot-waiting">
                 <div style="font-size: 5rem;">🚀</div>
@@ -95,9 +108,7 @@ window.submitLiveAnswer = async (char, index) => {
                 <p>Vent på næste spørgsmål...</p>
             </div>
         `;
-    } catch (e) {
-        console.error("Fejl ved afsendelse af svar:", e);
-    }
+    } catch (e) { console.error("Submit error:", e); }
 };
 
 // --- STANDARD DASHBOARD LOGIK ---
@@ -156,5 +167,15 @@ async function renderDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('quiz-grid')) initDashboard();
+    if (document.getElementById('quiz-grid')) {
+        initDashboard();
+        // Aktiver Deltag-knap
+        const joinBtn = document.getElementById('live-join-btn');
+        if (joinBtn) {
+            joinBtn.onclick = () => {
+                console.log("Deltag trykket - starter join proces");
+                window.startJoinProcess();
+            };
+        }
+    }
 });
