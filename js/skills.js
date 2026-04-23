@@ -295,27 +295,7 @@ function renderQuestion() {
     // Opdater stemningsbillede (hvis vi er på split-screen layoutet)
     const moodBg = document.getElementById('quiz-mood-bg');
     if (moodBg) {
-        let userKeywords = currentQuiz.moodKeywords || "";
-        if (!userKeywords) {
-            const titleMatch = currentQuiz.title.match(/\(([^)]+)\)/);
-            userKeywords = titleMatch ? titleMatch[1] : currentQuiz.title;
-        }
-
-        const translated = translateKeywords(userKeywords);
-        
-        // NYT: Tjek for dårlige links
-        let activeImageUrl = currentQuiz.moodImageUrl;
-        if (activeImageUrl && activeImageUrl.includes('loremflickr') && (activeImageUrl.includes('carpenter') || activeImageUrl.includes('construction'))) {
-            activeImageUrl = null;
-        }
-
-        // Simpel men effektiv søgning. Vi undgår /all da det ofte giver 0 resultater.
-        const finalKeywords = window.cleanKeywords(translated);
-        
-        // Vi bruger kun det faste lockValue fra databasen for at sikre 100% stabilitet
-        const lockValue = currentQuiz.moodImageLock || currentQuiz.id;
-        // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
-        const imageUrl = activeImageUrl || `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
+        const imageUrl = currentQuiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(currentQuiz.title)}`;
         
         moodBg.style.backgroundImage = `url('${imageUrl}')`;
     }
