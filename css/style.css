@@ -252,30 +252,33 @@ h1 {
 .card-footer {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     margin-top: auto;
+    padding-top: 1rem;
 }
 
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .badge-default {
-    background: hsla(220, 10%, 30%, 0.3);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--text-secondary);
 }
 
 .badge-success {
-    background: hsla(150, 70%, 45%, 0.15);
-    color: var(--correct);
-    border: 1px solid hsla(150, 70%, 45%, 0.3);
+    background: rgba(0, 0, 0, 0.5); /* Mørk baggrund for kontrast */
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
 }
 
 /* Quiz Interface */
