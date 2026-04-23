@@ -294,12 +294,8 @@ function renderAdminContent() {
                         }
                         const translateFn = window.translateKeywords || ((s) => s);
                         const translated = translateFn(displayKeywords);
-                        // LoremFlickr virker bedst med kommaer, ikke bindestreger
-                        const cleanFn = window.cleanKeywords || ((s) => s);
-                        const finalKeywords = cleanFn(translated);
-                        const lockValue = quiz.moodImageLock || quiz.id;
-                        // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
-                        const previewUrl = quiz.moodImageUrl || `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
+                        // Brug det faste billede, eller vis en pladsholder indtil læreren trykker "Nyt Billede"
+                        const previewUrl = quiz.moodImageUrl || `https://placehold.co/800x600/2a2a2a/ffffff?text=Klik+paa+Nyt+Billede`;
                         
                         return `
                         <div class="admin-item-expanded">
