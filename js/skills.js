@@ -75,9 +75,11 @@ async function renderDashboard() {
 
     const grid = document.getElementById('quiz-grid');
     if (grid) {
+        // Filtrer først alle skjulte quizzer væk. Filtrer derefter på kategori.
+        const visibleQuizzes = data.quizzes.filter(q => !q.isHidden);
         const filteredQuizzes = currentCategory === 'all' 
-            ? data.quizzes 
-            : data.quizzes.filter(q => q.categoryId === currentCategory);
+            ? visibleQuizzes 
+            : visibleQuizzes.filter(q => q.categoryId === currentCategory);
 
         grid.innerHTML = filteredQuizzes.map(quiz => {
             const scoreData = scores[quiz.id];
