@@ -95,3 +95,8 @@ window.listenToSession = listenToSession;
 window.updateSession = updateSession;
 window.addPlayerToSession = addPlayerToSession;
 window.listenToAllSessions = listenToAllSessions;
+
+// Eksponer Firebase værktøjer til direkte brug i andre scripts
+window.db = db;
+window.ref = ref;
+window.onValue = onValue;

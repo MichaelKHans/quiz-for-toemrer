@@ -32,16 +32,19 @@ let currentCategory = 'all';
 async function initDashboard() {
     console.log("Initialiserer dashboard...");
     
-    // Tjek for aktive live sessioner for at vise/skjule deltag-knap
-    if (window.listenToAllSessions) {
-        window.listenToAllSessions((sessions) => {
+    // Tjek for aktive live sessioner (v4.8.3 logik fra bruger)
+    if (window.ref && window.onValue) {
+        const liveRef = window.ref(window.db, 'live_sessions');
+        window.onValue(liveRef, (snapshot) => {
+            const sessions = snapshot.val();
+            let activeFound = false;
+            if (sessions) {
+                Object.values(sessions).forEach(s => {
+                    if (s.status === 'lobby' || s.status === 'playing') activeFound = true;
+                });
+            }
             const btn = document.getElementById('live-join-btn');
-            if (!btn) return;
-            
-            const hasActive = sessions && Object.values(sessions).some(s => 
-                s.status === 'lobby' || s.status === 'playing'
-            );
-            btn.style.display = hasActive ? 'block' : 'none';
+            if (btn) btn.style.display = activeFound ? 'block' : 'none';
         });
     }
 
@@ -599,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Opdater versionstag
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        const APP_VERSION = "v4.8.2";
+        const APP_VERSION = "v4.8.3";
         if (tag) tag.textContent = APP_VERSION;
     }, 500);
 
