@@ -2,6 +2,17 @@
 
 Her trackes alle ændringer, forbedringer og rettelser foretaget i projektet.
 
+## [v4.4.0] - 2026-04-23
+### 🚀 Tilføjet
+- **Pixabay Billedmotor:** Migreret fra LoremFlickr til Pixabay API. Dette sikrer 100% stabile, faste og professionelle bygge-billeder, der aldrig ændrer sig uventet.
+- **Synligheds-kontrol (Live Mode Forberedelse):** Lærere kan nu nemt 'Skjule' eller 'Gøre Synlig' quizzer fra forsiden med et enkelt klik i oversigten, så de kan gemmes til live-undervisning (f.eks. Kahoot-style).
+- **Hurtig-Gem:** Tilføjet en fast 'Gem alle ændringer' knap i toppen af admin-panelet for bedre workflow.
+
+### 🔧 Rettet
+- **Design:** Lysnet 'mood-billederne' på forside-kortene markant for bedre visuelt udtryk.
+
+---
+
 ## [v4.3.1] - 2026-04-22
 ### 🚀 Tilføjet
 - **AI-Scenarier:** Nyt felt i AI-generatoren til specifikke ønsker og scenarier, hvilket giver langt mere præcise og fagrelevante quizzer.
