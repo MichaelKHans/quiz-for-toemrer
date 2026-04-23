@@ -34,20 +34,11 @@ async function initDashboard() {
     
     // Tjek for aktive live sessioner (v4.9.0 logik)
     if (window.ref && window.onValue) {
-        const liveRef = window.ref(window.db, 'live_sessions');
-        window.onValue(liveRef, (snapshot) => {
-            const sessions = snapshot.val();
-            let activeFound = false;
-            if (sessions) {
-                Object.values(sessions).forEach(s => {
-                    // Kun 'lobby' og 'playing' anses for at være LIVE
-                    if (s.status === 'lobby' || s.status === 'playing') activeFound = true;
-                });
-            }
+        window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
+            const s = snap.val();
+            const active = s && Object.values(s).some(x => x.status === 'lobby' || x.status === 'playing');
             const btn = document.getElementById('live-join-btn');
-            if (btn) {
-                btn.style.display = activeFound ? 'block' : 'none';
-            }
+            if (btn) btn.style.display = active ? 'block' : 'none';
         });
     }
 
@@ -152,7 +143,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.9.0';
+        tag.textContent = 'v4.9.1';
     }
 }
 
@@ -614,7 +605,7 @@ function renderStudentPodium(session) {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        const APP_VERSION = "v4.9.0";
+        const APP_VERSION = "v4.9.1";
         if (tag) tag.textContent = APP_VERSION;
     }, 500);
 
