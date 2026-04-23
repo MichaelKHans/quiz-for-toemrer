@@ -172,7 +172,7 @@ async function showAdminPanel() {
     container.innerHTML = `
         <div style="padding: 2rem; text-align: center;">
             <div class="loader" style="margin-bottom: 1rem;">⌛</div>
-            <p>Henter nyeste date fra skyen...</p>
+            <p>Henter nyeste data fra skyen...</p>
         </div>
     `;
     document.getElementById('admin-modal').style.display = 'flex';
@@ -187,23 +187,14 @@ async function showAdminPanel() {
             localDbCopy = cloudDb;
             console.log("Admin: Data hentet fra Firebase.");
         } else {
-            console.warn("Admin: Ingen data i skyen, bruger standard.");
-            localDbCopy = JSON.parse(JSON.stringify(window.QUIZ_DATABASE));
+            // STOP systemet frem for at indlæse en tom database!
+            alert("KRITISK FEJL: Kunne ikke hente data fra skyen. Databasen er tom. Luk panelet og prøv igen.");
+            return; 
         }
     } catch (error) {
         console.error("Admin: Fejl ved hentning fra skyen:", error);
-        localDbCopy = JSON.parse(JSON.stringify(window.QUIZ_DATABASE));
-    }
-    
-    // AUTO-MIGRATION logic (hvis der er nye felter i den statiske DB)
-    if (window.QUIZ_DATABASE) {
-        localDbCopy.quizzes.forEach(quiz => {
-            const masterQuiz = window.QUIZ_DATABASE.quizzes.find(mq => mq.id === quiz.id);
-            if (masterQuiz) {
-                if (!quiz.moodKeywords && masterQuiz.moodKeywords) quiz.moodKeywords = masterQuiz.moodKeywords;
-                if (!quiz.moodImageLock && masterQuiz.moodImageLock) quiz.moodImageLock = masterQuiz.moodImageLock;
-            }
-        });
+        alert("KRITISK FEJL: Forbindelsen til skyen fejlede. Luk panelet og prøv igen.");
+        return; 
     }
 
     historyStack = [];
