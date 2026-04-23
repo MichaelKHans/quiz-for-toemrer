@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.2.0";
+const APP_VERSION = "v5.2.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -935,8 +935,16 @@ function updateLobbyPlayerList(session) {
     const countVal = document.getElementById('player-count-val');
     const startBtn = document.getElementById('start-btn');
     if (!list) return;
+
+    const players = session.players ? Object.values(session.players) : [];
+    if (countVal) countVal.textContent = players.length;
+
     if (players.length > 0) {
-        startBtn.disabled = false;
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.style.opacity = "1";
+            startBtn.style.cursor = "pointer";
+        }
         list.innerHTML = players.map(p => `
             <div class="player-bubble fade-in">
                 <span class="player-icon-small">${p.icon || '👤'}</span>
@@ -944,17 +952,22 @@ function updateLobbyPlayerList(session) {
             </div>
         `).join('');
     } else {
-        startBtn.disabled = true;
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.style.opacity = "0.5";
+        }
         list.innerHTML = `<p class="waiting-msg">Venter på spillere...</p>`;
     }
 }
 
 window.startLiveGame = async (pin) => {
-    await window.updateSession(pin, { 
-        status: 'playing', 
-        currentQuestion: 0,
-        questionStartTime: window.serverTimestamp()
-    });
+    console.log("Starter spil for PIN:", pin);
+    try {
+        await window.set(window.ref(window.db, `live_sessions/${pin}/status`), 'playing');
+        await window.set(window.ref(window.db, `live_sessions/${pin}/questionStartTime`), window.serverTimestamp());
+    } catch (e) {
+        console.error("Start game error:", e);
+    }
 };
 
 window.stopLiveSession = async () => {
