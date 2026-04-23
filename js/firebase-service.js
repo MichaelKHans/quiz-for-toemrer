@@ -45,3 +45,5 @@ export async function getDbFromCloud() {
         return null;
     }
 }
+
+window.getDbFromCloud = getDbFromCloud;

@@ -182,7 +182,7 @@ async function showAdminPanel() {
     if (titleEl) titleEl.textContent = `Tømrer Quiz - Panel (Underviser) - ${APP_VERSION}`;
     
     try {
-        const cloudDb = await getDbFromCloud();
+        const cloudDb = await window.getDbFromCloud();
         if (cloudDb) {
             localDbCopy = cloudDb;
             console.log("Admin: Data hentet fra Firebase.");
