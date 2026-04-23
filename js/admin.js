@@ -249,7 +249,7 @@ function renderAdminContent() {
                 <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
                 <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
             </div>
-            <button class="btn btn-primary btn-small" style="background: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow);" onclick="saveAdminChanges()">☁️ Gem alle ændringer</button>
+            <button class="btn btn-primary btn-small" style="background: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow);" onmousedown="setTimeout(() => saveAdminChanges(), 150)">☁️ Gem alle ændringer</button>
         </div>
 
         <div id="tab-edit" class="tab-content active">
@@ -444,7 +444,7 @@ function renderAdminContent() {
         
         <div class="admin-footer">
             <button class="btn btn-secondary" onclick="closeAdmin()">Gå tilbage (Annuller)</button>
-            <button class="btn btn-primary" onclick="saveAdminChanges()">Gem alle ændringer i skyen ☁️</button>
+            <button class="btn btn-primary" onmousedown="setTimeout(() => saveAdminChanges(), 150)">Gem alle ændringer i skyen ☁️</button>
         </div>
     `;
     
