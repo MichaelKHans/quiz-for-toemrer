@@ -90,6 +90,7 @@ async function renderDashboard() {
 
         grid.innerHTML = filteredQuizzes.map(quiz => {
             const scoreData = scores[quiz.id];
+            const catTitle = data.categories.find(c => c.id === quiz.categoryId)?.title || "Diverse";
             let footerContent = '<span class="badge badge-default">Ikke startet</span>';
             
             if (scoreData) {
@@ -99,16 +100,21 @@ async function renderDashboard() {
                 `;
             }
 
-            // Brug det faste billede fra databasen, ellers brug en diskret pladsholder
             const imageUrl = quiz.moodImageUrl || `https://placehold.co/800x600/2a2a2a/ffffff?text=Intet+billede+valgt`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
-                    <div class="card-mood-bg" style="background-image: url('${imageUrl}')"></div>
-                    <h3 style="position: relative; z-index: 2;">${quiz.title}</h3>
-                    <p style="position: relative; z-index: 2;">${quiz.description}</p>
-                    <div class="card-footer" style="position: relative; z-index: 2;">
-                        ${footerContent}
+                    <div class="card-image-container">
+                        <img src="${imageUrl}" alt="${quiz.title}">
+                    </div>
+                    <div class="card-overlay"></div>
+                    <div class="card-content">
+                        <span class="card-category-tag">${catTitle}</span>
+                        <h3>${quiz.title}</h3>
+                        <p>${quiz.description}</p>
+                        <div class="card-footer">
+                            ${footerContent}
+                        </div>
                     </div>
                 </a>
             `;

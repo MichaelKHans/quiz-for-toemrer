@@ -5,10 +5,16 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.4.4";
+const APP_VERSION = "v4.4.5";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
+    {
+        version: "v4.4.5",
+        date: "2026-04-23",
+        title: "🎨 Design Oprydning (v4.4.5)",
+        desc: "Fjernet forældede CSS-klasser (.card-mood-bg) og strømlinet dashboard-designet."
+    },
     {
         version: "v4.3.2",
         date: "2026-04-22",
