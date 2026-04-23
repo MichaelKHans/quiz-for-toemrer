@@ -279,7 +279,8 @@ function renderAdminContent() {
                 </div>
             </div>
             
-            <div class="admin-actions-secondary">
+            <div class="admin-actions-secondary" style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-secondary btn-small" onclick="cleanupAllSessions()" title="Afslut alle aktive live-sessioner i databasen">🧹 Ryd Live-sessioner</button>
                 <button class="btn btn-secondary btn-small" onclick="resetToStandard()">Nulstil til Standard-indhold</button>
             </div>
             
@@ -811,7 +812,37 @@ document.addEventListener('keydown', (e) => {
 let activeSessionUnsubscribe = null;
 let currentLivePin = null;
 
+window.cleanupAllSessions = async () => {
+    if (!confirm("Vil du afslutte ALLE aktive live-sessioner i databasen? Dette fjerner 'Deltag' knappen for alle elever.")) return;
+    
+    const liveRef = window.ref(window.db, 'live_sessions');
+    const snapshot = await window.get(liveRef);
+    const sessions = snapshot.val();
+    if (sessions) {
+        const updates = {};
+        Object.keys(sessions).forEach(pin => {
+            if (sessions[pin].status !== 'finished') {
+                updates[`${pin}/status`] = 'finished';
+            }
+        });
+        await window.update(liveRef, updates);
+        alert("Alle sessioner er nu afsluttet!");
+    }
+};
+
 window.initiateLiveSession = async (quizIdx) => {
+    // Ryd op i gamle sessioner først
+    const liveRef = window.ref(window.db, 'live_sessions');
+    const snapshot = await window.get(liveRef);
+    const sessions = snapshot.val();
+    if (sessions) {
+        const updates = {};
+        Object.keys(sessions).forEach(p => {
+            if (sessions[p].status !== 'finished') updates[`${p}/status`] = 'finished';
+        });
+        await window.update(liveRef, updates);
+    }
+
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     currentLivePin = pin;
     const quiz = localDbCopy.quizzes[quizIdx];

@@ -32,7 +32,7 @@ let currentCategory = 'all';
 async function initDashboard() {
     console.log("Initialiserer dashboard...");
     
-    // Tjek for aktive live sessioner (v4.8.3 logik fra bruger)
+    // Tjek for aktive live sessioner (v4.9.0 logik)
     if (window.ref && window.onValue) {
         const liveRef = window.ref(window.db, 'live_sessions');
         window.onValue(liveRef, (snapshot) => {
@@ -40,6 +40,7 @@ async function initDashboard() {
             let activeFound = false;
             if (sessions) {
                 Object.values(sessions).forEach(s => {
+                    // Kun 'lobby' og 'playing' anses for at være LIVE
                     if (s.status === 'lobby' || s.status === 'playing') activeFound = true;
                 });
             }
@@ -143,7 +144,7 @@ async function renderDashboard() {
         // Genindlæs kategori-knapper for at sikre aktiv tilstand er korrekt
         renderCategorySelector(data.categories);
 
-        // Tilføj versionsmærkat i bunden (v4.0.0)
+        // Tilføj versionsmærkat i bunden
         let tag = document.getElementById('version-tag');
         if (!tag) {
             tag = document.createElement('div');
@@ -484,7 +485,7 @@ async function joinLiveSession(pin, name) {
     const container = document.getElementById('quiz-grid');
     if (container) {
         container.innerHTML = `
-            <div class="live-student-lobby fade-in" style="text-align:center; padding: 5rem 2rem; color: white;">
+            <div class="live-student-lobby fade-in">
                 <div class="live-badge">DU ER MED!</div>
                 <h1>Venter på læreren...</h1>
                 <p style="font-size: 1.5rem; margin-bottom: 2rem;">Klar som: <strong>${name}</strong></p>
@@ -545,15 +546,9 @@ async function renderStudentGameView(session) {
         </div>
     `;
 
-    // Start lokal nedtælling (standard 20 sek eller synkroniseret)
-    const timeLimit = 20;
-    const now = Date.now();
-    const startTime = session.questionStartTime || now;
-    const elapsed = (now - startTime) / 1000;
-    const remaining = Math.max(0, timeLimit - elapsed);
-    
-    window.currentQuestionStartTime = startTime;
-    startStudentTimer(remaining);
+    // Start lokal nedtælling
+    startStudentTimer(20);
+    window.currentQuestionStartTime = session.questionStartTime || Date.now();
 }
 
 function startStudentTimer(seconds) {
