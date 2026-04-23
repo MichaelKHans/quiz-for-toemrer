@@ -1262,6 +1262,60 @@ body.live-mode-active .container {
 .opt-C { background: #d89e00 !important; }
 .opt-D { background: #26890c !important; }
 
+/* KAHOOT MODE v5.1.0 */
+.kahoot-mode {
+    background: #46178f !important;
+    overflow: hidden !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+}
+
+.kahoot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    height: 100vh;
+    width: 100vw;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.kahoot-grid button {
+    border: none !important;
+    border-radius: 15px !important;
+    font-size: 5rem !important;
+    font-weight: 900 !important;
+    color: white !important;
+    cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+}
+
+.kahoot-grid button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.kahoot-btn-a { background: #e21b3c !important; }
+.kahoot-btn-b { background: #1368ce !important; }
+.kahoot-btn-c { background: #d89e00 !important; }
+.kahoot-btn-d { background: #26890c !important; }
+
+.kahoot-waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: white;
+    text-align: center;
+}
+
 .live-student-waiting {
     text-align: center;
     padding: 5rem 2rem;

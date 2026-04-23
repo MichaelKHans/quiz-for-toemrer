@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.0.2";
+const APP_VERSION = "v5.1.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -1040,10 +1040,9 @@ function renderTeacherGameView(session) {
 }
 
 window.nextLiveQuestion = async (pin, currentIdx) => {
-    await window.updateSession(pin, { 
-        currentQuestion: currentIdx + 1,
-        questionStartTime: window.serverTimestamp()
-    });
+    const liveRef = window.ref(window.db, `live_sessions/${pin}`);
+    await window.set(window.ref(window.db, `live_sessions/${pin}/currentQuestionIndex`), currentIdx + 1);
+    await window.set(window.ref(window.db, `live_sessions/${pin}/questionStartTime`), window.serverTimestamp());
 };
 
 function renderPodium(session) {
