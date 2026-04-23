@@ -1090,6 +1090,26 @@ h1 {
     padding: 3rem;
 }
 
+.player-bubble {
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.live-student-game h1 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.btn-large {
+    padding: 1.5rem !important;
+    font-size: 1.2rem !important;
+    font-weight: bold !important;
+}
+
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.6; }

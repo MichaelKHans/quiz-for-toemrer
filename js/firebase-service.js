@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB8WoEWReTrIMLwx3tqWCsbQHEstZL_SZA",
@@ -60,5 +60,30 @@ export async function createLiveSession(pin, data) {
     }
 }
 
+export function listenToSession(pin, callback) {
+    const sessionRef = ref(db, 'live_sessions/' + pin);
+    return onValue(sessionRef, (snapshot) => {
+        callback(snapshot.val());
+    });
+}
+
+export async function updateSession(pin, updates) {
+    try {
+        await update(ref(db, 'live_sessions/' + pin), updates);
+        return true;
+    } catch (e) {
+        console.error("Update Error:", e);
+        return false;
+    }
+}
+
+export async function addPlayerToSession(pin, playerId, name) {
+    const playerRef = ref(db, `live_sessions/${pin}/players/${playerId}`);
+    await set(playerRef, { name: name, points: 0, joinedAt: Date.now() });
+}
+
 window.getDbFromCloud = getDbFromCloud;
 window.createLiveSession = createLiveSession;
+window.listenToSession = listenToSession;
+window.updateSession = updateSession;
+window.addPlayerToSession = addPlayerToSession;

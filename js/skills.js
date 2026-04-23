@@ -435,25 +435,109 @@ function showResults() {
     `;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.showLiveJoinModal = () => {
+// --- LIVE QUIZ ELEV LOGIK ---
+let studentSessionUnsubscribe = null;
+let currentStudentPin = null;
+let currentPlayerId = null;
+
+window.showLiveJoinModal = () => {
     const pin = prompt("Indtast 6-cifret PIN-kode:");
-    if (pin && pin.trim()) {
-        const name = prompt("Hvad er dit navn?");
-        if (name && name.trim()) {
-            joinLiveSession(pin.trim(), name.trim());
-        }
-    }
+    if (!pin) return;
+    const name = prompt("Hvad er dit navn?");
+    if (!name) return;
+    joinLiveSession(pin.trim(), name.trim());
 };
 
 async function joinLiveSession(pin, name) {
-    console.log(`Forsøger at deltage i live session: ${pin} som ${name}`);
-    alert(`Forbinder ${name} til session ${pin}... Vent venligst på at læreren starter spillet.`);
+    currentStudentPin = pin;
+    currentPlayerId = 'player_' + Math.random().toString(36).substr(2, 9);
+    
+    // Vis venteskærm
+    const container = document.getElementById('quiz-grid');
+    if (container) {
+        container.innerHTML = `
+            <div class="live-student-lobby fade-in" style="text-align:center; padding: 5rem 2rem; background: rgba(255,255,255,0.05); border-radius: 20px; border: 2px solid var(--accent); max-width: 600px; margin: 2rem auto;">
+                <div class="live-badge">LIVE LOBBY</div>
+                <h1>Venter på læreren...</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 2rem;">Du er logget ind som <strong>${name}</strong></p>
+                <div style="font-size: 3rem; animation: pulse 2s infinite;">⌛</div>
+                <p style="margin-top: 2rem; opacity: 0.7;">Gør dig klar! Quizzen starter når læreren trykker Start.</p>
+            </div>
+        `;
+    }
+    
+    if (window.addPlayerToSession) {
+        await window.addPlayerToSession(pin, currentPlayerId, name);
+        
+        if (studentSessionUnsubscribe) studentSessionUnsubscribe();
+        studentSessionUnsubscribe = window.listenToSession(pin, (session) => {
+            if (!session) return;
+            if (session.status === 'playing') {
+                renderStudentGameView(session);
+            } else if (session.status === 'ended') {
+                alert("Quizzen er slut!");
+                window.location.reload();
+            }
+        });
+    }
 }
 
-if (document.getElementById('quiz-grid')) {
-    initDashboard();
-} else if (document.getElementById('quiz-content')) {
+async function renderStudentGameView(session) {
+    const data = await loadDatabase();
+    const quiz = data.quizzes.find(q => q.id === session.quizId);
+    const qIdx = session.currentQuestion;
+    const question = quiz.questions[qIdx];
+    
+    const container = document.getElementById('quiz-grid');
+    if (!container) return;
+    
+    // Tjek om allerede svaret
+    const player = session.players[currentPlayerId];
+    if (player.answers && player.answers[qIdx]) {
+        container.innerHTML = `
+            <div class="live-student-waiting fade-in" style="text-align:center; padding: 5rem 2rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <h2>Svar modtaget!</h2>
+                <p>Venter på at de andre bliver færdige...</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="live-student-game fade-in" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+            <div style="text-align:center; margin-bottom: 2rem;">
+                <span class="live-badge">SPØRGSMÅL ${qIdx + 1}</span>
+                <h1 style="margin-top: 1rem;">${question.question}</h1>
+            </div>
+            <div class="options-grid" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                ${question.options.map((opt, i) => `
+                    <button class="btn btn-secondary btn-large" style="min-height: 80px;" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+window.submitLiveAnswer = async (qIdx, answerIdx) => {
+    const updates = {};
+    updates[`players/${currentPlayerId}/answers/${qIdx}`] = {
+        answer: answerIdx,
+        time: Date.now()
+    };
+    await window.updateSession(currentStudentPin, updates);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Opdater versionstag
+    setTimeout(() => {
+        const tag = document.getElementById('version-tag');
+        if (tag) tag.textContent = 'v4.7.0';
+    }, 500);
+
+    if (document.getElementById('quiz-grid')) {
+        initDashboard();
+    } else if (document.getElementById('quiz-content')) {
         initQuiz();
     }
 });

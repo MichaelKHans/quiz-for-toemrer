@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.5.0";
+const APP_VERSION = "v4.7.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -807,11 +807,17 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Vi skal holde styr på lytteren for at kunne afbryde den
+let activeSessionUnsubscribe = null;
+let currentLivePin = null;
+
 window.initiateLiveSession = async (quizIdx) => {
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    currentLivePin = pin;
     const quiz = localDbCopy.quizzes[quizIdx];
 
     const sessionData = {
+        pin: pin,
         quizId: quiz.id,
         quizTitle: quiz.title,
         status: 'lobby',
@@ -820,42 +826,111 @@ window.initiateLiveSession = async (quizIdx) => {
         players: {}
     };
 
+    renderLobbyUI(pin, quiz.title);
+
+    if (window.createLiveSession) {
+        await window.createLiveSession(pin, sessionData);
+        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+        activeSessionUnsubscribe = window.listenToSession(pin, (data) => {
+            if (!data) return;
+            if (data.status === 'lobby') {
+                updateLobbyPlayerList(data);
+            } else if (data.status === 'playing') {
+                renderTeacherGameView(data);
+            }
+        });
+    }
+};
+
+function renderLobbyUI(pin, title) {
     const container = document.getElementById('admin-content-inner');
     container.innerHTML = `
         <div class="live-lobby-container fade-in">
             <div class="lobby-header">
-                <span class="live-badge">LIVE SESSION</span>
-                <h1>${quiz.title}</h1>
+                <span class="live-badge">LIVE LOBBY</span>
+                <h1>${title}</h1>
                 <div class="pin-display">
                     <p>Deltag med koden:</p>
                     <div class="pin-code">${pin}</div>
                 </div>
             </div>
-            
             <div class="lobby-main">
-                <div class="player-list-header">
-                    <h2>Spillere klar (0)</h2>
-                    <div style="display:flex; gap:1rem;">
-                         <button class="btn btn-success" onclick="alert('Spillet starter snart! Vi skal lige have elev-delen klar først.')">START SPIL</button>
-                    </div>
+                <div class="player-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 id="player-count">Spillere klar (0)</h2>
+                    <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START SPIL</button>
                 </div>
                 <div id="player-list" class="player-grid">
-                    <p class="waiting-msg">Venter på spillere... <br><small>(Eleverne skal bruge /live siden, som vi bygger i næste trin)</small></p>
+                    <p class="waiting-msg">Venter på spillere...</p>
                 </div>
             </div>
-            
-            <div class="lobby-actions" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
-                <button class="btn btn-secondary" onclick="renderAdminContent()">Afbryd og gå tilbage</button>
+            <div class="lobby-actions" style="margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
             </div>
         </div>
     `;
+}
 
-    // Gem session i Firebase
-    if (window.createLiveSession) {
-        await window.createLiveSession(pin, sessionData);
+function updateLobbyPlayerList(session) {
+    const list = document.getElementById('player-list');
+    const countEl = document.getElementById('player-count');
+    const startBtn = document.getElementById('start-btn');
+    if (!list) return;
+    const players = session.players ? Object.values(session.players) : [];
+    countEl.textContent = `Spillere klar (${players.length})`;
+    if (players.length > 0) {
+        startBtn.disabled = false;
+        list.innerHTML = players.map(p => `<div class="player-bubble fade-in">${p.name}</div>`).join('');
     } else {
-        console.error("createLiveSession ikke fundet!");
+        startBtn.disabled = true;
+        list.innerHTML = `<p class="waiting-msg">Venter på spillere...</p>`;
     }
+}
+
+window.startLiveGame = async (pin) => {
+    await window.updateSession(pin, { status: 'playing', currentQuestion: 0 });
+};
+
+window.stopLiveSession = () => {
+    if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+    renderAdminContent();
+};
+
+function renderTeacherGameView(session) {
+    const container = document.getElementById('admin-content-inner');
+    const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
+    const qIdx = session.currentQuestion;
+    const question = quiz.questions[qIdx];
+    const players = session.players ? Object.values(session.players) : [];
+    const answerCount = players.filter(p => p.answers && p.answers[qIdx]).length;
+
+    container.innerHTML = `
+        <div class="live-teacher-view fade-in" style="padding: 2rem; text-align: center;">
+            <div class="game-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div class="pin-small" style="font-weight: bold; background: var(--accent); padding: 0.5rem 1rem; border-radius: 20px;">PIN: ${session.pin}</div>
+                <h2>Spørgsmål ${qIdx + 1} af ${quiz.questions.length}</h2>
+                <div class="player-status">👥 ${players.length} elever</div>
+            </div>
+            <div class="question-preview" style="background: rgba(255,255,255,0.05); padding: 3rem; border-radius: 20px; margin-bottom: 2rem; border: 2px solid var(--accent);">
+                <h1 style="font-size: 2.5rem; margin: 0;">${question.question}</h1>
+            </div>
+            <div class="teacher-stats" style="margin-bottom: 3rem;">
+                <div style="font-size: 1.5rem; opacity: 0.8;">Svaret: <strong>${answerCount}</strong> ud af <strong>${players.length}</strong></div>
+                <div class="progress-bar-bg" style="max-width: 400px; margin: 1rem auto;">
+                    <div class="progress-bar-fill" style="width: ${(answerCount/Math.max(1, players.length))*100}%"></div>
+                </div>
+            </div>
+            <div class="teacher-controls" style="display: flex; gap: 1rem; justify-content: center;">
+                ${qIdx < quiz.questions.length - 1 
+                    ? `<button class="btn btn-primary btn-large" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">Næste Spørgsmål</button>`
+                    : `<button class="btn btn-success btn-large" onclick="stopLiveSession()">Afslut Quiz</button>`
+                }
+            </div>
+        </div>
+    `;
+}
+
+window.nextLiveQuestion = async (pin, currentIdx) => {
+    await window.updateSession(pin, { currentQuestion: currentIdx + 1 });
 };
 
 document.addEventListener('DOMContentLoaded', initAdmin);
