@@ -456,13 +456,60 @@ function renderAdminContent() {
     });
 }
 
-window.refreshImage = (idx) => {
-    pushToHistory();
+// --- NY PIXABAY BILLEDSØGNING ---
+const PIXABAY_API_KEY = "33031971-903622639880d24a7febb7bc5";
+
+async function fetchPixabayImage(keywords) {
+    if (!keywords) return null;
+    
+    // Rens keywords for at gøre søgningen bedre
+    const cleanKeywords = keywords.replace(/,/g, ' ').trim();
+    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(cleanKeywords)}&image_type=photo&orientation=horizontal&safesearch=true&per_page=20`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.hits && data.hits.length > 0) {
+            // Vælg et tilfældigt billede blandt de bedste resultater for at give variation
+            const randomHit = data.hits[Math.floor(Math.random() * data.hits.length)];
+            return randomHit.webformatURL; // Dette er det permanente, låste link!
+        }
+        return null; // Ingen billeder fundet
+    } catch (error) {
+        console.error("Fejl ved hentning fra Pixabay:", error);
+        return null;
+    }
+}
+
+window.refreshImage = async (idx) => {
     const quiz = localDbCopy.quizzes[idx];
-    quiz.moodImageUrl = ""; // Nulstil URL for at tvinge nyt billede via keywords
-    quiz.moodImageLock = Math.floor(Math.random() * 1000000);
+    
+    // Find søgeord (brug engelske tags, da Pixabay er bedst til det)
+    const keywords = quiz.moodKeywords || quiz.title;
+    
+    // Vis brugeren at vi arbejder
+    const btn = event.target;
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "⏳ Søger...";
+    btn.disabled = true;
+
+    // Hent permanent billede fra Pixabay
+    const newImageUrl = await fetchPixabayImage(keywords);
+    
+    pushToHistory();
+    
+    if (newImageUrl) {
+        quiz.moodImageUrl = newImageUrl; // Gem den ægte URL direkte i databasen!
+    } else {
+        alert("Pixabay kunne ikke finde nogle billeder for: " + keywords + ".\nPrøv at ændre søgeordene.");
+    }
+
+    btn.innerHTML = oldText;
+    btn.disabled = false;
     renderAdminContent();
 };
+// --------------------------------
 
 window.translateAndSetKeywords = (idx, danishVal) => {
     pushToHistory();
