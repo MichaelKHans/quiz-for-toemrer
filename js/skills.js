@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.2";
+const APP_VERSION = "v5.1.3";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -23,23 +23,26 @@ function initHardLink() {
     console.log("Hard-Link Live System Active (v5.1.0)");
     
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
-        // --- EMERGENCY ADMIN CHECK v5.1.2 ---
-        const isAdmin = document.getElementById('admin-modal') || 
-                        document.querySelector('.admin-trigger') ||
-                        window.location.href.includes('admin');
-        
-        if (isAdmin) {
-            console.log("Admin detected - blocking student UI overwrite.");
-            return;
-        }
-
         const sessions = snap.val();
+        
+        // 1. Styr synlighed af "Deltag" knappen (skal køre for alle elever)
+        const hasActiveSession = sessions && Object.values(sessions).some(s => s && (s.status === 'lobby' || s.status === 'playing'));
+        const joinBtn = document.getElementById('live-join-btn');
+        if (joinBtn) joinBtn.style.display = hasActiveSession ? 'block' : 'none';
+
         if (!sessions) {
             if (document.body.classList.contains('kahoot-mode')) location.reload();
             return;
         }
 
-        // Find den første aktive session (playing)
+        // 2. EMERGENCY ADMIN CHECK - blokerer kun overskrivelse af skærmen
+        const isAdmin = document.getElementById('admin-modal') || 
+                        document.querySelector('.admin-trigger') ||
+                        window.location.href.includes('admin');
+        
+        if (isAdmin) return;
+
+        // 3. Automatisk UI-skift for elever
         const activeSession = Object.values(sessions).find(s => s && s.status === 'playing');
         
         if (activeSession) {
