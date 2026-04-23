@@ -193,7 +193,7 @@ h1 {
     height: 180px;
     background-size: cover;
     background-position: center;
-    opacity: 0.15;
+    opacity: 0.4; /* Øget fra 0.15 for at lade billedet træde frem */
     z-index: 0;
     pointer-events: none;
     transition: var(--transition);
@@ -204,7 +204,7 @@ h1 {
 }
 
 .quiz-card:hover .card-mood-bg {
-    opacity: 0.3;
+    opacity: 0.7; /* Øget fra 0.3 så hover-effekten bliver flottere */
     transform: scale(1.1) rotate(-5deg);
 }
 
@@ -747,12 +747,12 @@ h1 {
         background: linear-gradient(to right, transparent 50%, var(--bg-color) 100%);
     }
 
-    /* Mørk overlay så billedet ikke bliver for lyst */
+    /* Mørk overlay justeret så Pixabay-billedet ikke forsvinder */
     .split-image::before {
         content: '';
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.15); /* Sænket fra 0.4 for at lukke lyset ind */
     }
     
     .split-content {
