@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.1";
+const APP_VERSION = "v5.1.2";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -23,10 +23,13 @@ function initHardLink() {
     console.log("Hard-Link Live System Active (v5.1.0)");
     
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
-        // SIKKERHEDS-TJEK: Hvis vi er læreren (admin modal er åben), må vi ALDRIG overskrive skærmen
-        const isAdminOpen = document.getElementById('admin-modal')?.style.display === 'flex';
-        if (isAdminOpen) {
-            console.log("Admin modal åben - ignorerer elev-lytter.");
+        // --- EMERGENCY ADMIN CHECK v5.1.2 ---
+        const isAdmin = document.getElementById('admin-modal') || 
+                        document.querySelector('.admin-trigger') ||
+                        window.location.href.includes('admin');
+        
+        if (isAdmin) {
+            console.log("Admin detected - blocking student UI overwrite.");
             return;
         }
 

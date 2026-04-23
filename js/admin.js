@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.1.1";
+const APP_VERSION = "v5.1.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -956,7 +956,14 @@ window.startLiveGame = async (pin) => {
 
 window.stopLiveSession = async () => {
     if (currentLivePin) {
-        await window.updateSession(currentLivePin, { status: 'finished' });
+        try {
+            await window.set(window.ref(window.db, `live_sessions/${currentLivePin}/status`), 'finished');
+            if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+            currentLivePin = null;
+            renderAdminContent();
+        } catch (e) {
+            console.error("Error stopping session:", e);
+        }
     } else {
         if (activeSessionUnsubscribe) activeSessionUnsubscribe();
         renderAdminContent();
