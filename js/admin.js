@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.4.3";
+const APP_VERSION = "v4.4.4";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -278,15 +278,23 @@ function renderAdminContent() {
             </div>
             
             <div class="admin-section">
-                <h3>Kategorier</h3>
+                <h3>Kategorier (${localDbCopy.categories.length})</h3>
                 <div class="admin-items">
                     ${localDbCopy.categories.map((cat, idx) => `
-                        <div class="admin-item">
-                            <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)">
+                        <div class="admin-item" style="display: flex; align-items: center; gap: 0.5rem; background: ${cat.isHidden ? 'rgba(255,0,0,0.05)' : 'rgba(255,255,255,0.03)'};">
+                            <span class="status-badge ${cat.isHidden ? 'status-hidden' : 'status-visible'}" style="min-width: 90px; text-align: center;">
+                                ${cat.isHidden ? '🚫 Skjult' : '👁️ Synlig'}
+                            </span>
+                            <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1; font-weight: bold;">
+                            <button class="btn ${cat.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
+                                    onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})"
+                                    title="${cat.isHidden ? 'Gør kategorien synlig for elever' : 'Skjul kategorien (og alle dens quizzer) for elever'}">
+                                ${cat.isHidden ? 'Vis' : 'Skjul'}
+                            </button>
                             <button class="btn-icon" onclick="removeCategory(${idx})">🗑️</button>
                         </div>
                     `).join('')}
-                    <button class="btn btn-secondary btn-small" onclick="addCategory()">+ Tilføj Kategori</button>
+                    <button class="btn btn-secondary btn-small" style="margin-top: 1rem;" onclick="addCategory()">+ Tilføj Kategori</button>
                 </div>
             </div>
 

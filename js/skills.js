@@ -39,8 +39,11 @@ function renderCategorySelector(categories) {
     const container = document.getElementById('category-selector');
     if (!container) return;
 
+    // Filtrer skjulte kategorier fra (medmindre man er i preview mode - men vi holder det simpelt her)
+    const visibleCategories = categories.filter(c => !c.isHidden);
+
     const allBtn = `<button class="category-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="filterCategory('all')">Alle</button>`;
-    const categoryBtns = categories.map(cat => `
+    const categoryBtns = visibleCategories.map(cat => `
         <button class="category-btn ${currentCategory === cat.id ? 'active' : ''}" onclick="filterCategory('${cat.id}')">${cat.title}</button>
     `).join('');
 
@@ -75,8 +78,12 @@ async function renderDashboard() {
 
     const grid = document.getElementById('quiz-grid');
     if (grid) {
-        // Filtrer først alle skjulte quizzer væk. Filtrer derefter på kategori.
-        const visibleQuizzes = data.quizzes.filter(q => !q.isHidden);
+        // 1. Find alle ID'er på synlige kategorier
+        const visibleCategoryIds = data.categories.filter(c => !c.isHidden).map(c => c.id);
+
+        // 2. Filtrer quizzer: skal hverken være skjult selv, og deres kategori skal også være synlig
+        const visibleQuizzes = data.quizzes.filter(q => !q.isHidden && visibleCategoryIds.includes(q.categoryId));
+        
         const filteredQuizzes = currentCategory === 'all' 
             ? visibleQuizzes 
             : visibleQuizzes.filter(q => q.categoryId === currentCategory);
