@@ -82,8 +82,16 @@ export async function addPlayerToSession(pin, playerId, name) {
     await set(playerRef, { name: name, points: 0, joinedAt: Date.now() });
 }
 
+export function listenToAllSessions(callback) {
+    const sessionsRef = ref(db, 'live_sessions');
+    return onValue(sessionsRef, (snapshot) => {
+        callback(snapshot.val());
+    });
+}
+
 window.getDbFromCloud = getDbFromCloud;
 window.createLiveSession = createLiveSession;
 window.listenToSession = listenToSession;
 window.updateSession = updateSession;
 window.addPlayerToSession = addPlayerToSession;
+window.listenToAllSessions = listenToAllSessions;

@@ -30,6 +30,19 @@ async function loadDatabase() {
 let currentCategory = 'all';
 
 async function initDashboard() {
+    console.log("Initialiserer dashboard...");
+    
+    // Tjek for aktive live sessioner for at vise/skjule deltag-knap
+    if (window.listenToAllSessions) {
+        window.listenToAllSessions((sessions) => {
+            const btn = document.getElementById('live-join-btn');
+            if (!btn) return;
+            
+            const hasActive = sessions && Object.values(sessions).some(s => s.status !== 'finished');
+            btn.style.display = hasActive ? 'block' : 'none';
+        });
+    }
+
     const data = await loadDatabase();
     renderCategorySelector(data.categories);
     renderDashboard();
