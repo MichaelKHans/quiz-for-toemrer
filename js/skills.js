@@ -144,7 +144,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.9.6';
+        tag.textContent = 'v5.0.2';
     }
 }
 
@@ -503,11 +503,7 @@ async function joinLiveSession(pin, name) {
 }
 
 async function renderStudentGameView(session) {
-    const data = await loadDatabase();
-    const quiz = data.quizzes.find(q => q.id === session.quizId);
     const qIdx = session.currentQuestion;
-    const question = quiz.questions[qIdx];
-    
     const container = document.getElementById('quiz-grid');
     if (!container) return;
     
@@ -524,23 +520,14 @@ async function renderStudentGameView(session) {
         return;
     }
 
-    const symbols = ['▲', '◆', '●', '■'];
     const letters = ['A', 'B', 'C', 'D'];
 
     container.innerHTML = `
         <div class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
-        <div class="live-student-game fade-in">
-            <div class="live-question-header">
-                <h1>${question.question}</h1>
-            </div>
-            <div class="options-grid">
-                ${question.options.map((opt, i) => `
-                    <button class="btn btn-large opt-${i}" onclick="submitLiveAnswer(${qIdx}, ${i})">
-                        <span class="symbol">${symbols[i]}</span>
-                        <span class="letter">${letters[i]}</span>
-                    </button>
-                `).join('')}
-            </div>
+        <div class="live-answer-grid fade-in">
+            ${letters.map((char, i) => `
+                <button class="opt-${char}" onclick="submitLiveAnswer(${qIdx}, ${i})">${char}</button>
+            `).join('')}
         </div>
     `;
 
@@ -561,6 +548,12 @@ function startStudentTimer(seconds) {
 }
 
 window.submitLiveAnswer = async (qIdx, answerIdx) => {
+    console.log("Svar afsendt:", answerIdx);
+    
+    // Deaktiver knapper med det samme for at undgå dobbelt-svar
+    const buttons = document.querySelectorAll('.live-answer-grid button');
+    buttons.forEach(btn => btn.disabled = true);
+
     const data = await loadDatabase();
     const session = await new Promise(resolve => {
         const unsub = window.listenToSession(currentStudentPin, (s) => { unsub(); resolve(s); });
@@ -568,7 +561,7 @@ window.submitLiveAnswer = async (qIdx, answerIdx) => {
     const quiz = data.quizzes.find(q => q.id === session.quizId);
     const isCorrect = answerIdx === quiz.questions[qIdx].correctIndex;
 
-    // Kahoot-scoring: 500 basis point + op til 500 point for hastighed (max 1000)
+    // Kahoot-scoring
     const timeLimit = 20;
     const now = Date.now();
     const startTime = session.questionStartTime || now;
@@ -584,9 +577,7 @@ window.submitLiveAnswer = async (qIdx, answerIdx) => {
         points: pointsAwarded
     };
     
-    // Giv point hvis rigtigt
     updates[`players/${currentPlayerId}/points`] = (session.players[currentPlayerId].points || 0) + pointsAwarded;
-    
     await window.updateSession(currentStudentPin, updates);
 };
 
@@ -609,7 +600,7 @@ function renderStudentPodium(session) {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        const APP_VERSION = "v4.9.6";
+        const APP_VERSION = "v5.0.2";
         if (tag) tag.textContent = APP_VERSION;
     }, 500);
 

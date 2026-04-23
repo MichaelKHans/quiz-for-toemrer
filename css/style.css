@@ -1220,76 +1220,48 @@ body.live-mode-active .container {
 
 #quiz-grid:empty { display: none; }
 
-/* LIVE STUDENT GAME VIEW v5.0.0 */
-.live-student-game {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1rem;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: #46178f;
-    overflow: hidden;
-    z-index: 1000;
-}
-
-.live-question-header {
-    flex: 0 0 auto;
-    text-align: center;
-    padding: 1rem 0;
-}
-
-.live-question-header h1 {
-    color: white !important;
-    font-size: 1.4rem !important;
-    margin: 0 !important;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-.options-grid {
-    flex: 1 1 auto;
+/* LIVE STUDENT GAME VIEW v5.0.2 - KAHOOT STYLE */
+.live-answer-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 10px;
-    padding: 10px 0;
+    gap: 15px;
+    height: 80vh;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
-.options-grid .btn-large {
+.live-answer-grid button {
     border: none !important;
     color: white !important;
+    font-weight: 900 !important;
+    font-size: 6rem !important;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    border-radius: 20px !important;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.2);
     cursor: pointer;
-    margin: 0 !important;
-    padding: 0 !important;
+    transition: transform 0.1s;
 }
 
-.options-grid .btn-large .symbol {
-    font-size: 3.5rem;
-    line-height: 1;
+.live-answer-grid button:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
 }
 
-.options-grid .btn-large .letter {
-    font-size: 1rem;
-    opacity: 0.7;
-    margin-top: 0.5rem;
+.live-answer-grid button:disabled {
+    opacity: 0.3;
+    filter: grayscale(1);
+    cursor: not-allowed;
 }
 
-/* KAHOOT COLORS */
-.opt-0 { background: #e21b3c !important; }
-.opt-1 { background: #1368ce !important; }
-.opt-2 { background: #d89e00 !important; }
-.opt-3 { background: #26890c !important; }
+.opt-A { background: #e21b3c !important; }
+.opt-B { background: #1368ce !important; }
+.opt-C { background: #d89e00 !important; }
+.opt-D { background: #26890c !important; }
 
-/* WAITING SCREEN */
 .live-student-waiting {
     text-align: center;
     padding: 5rem 2rem;
