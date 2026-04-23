@@ -38,10 +38,8 @@ async function initDashboard() {
             const btn = document.getElementById('live-join-btn');
             if (!btn) return;
             
-            const now = Date.now();
-            const twoHoursInMs = 2 * 60 * 60 * 1000;
             const hasActive = sessions && Object.values(sessions).some(s => 
-                s.status !== 'finished' && (now - (s.createdAt || 0)) < twoHoursInMs
+                s.status === 'lobby' || s.status === 'playing'
             );
             btn.style.display = hasActive ? 'block' : 'none';
         });
@@ -601,7 +599,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Opdater versionstag
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        if (tag) tag.textContent = 'v4.8.0';
+        const APP_VERSION = "v4.8.2";
+        if (tag) tag.textContent = APP_VERSION;
     }, 500);
 
     if (document.getElementById('quiz-grid')) {
