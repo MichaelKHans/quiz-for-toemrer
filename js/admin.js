@@ -3,7 +3,7 @@
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
-import { saveDbToCloud } from './firebase-service.js';
+import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
 const APP_VERSION = "v4.3.2";
 const ADMIN_PASSWORD = "tømrer123";
