@@ -38,7 +38,11 @@ async function initDashboard() {
             const btn = document.getElementById('live-join-btn');
             if (!btn) return;
             
-            const hasActive = sessions && Object.values(sessions).some(s => s.status !== 'finished');
+            const now = Date.now();
+            const twoHoursInMs = 2 * 60 * 60 * 1000;
+            const hasActive = sessions && Object.values(sessions).some(s => 
+                s.status !== 'finished' && (now - (s.createdAt || 0)) < twoHoursInMs
+            );
             btn.style.display = hasActive ? 'block' : 'none';
         });
     }
