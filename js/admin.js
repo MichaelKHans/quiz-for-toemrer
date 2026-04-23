@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.9.1";
+const APP_VERSION = "v4.9.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -280,7 +280,7 @@ function renderAdminContent() {
             </div>
             
             <div class="admin-actions-secondary" style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button class="btn btn-secondary btn-small" onclick="cleanupAllSessions()" title="Afslut alle aktive live-sessioner i databasen">🧹 Ryd Live-sessioner</button>
+                <button class="btn btn-accent btn-small" onclick="cleanupSessions()" title="Slet alle live-sessioner i Firebase">🧹 Nulstil alle Live-sessioner</button>
                 <button class="btn btn-secondary btn-small" onclick="resetToStandard()">Nulstil til Standard-indhold</button>
             </div>
             
@@ -302,6 +302,7 @@ function renderAdminContent() {
                         </div>
                     `).join('')}
                     <button class="btn btn-secondary btn-small" style="margin-top: 1rem;" onclick="addCategory()">+ Tilføj Kategori</button>
+                    <button class="btn btn-accent btn-small" style="margin-top: 1rem; margin-left: 0.5rem;" onclick="cleanupSessions()">🧹 Nulstil alle Live-sessioner</button>
                 </div>
             </div>
 
@@ -812,36 +813,23 @@ document.addEventListener('keydown', (e) => {
 let activeSessionUnsubscribe = null;
 let currentLivePin = null;
 
-window.cleanupAllSessions = async () => {
-    if (!confirm("Vil du afslutte ALLE aktive live-sessioner i databasen? Dette fjerner 'Deltag' knappen for alle elever.")) return;
+window.cleanupSessions = async () => {
+    if (!confirm("Vil du SLETTE alle live-sessioner fra databasen? Dette kan ikke fortrydes og fjerner straks 'Deltag' knappen for alle elever.")) return;
     
-    const liveRef = window.ref(window.db, 'live_sessions');
-    const snapshot = await window.get(liveRef);
-    const sessions = snapshot.val();
-    if (sessions) {
-        const updates = {};
-        Object.keys(sessions).forEach(pin => {
-            if (sessions[pin].status !== 'finished') {
-                updates[`${pin}/status`] = 'finished';
-            }
-        });
-        await window.update(liveRef, updates);
-        alert("Alle sessioner er nu afsluttet!");
+    try {
+        const liveRef = window.ref(window.db, 'live_sessions');
+        await window.set(liveRef, null); // Sletter alt under live_sessions
+        alert("Live-sessioner er nulstillet!");
+    } catch (e) {
+        console.error("Fejl ved rydning:", e);
+        alert("Fejl ved rydning af sessioner.");
     }
 };
 
 window.initiateLiveSession = async (quizIdx) => {
-    // Ryd op i gamle sessioner først
+    // Automatisk oprydning før ny session
     const liveRef = window.ref(window.db, 'live_sessions');
-    const snapshot = await window.get(liveRef);
-    const sessions = snapshot.val();
-    if (sessions) {
-        const updates = {};
-        Object.keys(sessions).forEach(p => {
-            if (sessions[p].status !== 'finished') updates[`${p}/status`] = 'finished';
-        });
-        await window.update(liveRef, updates);
-    }
+    await window.set(liveRef, null);
 
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     currentLivePin = pin;
