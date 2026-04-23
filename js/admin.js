@@ -837,6 +837,8 @@ window.initiateLiveSession = async (quizIdx) => {
                 updateLobbyPlayerList(data);
             } else if (data.status === 'playing') {
                 renderTeacherGameView(data);
+            } else if (data.status === 'finished') {
+                renderPodium(data);
             }
         });
     }
@@ -846,24 +848,24 @@ function renderLobbyUI(pin, title) {
     const container = document.getElementById('admin-content-inner');
     container.innerHTML = `
         <div class="live-lobby-container fade-in">
-            <div class="lobby-header">
-                <span class="live-badge">LIVE LOBBY</span>
-                <h1>${title}</h1>
+            <div class="lobby-header" style="margin-bottom: 3rem;">
+                <span class="live-badge">TØMRER-LIVE LOBBY</span>
+                <h1 style="font-size: 3.5rem;">${title}</h1>
                 <div class="pin-display">
-                    <p>Deltag med koden:</p>
+                    <p>Deltag på forsiden med koden:</p>
                     <div class="pin-code">${pin}</div>
                 </div>
             </div>
             <div class="lobby-main">
                 <div class="player-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 id="player-count">Spillere klar (0)</h2>
-                    <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START SPIL</button>
+                    <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
                 </div>
                 <div id="player-list" class="player-grid">
                     <p class="waiting-msg">Venter på spillere...</p>
                 </div>
             </div>
-            <div class="lobby-actions" style="margin-top: 2rem;">
+            <div class="lobby-actions" style="margin-top: 3rem;">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
             </div>
         </div>
@@ -890,9 +892,13 @@ window.startLiveGame = async (pin) => {
     await window.updateSession(pin, { status: 'playing', currentQuestion: 0 });
 };
 
-window.stopLiveSession = () => {
-    if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-    renderAdminContent();
+window.stopLiveSession = async () => {
+    if (currentLivePin) {
+        await window.updateSession(currentLivePin, { status: 'finished' });
+    } else {
+        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+        renderAdminContent();
+    }
 };
 
 function renderTeacherGameView(session) {
@@ -903,27 +909,38 @@ function renderTeacherGameView(session) {
     const players = session.players ? Object.values(session.players) : [];
     const answerCount = players.filter(p => p.answers && p.answers[qIdx]).length;
 
+    const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
+
     container.innerHTML = `
-        <div class="live-teacher-view fade-in" style="padding: 2rem; text-align: center;">
-            <div class="game-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                <div class="pin-small" style="font-weight: bold; background: var(--accent); padding: 0.5rem 1rem; border-radius: 20px;">PIN: ${session.pin}</div>
-                <h2>Spørgsmål ${qIdx + 1} af ${quiz.questions.length}</h2>
-                <div class="player-status">👥 ${players.length} elever</div>
+        <div class="live-teacher-view fade-in" style="height: 100vh; display: flex; flex-direction: column; padding: 2rem;">
+            <div class="game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div class="pin-small" style="font-size: 1.5rem; font-weight: bold; background: var(--accent); color: black; padding: 0.5rem 1.5rem; border-radius: 30px;">PIN: ${session.pin}</div>
+                <h1 style="font-size: 2.5rem; margin: 0; color: var(--accent);">${quiz.title}</h1>
+                <div class="player-status" style="font-size: 1.5rem;">👥 ${players.length}</div>
             </div>
-            <div class="question-preview" style="background: rgba(255,255,255,0.05); padding: 3rem; border-radius: 20px; margin-bottom: 2rem; border: 2px solid var(--accent);">
-                <h1 style="font-size: 2.5rem; margin: 0;">${question.question}</h1>
-            </div>
-            <div class="teacher-stats" style="margin-bottom: 3rem;">
-                <div style="font-size: 1.5rem; opacity: 0.8;">Svaret: <strong>${answerCount}</strong> ud af <strong>${players.length}</strong></div>
-                <div class="progress-bar-bg" style="max-width: 400px; margin: 1rem auto;">
-                    <div class="progress-bar-fill" style="width: ${(answerCount/Math.max(1, players.length))*100}%"></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem; flex-grow: 1; align-items: center;">
+                <div class="question-main">
+                    <h1 style="font-size: 4rem; margin-bottom: 2rem; line-height: 1.1;">${question.question}</h1>
+                    <div class="image-box" style="width: 100%; height: 450px; border-radius: 20px; overflow: hidden; border: 4px solid var(--accent);">
+                        <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
                 </div>
-            </div>
-            <div class="teacher-controls" style="display: flex; gap: 1rem; justify-content: center;">
-                ${qIdx < quiz.questions.length - 1 
-                    ? `<button class="btn btn-primary btn-large" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">Næste Spørgsmål</button>`
-                    : `<button class="btn btn-success btn-large" onclick="stopLiveSession()">Afslut Quiz</button>`
-                }
+                
+                <div class="stats-sidebar" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; text-align: center;">
+                    <div style="font-size: 5rem; font-weight: 900; color: var(--accent);">${answerCount}</div>
+                    <div style="font-size: 1.5rem; opacity: 0.7;">SVAR MODTAGET</div>
+                    <div class="progress-bar-bg" style="margin: 2rem 0;">
+                        <div class="progress-bar-fill" style="width: ${(answerCount/Math.max(1, players.length))*100}%"></div>
+                    </div>
+                    
+                    <div style="margin-top: 5rem;">
+                        ${qIdx < quiz.questions.length - 1 
+                            ? `<button class="btn btn-primary btn-large" style="width: 100%;" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">NÆSTE SPØRGSMÅL ➡️</button>`
+                            : `<button class="btn btn-success btn-large" style="width: 100%;" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -932,5 +949,44 @@ function renderTeacherGameView(session) {
 window.nextLiveQuestion = async (pin, currentIdx) => {
     await window.updateSession(pin, { currentQuestion: currentIdx + 1 });
 };
+
+function renderPodium(session) {
+    const container = document.getElementById('admin-content-inner');
+    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
+    
+    container.innerHTML = `
+        <div class="podium-screen fade-in" style="text-align:center; padding: 4rem 2rem;">
+            <span class="live-badge">RESULTATER</span>
+            <h1 style="font-size: 4rem; margin-bottom: 4rem;">🏆 PODIET 🏆</h1>
+            
+            <div class="podium-container">
+                ${players[1] ? `
+                <div class="podium-step step-2">
+                    <div class="step-name">${players[1].name}</div>
+                    <div class="step-label">2</div>
+                    <div style="margin-top: 1rem;">${players[1].points || 0}p</div>
+                </div>` : ''}
+                
+                ${players[0] ? `
+                <div class="podium-step step-1">
+                    <div class="step-name" style="font-size: 1.5rem; top: -50px;">👑 ${players[0].name}</div>
+                    <div class="step-label">1</div>
+                    <div style="margin-top: 1rem; font-weight: bold;">${players[0].points || 0}p</div>
+                </div>` : ''}
+                
+                ${players[2] ? `
+                <div class="podium-step step-3">
+                    <div class="step-name">${players[2].name}</div>
+                    <div class="step-label">3</div>
+                    <div style="margin-top: 1rem;">${players[2].points || 0}p</div>
+                </div>` : ''}
+            </div>
+            
+            <div style="margin-top: 5rem;">
+                <button class="btn btn-primary btn-large" onclick="renderAdminContent()">Afslut og gå tilbage</button>
+            </div>
+        </div>
+    `;
+}
 
 document.addEventListener('DOMContentLoaded', initAdmin);

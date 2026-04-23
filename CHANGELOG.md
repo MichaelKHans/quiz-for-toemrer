@@ -2,11 +2,13 @@
 
 Her trackes alle ændringer, forbedringer og rettelser foretaget i projektet.
 
-## [v4.5.0] - 2026-04-23
+## [v4.8.0] - 2026-04-23
 ### 🚀 Tilføjet
-- **Tømrer-Live (Trin 1):** Fundamentet til live-undervisning er lagt! Lærere kan nu starte en live-session fra admin-panelet.
-- **PIN-kode System:** Automatisk generering af 6-cifret PIN-kode til hver live-session.
-- **Lobby Visning:** Ny flot lobby-brugerflade til læreren, der viser koden stort og gør klar til at modtage spillere.
+- **Den Store Kahoot-Opgradering:** Live-modulet er nu komplet med fuldskærms-layout, timer og lydeffekter.
+- **Podium & Vinder-fejring:** Automatisk beregning af top 3 spillere og visning på et flot podium ved quiz-afslutning.
+- **Multimedia:** Tilføjet lydeffekter for rigtige/forkerte svar og spændingsmusik under nedtælling.
+- **Mobile-First Design:** Gigantiske, farvekoordinerede svarknapper til eleverne for bedre spiloplevelse på mobilen.
+- **Lærer-Dashboard:** Genskabt lærerens spil-view med gigantiske spørgsmål og billeder til projektor-brug.
 - **Firebase Live-Sync:** Sessioner oprettes nu direkte i Firebase Realtime Database under `live_sessions/`.
 
 ### 🔧 Rettet

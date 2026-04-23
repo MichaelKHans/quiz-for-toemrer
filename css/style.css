@@ -1110,6 +1110,97 @@ h1 {
     font-weight: bold !important;
 }
 
+/* LIVE MODE OVERRIDES */
+body.live-mode-active {
+    background: #46178f; /* Klassisk Live Quiz lilla */
+    overflow: hidden;
+}
+
+body.live-mode-active .container > *:not(#quiz-grid):not(#quiz-content) {
+    display: none !important;
+}
+
+body.live-mode-active header,
+body.live-mode-active .progress-section,
+body.live-mode-active .category-selector {
+    display: none !important;
+}
+
+body.live-mode-active .container {
+    max-width: 100%;
+    height: 100vh;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#quiz-grid:empty { display: none; }
+
+/* KAHOOT BUTTON COLORS */
+.opt-0 { background: #e21b3c !important; } /* Rød */
+.opt-1 { background: #1368ce !important; } /* Blå */
+.opt-2 { background: #d89e00 !important; } /* Gul */
+.opt-3 { background: #26890c !important; } /* Grøn */
+
+/* PODIUM */
+.podium-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1rem;
+    height: 300px;
+    margin-top: 3rem;
+}
+
+.podium-step {
+    width: 120px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 1rem;
+    position: relative;
+}
+
+.step-1 { height: 200px; background: #ffd700; color: #000; z-index: 3; } /* Guld */
+.step-2 { height: 150px; background: #c0c0c0; color: #000; z-index: 2; } /* Sølv */
+.step-3 { height: 100px; background: #cd7f32; color: #000; z-index: 1; } /* Bronze */
+
+.step-label {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-top: 1rem;
+}
+
+.step-name {
+    position: absolute;
+    top: -40px;
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+    color: white;
+}
+
+/* TIMER */
+.timer-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(0,0,0,0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.timer-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 100%;
+    transition: width 1s linear;
+}
+
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.6; }

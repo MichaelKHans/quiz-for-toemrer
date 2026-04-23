@@ -440,6 +440,11 @@ let studentSessionUnsubscribe = null;
 let currentStudentPin = null;
 let currentPlayerId = null;
 
+// Lydeffekter
+const audioCorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'); // Tadaa
+const audioIncorrect = new Audio('https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3'); // Oh no
+const audioTick = new Audio('https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3'); // Clock tick
+
 window.showLiveJoinModal = () => {
     const pin = prompt("Indtast 6-cifret PIN-kode:");
     if (!pin) return;
@@ -452,16 +457,18 @@ async function joinLiveSession(pin, name) {
     currentStudentPin = pin;
     currentPlayerId = 'player_' + Math.random().toString(36).substr(2, 9);
     
+    // Tænd for Live-layout (skjul dashboard)
+    document.body.classList.add('live-mode-active');
+    
     // Vis venteskærm
     const container = document.getElementById('quiz-grid');
     if (container) {
         container.innerHTML = `
-            <div class="live-student-lobby fade-in" style="text-align:center; padding: 5rem 2rem; background: rgba(255,255,255,0.05); border-radius: 20px; border: 2px solid var(--accent); max-width: 600px; margin: 2rem auto;">
-                <div class="live-badge">LIVE LOBBY</div>
+            <div class="live-student-lobby fade-in" style="text-align:center; padding: 5rem 2rem; color: white;">
+                <div class="live-badge">DU ER MED!</div>
                 <h1>Venter på læreren...</h1>
-                <p style="font-size: 1.2rem; margin-bottom: 2rem;">Du er logget ind som <strong>${name}</strong></p>
-                <div style="font-size: 3rem; animation: pulse 2s infinite;">⌛</div>
-                <p style="margin-top: 2rem; opacity: 0.7;">Gør dig klar! Quizzen starter når læreren trykker Start.</p>
+                <p style="font-size: 1.5rem; margin-bottom: 2rem;">Klar som: <strong>${name}</strong></p>
+                <div style="font-size: 5rem; animation: pulse 2s infinite;">🔥</div>
             </div>
         `;
     }
@@ -474,9 +481,8 @@ async function joinLiveSession(pin, name) {
             if (!session) return;
             if (session.status === 'playing') {
                 renderStudentGameView(session);
-            } else if (session.status === 'ended') {
-                alert("Quizzen er slut!");
-                window.location.reload();
+            } else if (session.status === 'finished') {
+                renderStudentPodium(session);
             }
         });
     }
@@ -495,44 +501,90 @@ async function renderStudentGameView(session) {
     const player = session.players[currentPlayerId];
     if (player.answers && player.answers[qIdx]) {
         container.innerHTML = `
-            <div class="live-student-waiting fade-in" style="text-align:center; padding: 5rem 2rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-                <h2>Svar modtaget!</h2>
-                <p>Venter på at de andre bliver færdige...</p>
+            <div class="live-student-waiting fade-in" style="text-align:center; padding: 5rem 2rem; color: white;">
+                <div style="font-size: 6rem; margin-bottom: 1rem;">🚀</div>
+                <h2>Svar sendt!</h2>
+                <p style="font-size: 1.2rem;">Kig op på læreren!</p>
             </div>
         `;
         return;
     }
 
     container.innerHTML = `
-        <div class="live-student-game fade-in" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
-            <div style="text-align:center; margin-bottom: 2rem;">
-                <span class="live-badge">SPØRGSMÅL ${qIdx + 1}</span>
-                <h1 style="margin-top: 1rem;">${question.question}</h1>
+        <div class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
+        <div class="live-student-game fade-in" style="width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
+            <div style="text-align:center; margin-bottom: 3rem;">
+                <h1 style="color: white; font-size: 2.5rem;">${question.question}</h1>
             </div>
-            <div class="options-grid" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+            <div class="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1rem; flex-grow: 1; max-height: 60vh;">
                 ${question.options.map((opt, i) => `
-                    <button class="btn btn-secondary btn-large" style="min-height: 80px;" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
+                    <button class="btn btn-large opt-${i}" style="border: none; color: white;" onclick="submitLiveAnswer(${qIdx}, ${i})">${opt}</button>
                 `).join('')}
             </div>
         </div>
     `;
+
+    // Start lokal nedtælling (standard 20 sek)
+    startStudentTimer(20);
+}
+
+function startStudentTimer(seconds) {
+    const bar = document.getElementById('timer-bar');
+    if (!bar) return;
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    setTimeout(() => {
+        bar.style.transition = `width ${seconds}s linear`;
+        bar.style.width = '0%';
+    }, 50);
 }
 
 window.submitLiveAnswer = async (qIdx, answerIdx) => {
+    const data = await loadDatabase();
+    const session = await new Promise(resolve => {
+        const unsub = window.listenToSession(currentStudentPin, (s) => { unsub(); resolve(s); });
+    });
+    const quiz = data.quizzes.find(q => q.id === session.quizId);
+    const isCorrect = answerIdx === quiz.questions[qIdx].correctIndex;
+
+    if (isCorrect) audioCorrect.play();
+    else audioIncorrect.play();
+
     const updates = {};
     updates[`players/${currentPlayerId}/answers/${qIdx}`] = {
         answer: answerIdx,
+        isCorrect: isCorrect,
         time: Date.now()
     };
+    // Giv point hvis rigtigt
+    if (isCorrect) {
+        updates[`players/${currentPlayerId}/points`] = (session.players[currentPlayerId].points || 0) + 100;
+    }
+    
     await window.updateSession(currentStudentPin, updates);
 };
+
+function renderStudentPodium(session) {
+    const container = document.getElementById('quiz-grid');
+    const players = Object.values(session.players).sort((a,b) => b.points - a.points);
+    const myRank = players.findIndex(p => p.name === session.players[currentPlayerId].name) + 1;
+
+    container.innerHTML = `
+        <div class="podium-screen fade-in" style="text-align:center; color: white; padding: 3rem;">
+            <h1>QUIZ SLUT!</h1>
+            <div style="font-size: 5rem; margin: 2rem 0;">${myRank === 1 ? '🏆' : '👏'}</div>
+            <h2>Du fik en ${myRank}. plads!</h2>
+            <p style="font-size: 1.5rem;">Point: ${session.players[currentPlayerId].points || 0}</p>
+            <button class="btn btn-primary" style="margin-top: 3rem;" onclick="location.reload()">Tilbage til start</button>
+        </div>
+    `;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Opdater versionstag
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        if (tag) tag.textContent = 'v4.7.0';
+        if (tag) tag.textContent = 'v4.8.0';
     }, 500);
 
     if (document.getElementById('quiz-grid')) {
