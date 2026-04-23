@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.4.6";
+const APP_VERSION = "v4.5.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -331,6 +331,7 @@ function renderAdminContent() {
                                     <strong>${quiz.title}</strong>
                                 </div>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})" title="Start en live-session for klassen">🚀 Start Live</button>
                                     <button class="btn ${quiz.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
                                             onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">
                                         ${quiz.isHidden ? 'Gør Synlig' : 'Skjul'}
@@ -805,5 +806,56 @@ document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.key === 'y') { e.preventDefault(); window.redo(); }
     }
 });
+
+window.initiateLiveSession = async (quizIdx) => {
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    const quiz = localDbCopy.quizzes[quizIdx];
+
+    const sessionData = {
+        quizId: quiz.id,
+        quizTitle: quiz.title,
+        status: 'lobby',
+        currentQuestion: 0,
+        createdAt: Date.now(),
+        players: {}
+    };
+
+    const container = document.getElementById('admin-content-inner');
+    container.innerHTML = `
+        <div class="live-lobby-container fade-in">
+            <div class="lobby-header">
+                <span class="live-badge">LIVE SESSION</span>
+                <h1>${quiz.title}</h1>
+                <div class="pin-display">
+                    <p>Deltag med koden:</p>
+                    <div class="pin-code">${pin}</div>
+                </div>
+            </div>
+            
+            <div class="lobby-main">
+                <div class="player-list-header">
+                    <h2>Spillere klar (0)</h2>
+                    <div style="display:flex; gap:1rem;">
+                         <button class="btn btn-success" onclick="alert('Spillet starter snart! Vi skal lige have elev-delen klar først.')">START SPIL</button>
+                    </div>
+                </div>
+                <div id="player-list" class="player-grid">
+                    <p class="waiting-msg">Venter på spillere... <br><small>(Eleverne skal bruge /live siden, som vi bygger i næste trin)</small></p>
+                </div>
+            </div>
+            
+            <div class="lobby-actions" style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+                <button class="btn btn-secondary" onclick="renderAdminContent()">Afbryd og gå tilbage</button>
+            </div>
+        </div>
+    `;
+
+    // Gem session i Firebase
+    if (window.createLiveSession) {
+        await window.createLiveSession(pin, sessionData);
+    } else {
+        console.error("createLiveSession ikke fundet!");
+    }
+};
 
 document.addEventListener('DOMContentLoaded', initAdmin);

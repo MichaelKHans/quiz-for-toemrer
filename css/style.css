@@ -1015,3 +1015,83 @@ h1 {
     color: var(--incorrect);
     background: hsla(0, 80%, 60%, 0.1);
 }
+
+/* LIVE LOBBY STYLES */
+.live-lobby-container {
+    padding: 3rem;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.lobby-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.live-badge {
+    background: var(--incorrect);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+.pin-display {
+    background: rgba(255,255,255,0.05);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 2px solid var(--accent);
+    display: inline-block;
+    margin-bottom: 3rem;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
+.pin-display p {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.pin-code {
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent-glow);
+    font-family: 'Outfit', sans-serif;
+}
+
+.player-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+}
+
+.player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    min-height: 200px;
+}
+
+.waiting-msg {
+    grid-column: 1 / -1;
+    font-size: 1.2rem;
+    opacity: 0.5;
+    padding: 3rem;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}

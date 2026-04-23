@@ -46,4 +46,19 @@ export async function getDbFromCloud() {
     }
 }
 
+/**
+ * Opretter en ny live-session i skyen
+ */
+export async function createLiveSession(pin, data) {
+    try {
+        await set(ref(db, 'live_sessions/' + pin), data);
+        console.log("Live: Session oprettet med PIN " + pin);
+        return true;
+    } catch (error) {
+        console.error("Live Error: Kunne ikke oprette session!", error);
+        return false;
+    }
+}
+
 window.getDbFromCloud = getDbFromCloud;
+window.createLiveSession = createLiveSession;
