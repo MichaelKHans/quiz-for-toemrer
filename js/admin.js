@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v4.9.2";
+const APP_VERSION = "v4.9.3";
 const ADMIN_PASSWORD = "tømrer123";
 
 const UPDATE_LOG = [
@@ -827,39 +827,44 @@ window.cleanupSessions = async () => {
 };
 
 window.initiateLiveSession = async (quizIdx) => {
-    // Automatisk oprydning før ny session
-    const liveRef = window.ref(window.db, 'live_sessions');
-    await window.set(liveRef, null);
+    try {
+        // Automatisk oprydning før ny session
+        const liveRef = window.ref(window.db, 'live_sessions');
+        await window.set(liveRef, null);
 
-    const pin = Math.floor(100000 + Math.random() * 900000).toString();
-    currentLivePin = pin;
-    const quiz = localDbCopy.quizzes[quizIdx];
+        const pin = Math.floor(100000 + Math.random() * 900000).toString();
+        currentLivePin = pin;
+        const quiz = localDbCopy.quizzes[quizIdx];
 
-    const sessionData = {
-        pin: pin,
-        quizId: quiz.id,
-        quizTitle: quiz.title,
-        status: 'lobby',
-        currentQuestion: 0,
-        createdAt: Date.now(),
-        players: {}
-    };
+        const sessionData = {
+            pin: pin,
+            quizId: quiz.id,
+            quizTitle: quiz.title,
+            status: 'lobby',
+            currentQuestion: 0,
+            createdAt: window.serverTimestamp(),
+            players: {}
+        };
 
-    renderLobbyUI(pin, quiz.title);
+        renderLobbyUI(pin, quiz.title);
 
-    if (window.createLiveSession) {
-        await window.createLiveSession(pin, sessionData);
-        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-        activeSessionUnsubscribe = window.listenToSession(pin, (data) => {
-            if (!data) return;
-            if (data.status === 'lobby') {
-                updateLobbyPlayerList(data);
-            } else if (data.status === 'playing') {
-                renderTeacherGameView(data);
-            } else if (data.status === 'finished') {
-                renderPodium(data);
-            }
-        });
+        if (window.createLiveSession) {
+            await window.createLiveSession(pin, sessionData);
+            if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+            activeSessionUnsubscribe = window.listenToSession(pin, (data) => {
+                if (!data) return;
+                if (data.status === 'lobby') {
+                    updateLobbyPlayerList(data);
+                } else if (data.status === 'playing') {
+                    renderTeacherGameView(data);
+                } else if (data.status === 'finished') {
+                    renderPodium(data);
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Fejl ved start af Live Quiz:", e);
+        alert("Kunne ikke starte Live Quiz. Tjek konsollen.");
     }
 };
 

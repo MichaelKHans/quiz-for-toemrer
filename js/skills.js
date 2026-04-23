@@ -144,7 +144,7 @@ async function renderDashboard() {
             tag.style = 'position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.5; z-index: 100; pointer-events: none;';
             document.body.appendChild(tag);
         }
-        tag.textContent = 'v4.9.2';
+        tag.textContent = 'v4.9.3';
     }
 }
 
@@ -606,7 +606,7 @@ function renderStudentPodium(session) {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const tag = document.getElementById('version-tag');
-        const APP_VERSION = "v4.9.2";
+        const APP_VERSION = "v4.9.3";
         if (tag) tag.textContent = APP_VERSION;
     }, 500);
 
