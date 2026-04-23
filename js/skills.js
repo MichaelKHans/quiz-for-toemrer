@@ -90,11 +90,8 @@ async function renderDashboard() {
                 `;
             }
 
-            const translated = window.translateKeywords(quiz.title);
-            const finalKeywords = window.cleanKeywords(translated);
-            const lockValue = quiz.moodImageLock || quiz.id;
-            // DIREKTE LINK: Vi bruger 800x600 som standard for at sikre synkronisering uden timeout-fejl
-            const imageUrl = `https://loremflickr.com/800/600/${finalKeywords}?lock=${lockValue}`;
+            // Brug det faste billede fra databasen, ellers brug en diskret pladsholder
+            const imageUrl = quiz.moodImageUrl || `https://placehold.co/800x600/2a2a2a/ffffff?text=Intet+billede+valgt`;
 
             return `
                 <a href="quiz.html?id=${quiz.id}" class="quiz-card fade-in">
