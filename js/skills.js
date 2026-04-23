@@ -287,18 +287,16 @@ window.cleanKeywords = function(input) {
         .map(s => s.trim())
         .filter(s => s.length > 2);
         
-    // 4. Billed-tjenester (LoremFlickr) bruger AND-logik ved kommaer.
-    // Hvis vi sender for mange tags, finder den intet og viser en kat.
-    // Vi begrænser os til de 2 vigtigste ord.
+    // 4. Billed-tjenester (Pixabay)
     let finalTags = tags.length > 0 ? tags.slice(0, 2) : ["carpentry"];
     
-    // Hvis vi kun har ét tag, tilføjer vi 'construction' som et ekstra (stadig ret specifikt)
+    // Hvis vi kun har ét tag, tilføjer vi 'carpentry'
     if (finalTags.length === 1 && finalTags[0] !== 'carpentry') {
         finalTags.push('carpentry');
     }
     
     const result = finalTags.join(',');
-    console.log("Image Search Tags (v4.3.2):", result);
+    console.log("Image Search Tags (v4.6.0):", result);
     return result;
 };
 
@@ -438,9 +436,24 @@ function showResults() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('quiz-grid')) {
-        initDashboard();
-    } else if (document.getElementById('quiz-content')) {
+    window.showLiveJoinModal = () => {
+    const pin = prompt("Indtast 6-cifret PIN-kode:");
+    if (pin && pin.trim()) {
+        const name = prompt("Hvad er dit navn?");
+        if (name && name.trim()) {
+            joinLiveSession(pin.trim(), name.trim());
+        }
+    }
+};
+
+async function joinLiveSession(pin, name) {
+    console.log(`Forsøger at deltage i live session: ${pin} som ${name}`);
+    alert(`Forbinder ${name} til session ${pin}... Vent venligst på at læreren starter spillet.`);
+}
+
+if (document.getElementById('quiz-grid')) {
+    initDashboard();
+} else if (document.getElementById('quiz-content')) {
         initQuiz();
     }
 });

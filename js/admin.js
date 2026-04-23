@@ -331,7 +331,7 @@ function renderAdminContent() {
                                     <strong>${quiz.title}</strong>
                                 </div>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})" title="Start en live-session for klassen">🚀 Start Live</button>
+                                    <button class="btn btn-accent btn-small" style="background: #6366f1;" onclick="initiateLiveSession(${idx})" title="Start en live-session for klassen">🚀 Start Live</button>
                                     <button class="btn ${quiz.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
                                             onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">
                                         ${quiz.isHidden ? 'Gør Synlig' : 'Skjul'}
