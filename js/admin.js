@@ -147,6 +147,8 @@ let localDbCopy = null;
 let historyStack = [];
 let redoStack = [];
 let activeQuizIdx = null; // HUSKER hvilken quiz der er åben
+let activeQuestionsIdx = null; // HUSKER hvilken quiz der har spørgsmål udfoldet
+let adminSearchTerm = ""; // Søgeterm i admin
 
 function initAdmin() {
     // Vi behøver ikke åbne panelet automatisk ved load
@@ -229,14 +231,20 @@ window.redo = function() {
 function renderAdminContent() {
     const container = document.getElementById('admin-content-inner');
     if (!container) return;
-
-    // Gem scroll position og quiz-status FØR innerHTML
     const scrollPos = container.scrollTop;
+    const quizCount = localDbCopy.quizzes.length;
+    
+    // Filtrer quizzer baseret på søgning
+    const term = adminSearchTerm.toLowerCase();
+    const filteredQuizzes = localDbCopy.quizzes.filter(q => {
+        const catTitle = getCategoryTitle(q.categoryId).toLowerCase();
+        return q.title.toLowerCase().includes(term) || catTitle.includes(term);
+    });
     
     let html = `
         <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 1rem;">
             <div>
-                <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold</button>
+                <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold (${quizCount})</button>
                 <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
                 <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
             </div>
@@ -244,7 +252,13 @@ function renderAdminContent() {
         </div>
 
         <div id="tab-edit" class="tab-content active">
-            <div class="admin-toolbar">
+            <div class="admin-toolbar" style="flex-wrap: wrap; gap: 1rem;">
+                <div style="flex: 1; min-width: 250px;">
+                    <input type="text" placeholder="🔍 Søg i quizzer (titel eller kategori)..." 
+                           value="${adminSearchTerm}" 
+                           oninput="window.setAdminSearch(this.value)"
+                           style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: #fff;">
+                </div>
                 <div class="admin-history-btns">
                     <button class="btn btn-secondary btn-small" onclick="undo()" ${historyStack.length === 0 ? 'disabled' : ''} title="Fortryd (Ctrl+Z)">↩️ Fortryd</button>
                     <button class="btn btn-secondary btn-small" onclick="redo()" ${redoStack.length === 0 ? 'disabled' : ''} title="Gendan (Ctrl+Y)">↪️ Gendan</button>
@@ -277,9 +291,10 @@ function renderAdminContent() {
             </div>
 
             <div class="admin-section">
-                <h3>Quizzer</h3>
+                <h3>Quizzer (${filteredQuizzes.length})</h3>
                 <div class="admin-items">
-                    ${localDbCopy.quizzes.map((quiz, idx) => {
+                    ${filteredQuizzes.map((quiz) => {
+                        const idx = localDbCopy.quizzes.findIndex(q => q.id === quiz.id);
                         const rawKeywords = quiz.moodKeywords || "";
                         let displayKeywords = rawKeywords;
                         if (!displayKeywords) {
@@ -338,35 +353,45 @@ function renderAdminContent() {
                                         <label>Søgeord (Dansk - Automatisk oversætter)</label>
                                         <input type="text" value="${quiz.moodKeywordsDanish || ''}" placeholder="f.eks. tagspær, trapper" onchange="translateAndSetKeywords(${idx}, this.value)">
                                         
-                                        <input type="hidden" value="${quiz.moodImageLock || ''}" id="mood-lock-${idx}">
-                                    </div>
-                                </div>
-                                
-                                <label style="margin-top: 1.5rem; display: block;">Eller indsæt direkte URL (overstyrer preview foroven)</label>
-                                <input type="text" placeholder="https://..." value="${quiz.moodImageUrl || ''}" onchange="updateQuiz(${idx}, 'moodImageUrl', this.value)">
-                                
-                                <h4 style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem;">Spørgsmål (${quiz.questions.length})</h4>
-                                <button class="btn btn-secondary btn-small" style="margin-bottom: 1rem;" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
-                                <div class="admin-questions">
-                                    ${quiz.questions.map((q, qIdx) => `
-                                        <div class="admin-question-edit">
-                                            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
-                                                <strong>Spørgsmål ${qIdx + 1}</strong>
-                                                <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})">Fjern 🗑️</button>
-                                            </div>
-                                            <input type="text" placeholder="Spørgsmål" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)">
-                                            <div class="admin-options-edit">
-                                                ${q.options.map((opt, oIdx) => `
-                                                    <div style="display:flex; gap:0.5rem; align-items:center;">
-                                                        <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
-                                                        <input type="text" placeholder="Svarmulighed ${oIdx+1}" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
-                                                    </div>
-                                                `).join('')}
-                                            </div>
-                                            <label>Rationale (forklaring der vises efter svar)</label>
-                                            <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)">${q.rationale}</textarea>
+                                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed var(--card-border);">
+                                            <label style="margin-top:0;">Overstyr med direkte Billed-URL (Valgfrit)</label>
+                                            <input type="text" placeholder="https://..." value="${quiz.moodImageUrl || ''}" onchange="updateQuiz(${idx}, 'moodImageUrl', this.value)" style="font-size: 0.8rem; opacity: 0.8;">
                                         </div>
-                                    `).join('')}
+                                        
+                                        <div style="margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                                <h4 style="margin:0;">Spørgsmål (${quiz.questions.length})</h4>
+                                                <button class="btn ${activeQuestionsIdx === idx ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="toggleQuestions(${idx})">
+                                                    ${activeQuestionsIdx === idx ? 'Skjul Spørgsmål 🔼' : 'Rediger Spørgsmål 🔽'}
+                                                </button>
+                                            </div>
+
+                                            <div id="questions-container-${idx}" style="display: ${activeQuestionsIdx === idx ? 'block' : 'none'}; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
+                                                <button class="btn btn-secondary btn-small" style="margin-bottom: 1rem;" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
+                                                <div class="admin-questions">
+                                                    ${quiz.questions.map((q, qIdx) => `
+                                                        <div class="admin-question-edit">
+                                                            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                                                                <strong>Spørgsmål ${qIdx + 1}</strong>
+                                                                <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})">Fjern 🗑️</button>
+                                                            </div>
+                                                            <input type="text" placeholder="Spørgsmål" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)">
+                                                            <div class="admin-options-edit">
+                                                                ${q.options.map((opt, oIdx) => `
+                                                                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                                                                        <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
+                                                                        <input type="text" placeholder="Svarmulighed ${oIdx+1}" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
+                                                                    </div>
+                                                                `).join('')}
+                                                            </div>
+                                                            <label>Rationale (forklaring der vises efter svar)</label>
+                                                            <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)">${q.rationale}</textarea>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -597,6 +622,11 @@ SVAR KUN MED RÅ JSON.`;
     document.getElementById('ai-prompt-result').style.display = 'block';
 };
 
+window.toggleQuestions = (idx) => {
+    activeQuestionsIdx = (activeQuestionsIdx === idx) ? null : idx;
+    renderAdminContent();
+};
+
 window.importAiQuiz = () => {
     const raw = document.getElementById('ai-import-json').value;
     try {
@@ -736,6 +766,11 @@ window.lockImage = function(idx) {
         btn.style.backgroundColor = "";
         renderAdminContent();
     }, 1500);
+};
+
+window.setAdminSearch = (val) => {
+    adminSearchTerm = val;
+    renderAdminContent();
 };
 
 document.addEventListener('keydown', (e) => {
