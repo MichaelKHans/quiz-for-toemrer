@@ -1,10 +1,10 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.6";
+const APP_VERSION = "v5.5.0";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
-// Global Rolle-check (v5.4.6)
+// Global Rolle-check (v5.5.0)
 window.isUserAdmin = () => {
     return sessionStorage.getItem('quizRole') === 'teacher';
 };

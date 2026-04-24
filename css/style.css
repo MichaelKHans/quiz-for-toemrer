@@ -1500,8 +1500,21 @@ body.admin-mode {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important;
+    overflow: hidden !important; /* Live dashboard handles its own scroll */
     padding: 0 !important;
+}
+
+/* Fix double scrollbars in Admin tabs */
+.tab-content {
+    display: none;
+    flex: 1;
+    overflow-y: auto !important; /* Allow only this to scroll */
+    padding-bottom: 5rem;
+}
+
+.tab-content.active {
+    display: flex;
+    flex-direction: column;
 }
 
 .live-lobby-container, .teacher-game-dashboard {

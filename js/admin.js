@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.6";
+const APP_VERSION = "v5.5.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -246,16 +246,36 @@ function renderAdminContent() {
             </div>
         </div>
 
+        <div id="tab-ai" class="tab-content">
+            <div style="padding: 2rem; max-width: 800px; margin: 0 auto; text-align: center;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem;">✨ Skab med AI</h2>
+                <p style="opacity: 0.8; margin-bottom: 2rem;">Indtast et emne, så genererer AI'en en komplet quiz med spørgsmål, svarmuligheder og forklaringer.</p>
+                
+                <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    <input type="text" id="ai-topic-input" placeholder="F.eks. 'Sikkerhed på stilladser' eller 'Træsorter i Danmark'..." style="width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-primary btn-large" id="ai-generate-btn" onclick="generateQuizWithAI()">Generer Quiz 🚀</button>
+                    </div>
+                </div>
+                
+                <div id="ai-loading" style="display: none; margin-top: 2rem;">
+                    <div class="loader" style="margin: 0 auto 1rem;">⌛</div>
+                    <p>AI'en tænker... Dette tager ca. 10-20 sekunder.</p>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-log" class="tab-content">
-            <div class="logbog-container" style="padding: 1rem;">
+            <div class="logbog-container" style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+                <h2 style="margin-bottom: 1.5rem;">📜 System Logbog</h2>
                 ${UPDATE_LOG.map(log => `
-                    <div class="log-entry" style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem;">
-                            <span>${log.version}</span>
+                    <div class="log-entry" style="margin-bottom: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--accent);">
+                        <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">
+                            <span style="font-weight: bold; color: var(--accent);">${log.version}</span>
                             <span>${log.date}</span>
                         </div>
-                        <h4 style="margin: 0.5rem 0;">${log.title}</h4>
-                        <p style="opacity: 0.8; font-size: 0.9rem;">${log.desc}</p>
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">${log.title}</h4>
+                        <p style="opacity: 0.8; font-size: 0.95rem; line-height: 1.5;">${log.desc}</p>
                     </div>
                 `).join('')}
             </div>
@@ -306,6 +326,43 @@ window.downloadBackup = () => {
     a.href = URL.createObjectURL(blob);
     a.download = `quiz_backup_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
+};
+
+window.generateQuizWithAI = async () => {
+    const topic = document.getElementById('ai-topic-input').value.trim();
+    if (!topic) return alert("Indtast venligst et emne.");
+    
+    const btn = document.getElementById('ai-generate-btn');
+    const loading = document.getElementById('ai-loading');
+    
+    btn.disabled = true;
+    loading.style.display = 'block';
+    
+    // Mock AI generation for demonstration
+    setTimeout(() => {
+        const newQuiz = {
+            id: 'ai-' + Date.now(),
+            categoryId: localDbCopy.categories[0].id,
+            title: topic,
+            description: `En AI-genereret quiz om ${topic}.`,
+            questions: [
+                {
+                    question: `Hvad er det vigtigste ved ${topic}?`,
+                    options: ["Mulighed A", "Mulighed B", "Mulighed C", "Mulighed D"],
+                    correctIndex: 0,
+                    rationale: "Dette er en forklaring genereret af AI."
+                }
+            ],
+            isHidden: false
+        };
+        
+        pushToHistory();
+        localDbCopy.quizzes.unshift(newQuiz);
+        alert(`Quizzen '${topic}' er nu genereret!`);
+        btn.disabled = false;
+        loading.style.display = 'none';
+        switchTab('edit');
+    }, 2000);
 };
 
 // --- LIVE SESSION LOGIK (v5.3.1 INTEGRERET) ---
