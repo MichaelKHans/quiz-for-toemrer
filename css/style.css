@@ -1853,3 +1853,14 @@ body.admin-mode {
 .top-leaderboard div {
     border-bottom: none !important;
 }
+
+#version-tag {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    color: #888;
+    font-size: 12px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.6;
+}
