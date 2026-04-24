@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.3";
+const APP_VERSION = "v5.4.6";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -321,6 +321,7 @@ window.cleanupSessions = async () => {
 };
 
 window.initiateLiveSession = async (quizIdx) => {
+    sessionStorage.setItem('quizRole', 'teacher');
     try {
         const pin = Math.floor(100000 + Math.random() * 900000).toString();
         currentLivePin = pin;

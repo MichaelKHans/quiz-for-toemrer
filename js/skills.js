@@ -1,14 +1,12 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.3";
+const APP_VERSION = "v5.4.6";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
-// Global Rolle-check (v5.4.3)
+// Global Rolle-check (v5.4.6)
 window.isUserAdmin = () => {
-    return window.location.href.includes('admin') || 
-           !!document.getElementById('admin-panel') || 
-           !!document.getElementById('admin-modal');
+    return sessionStorage.getItem('quizRole') === 'teacher';
 };
 
 async function loadDatabase() {
