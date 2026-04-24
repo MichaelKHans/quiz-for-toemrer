@@ -54,20 +54,34 @@
         </div>
     </div>
 
-    <!-- AI Creation Modal (v5.5.0 Restored) -->
+    <!-- AI Creation Modal (v5.6.0 - 2-Step Workflow) -->
     <div id="ai-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2>✨ Skab med AI</h2>
+                <h2>✨ Skab med AI (2-Trins Flow)</h2>
                 <button class="btn-icon" onclick="closeAIModal()">✖</button>
             </div>
-            <div class="modal-body" style="padding: 2rem; text-align: center;">
-                <p style="margin-bottom: 2rem; opacity: 0.8;">Indtast et emne, så skaber AI'en en unik quiz til dig.</p>
-                <input type="text" id="ai-topic-input" placeholder="F.eks. 'Sikkerhed på stilladser'..." style="width: 100%; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
-                <button class="btn btn-primary btn-large" id="ai-generate-btn" onclick="generateQuizWithAI()">Generer Quiz 🚀</button>
-                <div id="ai-loading" style="display: none; margin-top: 2rem;">
-                    <div class="loader" style="margin: 0 auto 1rem;">⌛</div>
-                    <p>AI'en tænker... (ca. 10-20 sekunder)</p>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <!-- Trin 1: Bestillingsseddel -->
+                <div class="ai-step-box" style="background: rgba(99, 102, 241, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2); margin-bottom: 1.5rem;">
+                    <h3 style="margin-top: 0; color: #818cf8;">Trin 1: Bestillingsseddel 📝</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1rem;">Definer hvad AI'en skal lave. Vi genererer en prompt du kan kopiere.</p>
+                    
+                    <input type="text" id="ai-topic-input" placeholder="Emne (f.eks. 'Sikkerhed ved tagarbejde')" style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; border-radius: 6px;">
+                    <textarea id="ai-scenario-input" placeholder="Specielle krav eller scenarier... (f.eks. 'Fokus på faldsikring og sele-brug')" style="width: 100%; height: 80px; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;"></textarea>
+                    
+                    <button class="btn btn-primary" onclick="copyAIPrompt()" style="width: 100%; background: #6366f1;">Kopier Prompt til Udklipsholder 📋</button>
+                    <div id="copy-status" style="display: none; text-align: center; margin-top: 0.5rem; color: #10b981; font-weight: bold; font-size: 0.8rem;">Kopieret! ✅</div>
+                </div>
+
+                <!-- Trin 2: Modtagelse -->
+                <div class="ai-step-box" style="background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <h3 style="margin-top: 0; color: #10b981;">Trin 2: Modtagelse 📥</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1rem;">Indsæt JSON-koden du fik fra AI'en herunder.</p>
+                    
+                    <textarea id="ai-code-input" placeholder="Indsæt AI'ens JSON-kode her..." style="width: 100%; height: 120px; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; font-family: monospace; font-size: 0.8rem;"></textarea>
+                    
+                    <button class="btn btn-success" onclick="createQuizFromAIJSON()" style="width: 100%;">Opret Quiz fra Kode 🚀</button>
                 </div>
             </div>
         </div>
@@ -89,9 +103,9 @@
     <!-- Scripts -->
     <script src="js/database.js"></script>
     <script src="js/memory.js"></script>
-    <script type="module" src="js/skills.js?v=5.5.0"></script>
-    <script type="module" src="js/admin.js?v=5.5.0"></script>
+    <script type="module" src="js/skills.js?v=5.6.0"></script>
+    <script type="module" src="js/admin.js?v=5.6.0"></script>
 </body>
-<!-- Rebuild trigger v5.5.0 -->
-<!-- GitHub Pages Refresh Trigger v5.5.0 -->
+<!-- Rebuild trigger v5.6.0 -->
+<!-- GitHub Pages Refresh Trigger v5.6.0 -->
 </html>
