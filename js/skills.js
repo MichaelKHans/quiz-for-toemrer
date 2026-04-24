@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.6.3";
+const APP_VERSION = "v5.6.4";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 

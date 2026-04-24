@@ -1538,6 +1538,25 @@ body.admin-mode {
 #admin-modal textarea::placeholder {
     color: rgba(255,255,255,0.4);
 }
+
+/* v5.6.4 Accordion Styles */
+.accordion-header:hover {
+    background: rgba(255,255,255,0.06) !important;
+}
+
+.accordion-item {
+    transition: all 0.2s ease;
+}
+
+.accordion-item:hover {
+    border-color: rgba(255,255,255,0.15) !important;
+    transform: translateX(4px);
+}
+
+.accordion-arrow {
+    font-size: 0.8rem;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;

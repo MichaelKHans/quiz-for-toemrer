@@ -1,11 +1,11 @@
 /**
- * admin.js - v5.6.3 UI/UX Icon Fix & Text Visibility
+ * admin.js - v5.6.4 Question Accordion & UI Polish
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.6.3";
+const APP_VERSION = "v5.6.4";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -37,16 +37,16 @@ window.setLiveVolume = (val) => {
 
 const UPDATE_LOG = [
     {
-        version: "v5.6.3",
+        version: "v5.6.4",
         date: "2026-04-24",
-        title: "👁️ FontAwesome Ikoner & Farve-fix",
-        desc: "Implementeret rigtige FontAwesome ikoner (øje-ikoner) og fixet 'sort-på-sort' teksten i alle input-felter."
+        title: "↕️ Spørgsmåls-Accordion",
+        desc: "Implementeret fold-ud/sammen funktion for spørgsmål i editoren, så lange lister er lettere at overskue."
     },
     {
-        version: "v5.6.2",
+        version: "v5.6.3",
         date: "2026-04-24",
-        title: "🎨 UX/UI Polering",
-        desc: "Fixet scrolling og tilføjet tooltips."
+        title: "👁️ FontAwesome & Farve-fix",
+        desc: "Rigtige ikoner og fixet tekst-synlighed i alle felter."
     }
 ];
 
@@ -159,29 +159,43 @@ function renderAdminContent() {
                             
                             <h4 style="margin-bottom: 1rem;">Spørgsmål (${quiz.questions.length})</h4>
                             <div class="admin-questions">
-                                ${quiz.questions.map((q, qIdx) => `
-                                    <div style="background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.03);">
-                                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                                            <span style="opacity: 0.3; font-weight: bold;">#${qIdx+1}</span>
-                                            <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="flex: 1;" placeholder="Indtast spørgsmål...">
-                                            <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål"><i class="fa-solid fa-trash-can"></i></button>
+                                ${quiz.questions.map((q, qIdx) => {
+                                    const snippet = q.question.length > 50 ? q.question.substring(0, 50) + "..." : q.question;
+                                    return `
+                                    <div class="accordion-item" style="background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 0.8rem; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                                        <div class="accordion-header" onclick="toggleAccordion(this)" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; cursor: pointer; background: rgba(255,255,255,0.02); transition: background 0.2s;">
+                                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                                <span style="opacity: 0.4; font-weight: bold; font-size: 0.8rem;">#${qIdx+1}</span>
+                                                <span style="font-size: 0.9rem; opacity: 0.8;">${snippet || 'Nyt spørgsmål...'}</span>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-down accordion-arrow" style="opacity: 0.4; transition: transform 0.3s;"></i>
                                         </div>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                            ${q.options.map((opt, oIdx) => `
-                                                <div style="display: flex; gap: 0.8rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 6px;">
-                                                    <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})" title="Marker som korrekt svar">
-                                                    <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.9rem; background: transparent; border: none; color: white;" placeholder="Svarmulighed ${oIdx+1}">
-                                                </div>
-                                            `).join('')}
+                                        <div class="accordion-body" style="display: none; padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
+                                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                                                <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="flex: 1;" placeholder="Indtast spørgsmål...">
+                                                <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål"><i class="fa-solid fa-trash-can"></i></button>
+                                            </div>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                                ${q.options.map((opt, oIdx) => `
+                                                    <div style="display: flex; gap: 0.8rem; align-items: center; background: rgba(255,255,255,0.03); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                                        <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})" title="Marker som korrekt svar">
+                                                        <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.9rem; background: transparent; border: none; color: white;" placeholder="Svarmulighed ${oIdx+1}">
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                            <div style="margin-top: 1rem;">
+                                                <label style="display: block; font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.3rem;">Forklaring (Rationale)</label>
+                                                <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)" style="width: 100%; height: 50px; font-size: 0.85rem;" placeholder="Hvorfor er dette svar korrekt?">${q.rationale || ''}</textarea>
+                                            </div>
                                         </div>
                                     </div>
-                                `).join('')}
-                                <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})" style="width: 100%; padding: 1rem; border: 2px dashed rgba(255,255,255,0.1); background: transparent;">+ Tilføj endnu et spørgsmål</button>
+                                `;}).join('')}
+                                <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})" style="width: 100%; padding: 1rem; border: 2px dashed rgba(255,255,255,0.1); background: transparent; border-radius: 10px;">+ Tilføj endnu et spørgsmål</button>
                             </div>
                         </div>
                     </div>
                 `;}).join('')}
-                <button class="btn btn-primary" onclick="addQuiz()" style="width: 100%; padding: 2rem; font-size: 1.2rem; border: 2px dashed var(--accent); background: rgba(99, 102, 241, 0.05);">+ Opret en helt ny Quiz 📚</button>
+                <button class="btn btn-primary" onclick="addQuiz()" style="width: 100%; padding: 2rem; font-size: 1.2rem; border: 2px dashed var(--accent); background: rgba(99, 102, 241, 0.05); border-radius: 15px;">+ Opret en helt ny Quiz 📚</button>
             </div>
         </div>
     `;
@@ -191,6 +205,20 @@ function getCategoryTitle(id) {
     const cat = localDbCopy.categories.find(c => c.id === id);
     return cat ? cat.title : "Ingen";
 }
+
+// ACCORDION LOGIC (v5.6.4)
+window.toggleAccordion = (header) => {
+    const body = header.nextElementSibling;
+    const arrow = header.querySelector('.accordion-arrow');
+    const isHidden = body.style.display === 'none';
+    
+    // Close others? (Optional, but let's keep it simple as requested)
+    body.style.display = isHidden ? 'block' : 'none';
+    arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    
+    // Header styling
+    header.style.background = isHidden ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)';
+};
 
 // AI WORKFLOW (v5.6.0)
 window.openAIModal = () => document.getElementById('ai-modal').style.display = 'flex';
@@ -280,14 +308,13 @@ window.saveAdminChanges = async () => {
     if (success) { alert("Alle ændringer er nu gemt i skyen!"); location.reload(); }
 };
 
-// --- LIVE LOGIK (v5.6.1) ---
+// --- LIVE LOGIK ---
 window.initiateLiveSession = async (quizIdx) => {
     sessionStorage.setItem('quizRole', 'teacher');
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     currentLivePin = pin;
     const quiz = localDbCopy.quizzes[quizIdx];
     const sessionData = { pin, quizId: quiz.id, quizTitle: quiz.title, status: 'lobby', currentQuestionIndex: 0, createdAt: Date.now(), players: {} };
-
     try {
         await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
         renderLobbyUI(pin, quiz.title);
@@ -350,7 +377,6 @@ function renderTeacherGameView(session) {
     const question = quiz.questions[qIdx];
     const players = session.players ? Object.values(session.players) : [];
     const answerCount = players.filter(p => p && p.answer !== undefined).length;
-
     container.innerHTML = `
         <div class="teacher-game-dashboard admin-live-dashboard fade-in">
             <div class="game-info-bar">
@@ -384,7 +410,6 @@ function renderLeaderboard(session) {
     const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
     const qIdx = session.currentQuestionIndex || 0;
     const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
-
     container.innerHTML = `
         <div class="teacher-game-dashboard admin-live-dashboard fade-in">
             <h1>LEADERBOARD - SPØRGSMÅL ${qIdx + 1}</h1>
