@@ -1604,6 +1604,25 @@ body.admin-mode {
     transform: scale(1.2);
     color: #ffffff !important;
 }
+
+.correct-highlight-teacher {
+    border: 4px solid #10b981 !important;
+    background: #064e3b !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.4) !important;
+    z-index: 5;
+    animation: correctPulse 1s infinite alternate;
+}
+
+@keyframes correctPulse {
+    from { box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+    to { box-shadow: 0 0 50px rgba(16, 185, 129, 0.8); }
+}
+
+@keyframes winnerPop {
+    from { transform: scale(1); text-shadow: 0 0 20px rgba(255,215,0,0.4); }
+    to { transform: scale(1.1); text-shadow: 0 0 50px rgba(255,215,0,0.8); }
+}
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;

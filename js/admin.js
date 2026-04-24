@@ -1,5 +1,5 @@
 /**
- * admin.js - v5.7.0 Classroom Edition (Etape 1)
+ * admin.js - v5.7.0 Classroom Edition (Etape 2)
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
@@ -39,8 +39,8 @@ const UPDATE_LOG = [
     {
         version: "v5.7.0",
         date: "2026-04-24",
-        title: "🏫 Classroom Edition (Etape 1)",
-        desc: "Optimeret lobby med 'Chips'-layout til 30+ elever. Forberedt systemet til partial updates for at undgå skærm-blink ved elev-svar."
+        title: "🏫 Classroom Edition (Etape 2)",
+        desc: "Implementeret automatisk skift til resultater, fremhævning af korrekte svar for læreren og A-D labels for tilgængelighed."
     },
     {
         version: "v5.6.4",
@@ -56,7 +56,7 @@ let redoStack = [];
 let adminSearchTerm = ""; 
 let currentLivePin = null;
 let activeSessionUnsubscribe = null;
-let lastUIRenderStatus = null; // Til at styre re-rendering
+let lastUIRenderStatus = null; 
 let lastQuestionIdx = -1;
 
 window.tryLogin = function() {
@@ -316,14 +316,21 @@ window.initiateLiveSession = async (quizIdx) => {
 
     try {
         await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
-        lastUIRenderStatus = null; // Reset render state
+        lastUIRenderStatus = null; 
         
         if (activeSessionUnsubscribe) activeSessionUnsubscribe();
         activeSessionUnsubscribe = window.onValue(window.ref(window.db, `live_sessions/${pin}`), (snap) => {
             const data = snap.val();
             if (!data) return;
             
-            // Partial Update Logic (v5.7.0)
+            // Auto-advance logic (v5.7.0 Etape 2)
+            const players = data.players ? Object.values(data.players) : [];
+            const answerCount = players.filter(p => p && p.answer !== undefined).length;
+            if (data.status === 'playing' && players.length > 0 && answerCount === players.length) {
+                showQuestionResults(pin);
+                return;
+            }
+
             if (data.status === 'lobby') {
                 if (lastUIRenderStatus !== 'lobby') {
                     renderLobbyUI(pin, quiz.title);
@@ -339,7 +346,7 @@ window.initiateLiveSession = async (quizIdx) => {
                 updateAnswerCounter(data);
             } else if (data.status === 'showing_results') {
                 if (lastUIRenderStatus !== 'showing_results') {
-                    renderLeaderboard(data);
+                    renderTeacherGameView(data); // Re-render for result highlights
                     lastUIRenderStatus = 'showing_results';
                 }
             } else if (data.status === 'finished') {
@@ -379,8 +386,6 @@ function updateLobbyPlayerList(session) {
     if (!list) return;
     const players = session.players ? Object.values(session.players) : [];
     if (countVal) countVal.textContent = players.length;
-    
-    // Brug chips i stedet for bubbles for bedre pladsudnyttelse (v5.7.0)
     if (players.length > 0) {
         if (startBtn) startBtn.disabled = false;
         list.innerHTML = players.map(p => `<div class="player-chip"><span>${p.icon || '👤'} ${p.name}</span></div>`).join('');
@@ -399,6 +404,7 @@ function renderTeacherGameView(session) {
     const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
     const qIdx = session.currentQuestionIndex || 0;
     const question = quiz.questions[qIdx];
+    const isShowingResults = session.status === 'showing_results';
     
     container.innerHTML = `
         <div class="teacher-game-dashboard admin-live-dashboard fade-in">
@@ -410,20 +416,52 @@ function renderTeacherGameView(session) {
                 <div style="font-size: 1.2rem;">PIN: <span style="color: var(--accent); font-weight: bold;">${session.pin}</span></div>
             </div>
             <div class="current-question-display"><h1>${question.question}</h1></div>
-            <div class="teacher-options-preview">
-                ${question.options.map((opt, i) => `<div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white;">${opt}</div>`).join('')}
+            
+            <div class="teacher-options-preview" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1000px; margin: 0 auto;">
+                ${question.options.map((opt, i) => {
+                    const isCorrect = i === question.correctIndex;
+                    const highlightClass = isShowingResults && isCorrect ? 'correct-highlight-teacher' : '';
+                    const label = ['A', 'B', 'C', 'D'][i];
+                    return `
+                        <div class="${highlightClass}" style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white; padding: 2rem; border-radius: 15px; font-size: 1.5rem; display: flex; align-items: center; gap: 1rem; position: relative; border: 4px solid transparent;">
+                            <span style="background: rgba(255,255,255,0.2); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-weight: 900;">${label}</span>
+                            <span style="flex: 1;">${opt}</span>
+                            ${isShowingResults && isCorrect ? '<i class="fa-solid fa-check-circle" style="font-size: 2.5rem; position: absolute; right: 20px;"></i>' : ''}
+                        </div>
+                    `;
+                }).join('')}
             </div>
-            <div class="answer-stats-panel" style="text-align:center;">
-                <span id="answer-counter" class="answer-count-big">0</span>
-                <p style="font-weight:bold; opacity: 0.6;">SVAR MODTAGET</p>
-            </div>
+
+            ${!isShowingResults ? `
+                <div class="answer-stats-panel" style="text-align:center;">
+                    <span id="answer-counter" class="answer-count-big">0</span>
+                    <p style="font-weight:bold; opacity: 0.6;">SVAR MODTAGET</p>
+                </div>
+            ` : `
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-secondary btn-large" onclick="renderLeaderboardUI()">SE LEADERBOARD 📊</button>
+                </div>
+            `}
+
             <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd</button>
-                <button class="btn btn-accent btn-large" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
+                ${!isShowingResults ? `<button class="btn btn-accent btn-large" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>` : ''}
             </div>
         </div>
     `;
+    
+    // Hvis vi viser resultater, sørg for at baggrunden ændrer sig lidt
+    if (isShowingResults) {
+        document.querySelector('.teacher-game-dashboard').style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+    }
 }
+
+// Hjælpefunktion til at tvinge leaderboard visning fra knappen
+window.renderLeaderboardUI = async () => {
+    const snap = await window.get(window.ref(window.db, `live_sessions/${currentLivePin}`));
+    const data = snap.val();
+    renderLeaderboard(data);
+};
 
 function updateAnswerCounter(session) {
     const counterEl = document.getElementById('answer-counter');
@@ -449,12 +487,16 @@ function renderLeaderboard(session) {
     const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
     container.innerHTML = `
         <div class="teacher-game-dashboard admin-live-dashboard fade-in">
+            <span class="live-badge">STILLING</span>
             <h1>LEADERBOARD - SPØRGSMÅL ${qIdx + 1}</h1>
-            <div style="max-width: 600px; margin: 2rem auto; background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
+            <div style="max-width: 600px; margin: 2rem auto; background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
                 ${players.slice(0, 5).map((p, i) => `
-                    <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <span>${i+1}. ${p.icon || '👤'} ${p.name}</span>
-                        <span style="font-weight: bold; color: var(--accent);">${p.points || 0} p</span>
+                    <div style="display: flex; justify-content: space-between; padding: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; ${i === 0 ? 'background: rgba(255,215,0,0.05); border-radius: 8px;' : ''}">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-weight: 900; font-size: 1.5rem; opacity: 0.3; width: 30px;">${i+1}</span>
+                            <span style="font-size: 1.2rem;">${p.icon || '👤'} ${p.name}</span>
+                        </div>
+                        <span style="font-weight: bold; color: var(--accent); font-size: 1.2rem;">${p.points || 0} p</span>
                     </div>
                 `).join('')}
             </div>
@@ -472,10 +514,20 @@ function renderLeaderboard(session) {
 window.nextLiveQuestion = async (pin) => {
     const snap = await window.get(window.ref(window.db, `live_sessions/${pin}`));
     const session = snap.val();
-    await window.update(window.ref(window.db, `live_sessions/${pin}`), {
-        status: 'playing', currentQuestionIndex: (session.currentQuestionIndex || 0) + 1,
-        questionStartTime: Date.now(), showResults: false
-    });
+    
+    // Nulstil svar for alle spillere (v5.7.0 Etape 2)
+    const updates = {};
+    if (session.players) {
+        Object.keys(session.players).forEach(pId => {
+            updates[`live_sessions/${pin}/players/${pId}/answer`] = null;
+        });
+    }
+    updates[`live_sessions/${pin}/status`] = 'playing';
+    updates[`live_sessions/${pin}/currentQuestionIndex`] = (session.currentQuestionIndex || 0) + 1;
+    updates[`live_sessions/${pin}/questionStartTime`] = Date.now();
+    updates[`live_sessions/${pin}/showResults`] = false;
+    
+    await window.update(window.ref(window.db), updates);
 };
 
 window.stopLiveSession = async () => {
@@ -489,8 +541,12 @@ function renderPodium(session) {
     container.innerHTML = `
         <div class="podium-screen fade-in" style="text-align:center; padding: 4rem 2rem;">
             <h1>🏆 VINDEREN ER... 🏆</h1>
-            <div style="font-size: 3rem; margin: 2rem 0;">👑 ${players[0] ? players[0].name : 'INGEN'}</div>
-            <button class="btn btn-primary" onclick="renderAdminContent()">Tilbage til Dashboard</button>
+            <div style="font-size: 4rem; margin: 3rem 0; animation: winnerPop 1s ease infinite alternate;">👑 ${players[0] ? players[0].name : 'INGEN'}</div>
+            <div style="display: flex; gap: 2rem; justify-content: center; margin-bottom: 3rem;">
+                ${players[1] ? `<div style="opacity: 0.8;">🥈 ${players[1].name}</div>` : ''}
+                ${players[2] ? `<div style="opacity: 0.6;">🥉 ${players[2].name}</div>` : ''}
+            </div>
+            <button class="btn btn-primary btn-large" onclick="renderAdminContent()">Tilbage til Dashboard</button>
         </div>
     `;
 }
