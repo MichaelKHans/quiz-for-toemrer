@@ -80,6 +80,14 @@
                     <h3 style="margin-top: 0; color: #10b981;">Trin 2: Modtagelse 📥</h3>
                     <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1rem;">Indsæt JSON-koden du fik fra AI'en herunder.</p>
                     
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; opacity: 0.6; margin-bottom: 0.3rem;">Vælg Kategori til Quizzen:</label>
+                        <select id="ai-category-select" style="width: 100%; padding: 0.8rem; background: #2a2a35; color: white; border: 1px solid #4a4a5a; border-radius: 6px;">
+                            <option value="auto">Brug/Opret kategori fra AI-koden</option>
+                            <!-- Kategorier indlæses her via JS -->
+                        </select>
+                    </div>
+
                     <textarea id="ai-code-input" placeholder="Indsæt AI'ens JSON-kode her..." style="width: 100%; height: 120px; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; font-family: monospace; font-size: 0.8rem;"></textarea>
                     
                     <button class="btn btn-success" onclick="createQuizFromAIJSON()" style="width: 100%;">Opret Quiz fra Kode 🚀</button>

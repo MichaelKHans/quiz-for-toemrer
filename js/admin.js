@@ -223,7 +223,23 @@ window.toggleAccordion = (header) => {
 };
 
 // AI WORKFLOW
-window.openAIModal = () => document.getElementById('ai-modal').style.display = 'flex';
+window.openAIModal = () => {
+    const modal = document.getElementById('ai-modal');
+    const select = document.getElementById('ai-category-select');
+    if (select) {
+        // Gem nuværende valg og ryd undtagen "auto"
+        const currentValue = select.value;
+        select.innerHTML = '<option value="auto">Brug/Opret kategori fra AI-koden</option>';
+        localDbCopy.categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.title;
+            select.appendChild(opt);
+        });
+        if (currentValue !== 'auto') select.value = currentValue;
+    }
+    modal.style.display = 'flex';
+};
 window.closeAIModal = () => document.getElementById('ai-modal').style.display = 'none';
 
 window.copyAIPrompt = () => {
@@ -251,24 +267,57 @@ window.copyAIPrompt = () => {
 
 window.createQuizFromAIJSON = async () => {
     const codeInput = document.getElementById('ai-code-input').value.trim();
+    const selectedCatId = document.getElementById('ai-category-select').value;
+    
     if (!codeInput) return alert("Indsæt venligst koden fra AI'en.");
+    
     try {
         const aiData = JSON.parse(codeInput);
         if (!aiData.title || !aiData.questions) throw new Error("Ugyldigt format");
+        
+        let finalCatId = selectedCatId;
+        
+        // Hvis auto, find eller opret kategori fra AI koden
+        if (selectedCatId === 'auto') {
+            const aiCatTitle = aiData.category || "Tømrerfag";
+            let existingCat = localDbCopy.categories.find(c => c.title.toLowerCase() === aiCatTitle.toLowerCase());
+            
+            if (existingCat) {
+                finalCatId = existingCat.id;
+            } else {
+                // Opret ny kategori
+                const newCat = { id: 'cat-' + Date.now(), title: aiCatTitle, isHidden: false };
+                localDbCopy.categories.push(newCat);
+                finalCatId = newCat.id;
+                // Gem kategorier med det samme
+                await saveDbToCloud(localDbCopy);
+            }
+        }
+
         const uniktId = 'q-ai-' + Date.now();
         const newQuiz = {
-            id: uniktId, categoryId: localDbCopy.categories[0].id, title: aiData.title,
-            description: `AI-genereret quiz om ${aiData.title}.`,
+            id: uniktId, 
+            categoryId: finalCatId, 
+            title: aiData.title,
+            description: aiData.description || `AI-genereret quiz om ${aiData.title}.`,
+            imageUrl: aiData.imageUrl || "",
             questions: aiData.questions.map(q => ({
                 question: q.question, options: q.options,
                 correctIndex: q.correctIndex !== undefined ? q.correctIndex : (q.correctAnswer || 0),
                 rationale: q.rationale || ""
             })), isHidden: false
         };
+        
         localDbCopy.quizzes.unshift(newQuiz);
-        await window.update(window.ref(window.db, `quiz_database/quizzes`), { [localDbCopy.quizzes.length]: newQuiz });
-        alert("Quiz oprettet!"); closeAIModal(); renderAdminContent();
-    } catch (e) { alert("Fejl: " + e.message); }
+        await saveDbToCloud(localDbCopy);
+        
+        alert("Quiz oprettet!"); 
+        closeAIModal(); 
+        renderAdminContent();
+    } catch (e) { 
+        console.error(e);
+        alert("Fejl ved oprettelse: " + e.message); 
+    }
 };
 
 // LOG MODAL
