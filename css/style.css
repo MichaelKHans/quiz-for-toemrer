@@ -1468,40 +1468,110 @@ body.live-mode-active .container {
     }
 }
 
-/* v5.4.0 Fixes */
+/* v5.4.1 Full-Screen Layout Fixes */
 body.admin-mode #live-join-btn {
     display: none !important;
 }
 
-.live-lobby-container, .teacher-game-dashboard {
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-    padding: 1.5rem !important;
+#admin-modal .modal-content {
+    width: 98vw !important;
+    max-width: 98vw !important;
+    height: 96vh !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    background: #1a1a1a !important;
+}
+
+#admin-content-inner {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
+.teacher-game-dashboard {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    padding: 1.5vh !important;
+    gap: 1.5vh !important;
+}
+
+.game-info-bar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 0.8vh 1.5vh;
+    border-radius: 8px;
+}
+
+.current-question-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 2vw;
 }
 
 .teacher-game-dashboard h1 {
-    font-size: 1.8rem !important;
-    margin-bottom: 1.5rem !important;
+    font-size: 5.5vh !important;
+    margin-bottom: 3vh !important;
+    line-height: 1.2;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.teacher-game-dashboard h2 {
-    font-size: 1.1rem !important;
+.teacher-options-preview {
+    flex-shrink: 0;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1.5vh !important;
+    width: 100%;
 }
 
-.answer-distribution {
-    background: rgba(255,255,255,0.03);
-    padding: 1.5rem;
+.teacher-options-preview > div {
+    height: 18vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 2.2vh !important;
+    padding: 1.5vh !important;
     border-radius: 12px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-.top-leaderboard {
+.answer-stats-panel {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background: rgba(255,255,255,0.03);
-    padding: 1.5rem;
+    padding: 1.5vh 2vh;
     border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-@media (max-width: 900px) {
-    .teacher-game-dashboard > div[style*="grid-template-columns: 1fr 1fr"] {
-        grid-template-columns: 1fr !important;
-    }
+.lobby-actions-fixed {
+    position: static !important;
+    flex-shrink: 0;
+    padding: 1vh 0 0 0 !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
 }

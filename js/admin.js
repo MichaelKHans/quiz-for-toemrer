@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.0";
+const APP_VERSION = "v5.4.1";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -442,29 +442,45 @@ function renderTeacherGameView(session) {
     }
 
     container.innerHTML = `
-        <div class="teacher-game-dashboard fade-in" style="padding: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <span class="live-badge">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
-                <h2 style="margin: 0; opacity: 0.7;">${quiz.title}</h2>
+        <div class="teacher-game-dashboard fade-in">
+            <div class="game-info-bar">
+                <div style="display: flex; gap: 2rem; align-items: center;">
+                    <span class="live-badge" style="margin:0;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
+                    <h2 style="margin:0; opacity: 0.7; font-size: 1rem;">${quiz.title}</h2>
+                </div>
+                <div style="display: flex; gap: 1.5rem; align-items: center;">
+                    <div style="font-size: 1.2rem;">PIN: <span style="color: var(--accent); font-weight: bold;">${session.pin}</span></div>
+                    <div style="font-weight: bold; opacity: 0.8;">👥 ${players.length}</div>
+                </div>
             </div>
-            <h1 style="font-size: 2.5rem; text-align: center; margin-bottom: 3rem;">${question.question}</h1>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+            <div class="current-question-display">
+                <h1>${question.question}</h1>
+            </div>
+            
+            <div class="teacher-options-preview">
                 ${question.options.map((opt, i) => `
-                    <div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white; padding: 2rem; border-radius: 15px; font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white;">
                         ${opt}
                     </div>
                 `).join('')}
             </div>
 
-            <div style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 15px; text-align: center; margin-bottom: 3rem;">
-                <div style="font-size: 4rem; font-weight: 900; color: var(--accent);">${answerCount}</div>
-                <p style="opacity: 0.7; margin: 0; font-weight: bold;">SVAR MODTAGET</p>
+            <div class="answer-stats-panel">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">${answerCount}</span>
+                    <span style="opacity: 0.7; font-weight: bold; font-size: 0.8rem; line-height: 1;">SVAR<br>MODTAGET</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    ${players.map(p => `
+                        <div style="width: 10px; height: 10px; border-radius: 50%; background: ${p.answer !== undefined ? '#00ffa3' : 'rgba(255,255,255,0.1)'};"></div>
+                    `).join('')}
+                </div>
             </div>
 
-            <div class="lobby-actions-fixed" style="display: flex; justify-content: center; gap: 1rem;">
+            <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
-                <button class="btn btn-accent btn-large" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
+                <button class="btn btn-accent btn-large" style="padding: 1rem 4rem;" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
             </div>
         </div>
     `;
