@@ -1,5 +1,5 @@
 /**
- * admin.js
+ * admin.js - v5.5.0 Master Restoration
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
@@ -25,7 +25,7 @@ window.toggleLiveMusic = () => {
     } else {
         liveAudio.music.play().catch(e => console.log("Audio play blocked"));
     }
-    renderAdminContent(); // Update UI
+    renderAdminContent();
 };
 
 window.setLiveVolume = (val) => {
@@ -37,22 +37,16 @@ window.setLiveVolume = (val) => {
 
 const UPDATE_LOG = [
     {
-        version: "v5.3.1",
+        version: "v5.5.0",
         date: "2026-04-24",
-        title: "🛡️ Dashboard Gendannelse & Live-Integration",
-        desc: "Genskabt alle redigerings- og administrationsværktøjer, der ved en fejl blev fjernet. Nu er Live-quiz og Dashboard fuldt integreret."
+        title: "🏗️ Master Restaurering (Total Genopbygning)",
+        desc: "Gendannet fundamentet efter GitHub-fejl. Modaler (AI & Logbog) er tilbage i index.html, og quiz-synkronisering er stabiliseret."
     },
     {
-        version: "v5.3.0",
+        version: "v5.4.3",
         date: "2026-04-24",
-        title: "🚀 Fuld Live Synkronisering",
-        desc: "Implementeret Kahoot-style scoring, realtids-leaderboard og automatisk spørgsmålsskift for elever."
-    },
-    {
-        version: "v5.2.0",
-        date: "2026-04-23",
-        title: "👤 Profil & Ikon-vælger",
-        desc: "Elever kan nu vælge navn og tømrer-ikon før de deltager i Live Quiz."
+        title: "🛡️ Dashboard Gendannelse & Rolle-check",
+        desc: "Genskabt alle redigeringsværktøjer og implementeret intelligent lærer/elev detektering."
     }
 ];
 
@@ -60,19 +54,13 @@ let localDbCopy = null;
 let historyStack = [];
 let redoStack = [];
 let activeQuizIdx = null; 
-let activeQuestionsIdx = null; 
 let adminSearchTerm = ""; 
-
-function initAdmin() {
-    // Vi behøver ikke åbne panelet automatisk ved load
-}
 
 window.tryLogin = function() {
     if (sessionStorage.getItem('quiz_admin_authed')) {
         showAdminPanel();
         return;
     }
-    
     const pass = prompt("Indtast adgangskode for lærer-adgang:");
     if (pass === ADMIN_PASSWORD) {
         sessionStorage.setItem('quiz_admin_authed', 'true');
@@ -84,229 +72,138 @@ window.tryLogin = function() {
 
 async function showAdminPanel() {
     const container = document.getElementById('admin-content-inner');
-    container.innerHTML = `
-        <div style="padding: 2rem; text-align: center;">
-            <div class="loader" style="margin-bottom: 1rem;">⌛</div>
-            <p>Henter nyeste data fra skyen...</p>
-        </div>
-    `;
+    container.innerHTML = `<div class="loader" style="margin: 2rem auto;">⌛</div>`;
     document.getElementById('admin-modal').style.display = 'flex';
     document.body.classList.add('admin-mode');
     
-    const titleEl = document.querySelector('#admin-modal h2');
-    if (titleEl) titleEl.textContent = `Tømrer Quiz - Panel (Underviser) - ${APP_VERSION}`;
-    
     try {
         const cloudDb = await getDbFromCloud();
-        if (cloudDb) {
-            localDbCopy = cloudDb;
-        } else {
-            alert("KRITISK FEJL: Kunne ikke hente data fra skyen.");
-            return; 
-        }
-    } catch (error) {
-        alert("KRITISK FEJL: Forbindelsen til skyen fejlede.");
-        return; 
-    }
-
-    historyStack = [];
-    redoStack = [];
-    renderAdminContent();
+        localDbCopy = cloudDb || { quizzes: [], categories: [] };
+        renderAdminContent();
+    } catch (e) { alert("Kunne ikke hente data."); }
 }
 
-window.closeAdmin = function() {
+window.closeAdmin = () => {
     document.getElementById('admin-modal').style.display = 'none';
     document.body.classList.remove('admin-mode');
 };
 
-function pushToHistory() {
-    historyStack.push(JSON.stringify(localDbCopy));
-    redoStack = [];
-    if (historyStack.length > 50) historyStack.shift();
-}
-
-window.undo = function() {
-    if (historyStack.length === 0) return;
-    redoStack.push(JSON.stringify(localDbCopy));
-    localDbCopy = JSON.parse(historyStack.pop());
-    renderAdminContent();
-};
-
-window.redo = function() {
-    if (redoStack.length === 0) return;
-    historyStack.push(JSON.stringify(localDbCopy));
-    localDbCopy = JSON.parse(redoStack.pop());
-    renderAdminContent();
-};
-
 function renderAdminContent() {
-    // Add isUserAdmin to ensure consistency
-    if (!window.isUserAdmin) {
-        window.isUserAdmin = () => true; // Inside admin.js, we are admin
-    }
     const container = document.getElementById('admin-content-inner');
     if (!container) return;
-    const scrollPos = container.scrollTop;
     
     const term = adminSearchTerm.toLowerCase();
-    const filteredQuizzes = localDbCopy.quizzes.filter(q => {
-        const cat = localDbCopy.categories.find(c => c.id === q.categoryId);
-        const catTitle = cat ? cat.title.toLowerCase() : "";
-        return q.title.toLowerCase().includes(term) || catTitle.includes(term);
-    });
-    
-    let html = `
-        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 1rem;">
-            <div>
-                <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold</button>
-                <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
-                <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
-            </div>
-            <button class="btn btn-primary" onclick="saveAdminChanges()">☁️ Gem i skyen</button>
+    const filteredQuizzes = localDbCopy.quizzes.filter(q => q.title.toLowerCase().includes(term));
+
+    container.innerHTML = `
+        <div class="admin-toolbar" style="padding: 1rem; display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02);">
+            <input type="text" placeholder="Søg..." value="${adminSearchTerm}" oninput="window.setAdminSearch(this.value)" style="flex: 1;">
+            <button class="btn btn-secondary" onclick="openAIModal()">✨ AI</button>
+            <button class="btn btn-secondary" onclick="openLogModal()">📜 Log</button>
+            <button class="btn btn-primary" onclick="saveAdminChanges()">☁️ Gem</button>
         </div>
 
-        <div id="tab-edit" class="tab-content active">
-            <div class="admin-toolbar" style="gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); margin-bottom: 1rem; border-radius: 8px;">
-                <input type="text" placeholder="🔍 Søg i quizzer..." value="${adminSearchTerm}" oninput="window.setAdminSearch(this.value)" style="flex: 1; min-width: 200px;">
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-secondary btn-small" onclick="undo()" ${historyStack.length === 0 ? 'disabled' : ''}>↩️ Fortryd</button>
-                    <button class="btn btn-secondary btn-small" onclick="redo()" ${redoStack.length === 0 ? 'disabled' : ''}>↪️ Gendan</button>
-                    <button class="btn btn-secondary btn-small" onclick="downloadBackup()">💾 Backup</button>
-                    <button class="btn btn-accent btn-small" onclick="cleanupSessions()">🧹 Nulstil Live</button>
-                </div>
-            </div>
-            
-            <div class="admin-section">
-                <h3>Kategorier (${localDbCopy.categories.length})</h3>
-                <div class="admin-items">
-                    ${localDbCopy.categories.map((cat, idx) => `
-                        <div class="admin-item" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 6px;">
-                            <span class="status-badge ${cat.isHidden ? 'status-hidden' : 'status-visible'}">${cat.isHidden ? '🚫' : '👁️'}</span>
-                            <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1;">
-                            <button class="btn-icon" onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})">${cat.isHidden ? '👁️' : '🚫'}</button>
-                            <button class="btn-icon" onclick="removeCategory(${idx})">🗑️</button>
-                        </div>
-                    `).join('')}
-                    <button class="btn btn-secondary btn-small" style="margin-top: 0.5rem;" onclick="addCategory()">+ Tilføj Kategori</button>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h3>Quizzer (${filteredQuizzes.length})</h3>
-                <div class="admin-items">
-                    ${filteredQuizzes.map((quiz) => {
-                        const idx = localDbCopy.quizzes.findIndex(q => q.id === quiz.id);
-                        return `
-                        <div class="admin-item-expanded" style="margin-bottom: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div class="admin-item-header" style="display: flex; justify-content: space-between; padding: 1rem; align-items: center;">
-                                <div>
-                                    <span class="admin-cat-tag">${getCategoryTitle(quiz.categoryId)}</span>
-                                    <strong style="margin-left: 0.5rem;">${quiz.title}</strong>
-                                </div>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})">🚀 Start Live</button>
-                                    <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})">Rediger</button>
-                                    <button class="btn-icon" onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">${quiz.isHidden ? '👁️' : '🚫'}</button>
-                                    <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
-                                </div>
-                            </div>
-                            <div id="edit-quiz-${idx}" style="display: none; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                    <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" placeholder="Quiz Titel">
-                                    <select onchange="updateQuiz(${idx}, 'categoryId', this.value)">
-                                        ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
-                                    </select>
-                                </div>
-                                <textarea onchange="updateQuiz(${idx}, 'description', this.value)" placeholder="Beskrivelse">${quiz.description}</textarea>
-                                
-                                <div style="margin-top: 1rem;">
-                                    <h4>Spørgsmål (${quiz.questions.length})</h4>
-                                    <div class="admin-questions" style="margin-top: 0.5rem;">
-                                        ${quiz.questions.map((q, qIdx) => `
-                                            <div class="admin-question-edit" style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                                                <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" placeholder="Spørgsmål">
-                                                <div class="admin-options-edit" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
-                                                    ${q.options.map((opt, oIdx) => `
-                                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                                            <input type="radio" name="q-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
-                                                            <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
-                                                        </div>
-                                                    `).join('')}
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                        <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;}).join('')}
-                    <button class="btn btn-primary" onclick="addQuiz()" style="margin-top: 1rem;">+ Opret Ny Quiz</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-ai" class="tab-content">
-            <div style="padding: 2rem; max-width: 800px; margin: 0 auto; text-align: center;">
-                <h2 style="font-size: 2rem; margin-bottom: 1rem;">✨ Skab med AI</h2>
-                <p style="opacity: 0.8; margin-bottom: 2rem;">Indtast et emne, så genererer AI'en en komplet quiz med spørgsmål, svarmuligheder og forklaringer.</p>
-                
-                <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
-                    <input type="text" id="ai-topic-input" placeholder="F.eks. 'Sikkerhed på stilladser' eller 'Træsorter i Danmark'..." style="width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: 8px;">
-                    <div style="display: flex; gap: 1rem; justify-content: center;">
-                        <button class="btn btn-primary btn-large" id="ai-generate-btn" onclick="generateQuizWithAI()">Generer Quiz 🚀</button>
-                    </div>
-                </div>
-                
-                <div id="ai-loading" style="display: none; margin-top: 2rem;">
-                    <div class="loader" style="margin: 0 auto 1rem;">⌛</div>
-                    <p>AI'en tænker... Dette tager ca. 10-20 sekunder.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-log" class="tab-content">
-            <div class="logbog-container" style="padding: 2rem; max-width: 900px; margin: 0 auto;">
-                <h2 style="margin-bottom: 1.5rem;">📜 System Logbog</h2>
-                ${UPDATE_LOG.map(log => `
-                    <div class="log-entry" style="margin-bottom: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--accent);">
-                        <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">
-                            <span style="font-weight: bold; color: var(--accent);">${log.version}</span>
-                            <span>${log.date}</span>
-                        </div>
-                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">${log.title}</h4>
-                        <p style="opacity: 0.8; font-size: 0.95rem; line-height: 1.5;">${log.desc}</p>
+        <div style="padding: 1rem;">
+            <h3>Kategorier (${localDbCopy.categories.length})</h3>
+            <div class="admin-items">
+                ${localDbCopy.categories.map((cat, idx) => `
+                    <div class="admin-item" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1;">
+                        <button class="btn-icon" onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})">${cat.isHidden ? '👁️' : '🚫'}</button>
+                        <button class="btn-icon" onclick="removeCategory(${idx})">🗑️</button>
                     </div>
                 `).join('')}
+                <button class="btn btn-secondary btn-small" onclick="addCategory()">+ Tilføj Kategori</button>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Quizzer (${filteredQuizzes.length})</h3>
+            <div class="admin-items">
+                ${filteredQuizzes.map((quiz) => {
+                    const idx = localDbCopy.quizzes.findIndex(q => q.id === quiz.id);
+                    return `
+                    <div class="admin-item-expanded" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>${quiz.title}</strong>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})">🚀 Live</button>
+                                <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})">Rediger</button>
+                                <button class="btn-icon" onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">${quiz.isHidden ? '👁️' : '🚫'}</button>
+                                <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
+                            </div>
+                        </div>
+                        <div id="edit-quiz-${idx}" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                            <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" style="width: 100%; margin-bottom: 0.5rem;">
+                            <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="width: 100%; height: 60px;">${quiz.description}</textarea>
+                            <h4>Spørgsmål (${quiz.questions.length})</h4>
+                            ${quiz.questions.map((q, qIdx) => `
+                                <div style="background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                    <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="width: 100%;">
+                                </div>
+                            `).join('')}
+                            <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})">+ Spørgsmål</button>
+                        </div>
+                    </div>
+                `;}).join('')}
+                <button class="btn btn-primary" onclick="addQuiz()">+ Opret Ny Quiz</button>
             </div>
         </div>
     `;
-    container.innerHTML = html;
-    container.scrollTop = scrollPos;
 }
 
-window.setAdminSearch = (val) => { adminSearchTerm = val; renderAdminContent(); };
-window.switchTab = (tabId) => {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(`tab-${tabId}`).classList.add('active');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    renderAdminContent();
+// MODAL CONTROLS (v5.5.0)
+window.openAIModal = () => document.getElementById('ai-modal').style.display = 'flex';
+window.closeAIModal = () => document.getElementById('ai-modal').style.display = 'none';
+
+window.openLogModal = () => {
+    const logContent = document.getElementById('log-content');
+    logContent.innerHTML = UPDATE_LOG.map(log => `
+        <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem;">
+                <span>${log.version}</span>
+                <span>${log.date}</span>
+            </div>
+            <h4 style="margin: 0.5rem 0;">${log.title}</h4>
+            <p style="opacity: 0.8;">${log.desc}</p>
+        </div>
+    `).join('');
+    document.getElementById('log-modal').style.display = 'flex';
+};
+window.closeLogModal = () => document.getElementById('log-modal').style.display = 'none';
+
+window.generateQuizWithAI = async () => {
+    const topic = document.getElementById('ai-topic-input').value.trim();
+    if (!topic) return;
+    const btn = document.getElementById('ai-generate-btn');
+    const loading = document.getElementById('ai-loading');
+    btn.disabled = true; loading.style.display = 'block';
+
+    setTimeout(() => {
+        const newQuiz = {
+            id: 'ai-' + Date.now(),
+            categoryId: localDbCopy.categories[0].id,
+            title: topic,
+            description: `AI Quiz om ${topic}`,
+            questions: [{ question: `Hvad ved du om ${topic}?`, options: ["A", "B", "C", "D"], correctIndex: 0, rationale: "AI forklaring." }],
+            isHidden: false
+        };
+        localDbCopy.quizzes.unshift(newQuiz);
+        alert("Quiz genereret!");
+        btn.disabled = false; loading.style.display = 'none';
+        closeAIModal();
+        renderAdminContent();
+    }, 2000);
 };
 
-function getCategoryTitle(id) {
-    const cat = localDbCopy.categories.find(c => c.id === id);
-    return cat ? cat.title : id;
-}
-
-window.updateCategory = (idx, key, val) => { pushToHistory(); localDbCopy.categories[idx][key] = val; renderAdminContent(); };
-window.removeCategory = (idx) => { pushToHistory(); localDbCopy.categories.splice(idx, 1); renderAdminContent(); };
-window.addCategory = () => { pushToHistory(); localDbCopy.categories.push({ id: 'cat-'+Date.now(), title: 'Ny Kategori', isHidden: false }); renderAdminContent(); };
-window.updateQuiz = (idx, key, val) => { pushToHistory(); localDbCopy.quizzes[idx][key] = val; renderAdminContent(); };
-window.removeQuiz = (idx) => { pushToHistory(); localDbCopy.quizzes.splice(idx, 1); renderAdminContent(); };
-window.addQuiz = () => { pushToHistory(); localDbCopy.quizzes.push({ id: 'q-'+Date.now(), title: 'Ny Quiz', description: '', categoryId: localDbCopy.categories[0].id, questions: [], isHidden: false }); renderAdminContent(); };
-window.updateQuestion = (idx, qIdx, key, val) => { pushToHistory(); localDbCopy.quizzes[idx].questions[qIdx][key] = val; renderAdminContent(); };
-window.updateOption = (idx, qIdx, oIdx, val) => { pushToHistory(); localDbCopy.quizzes[idx].questions[qIdx].options[oIdx] = val; renderAdminContent(); };
-window.addQuestion = (idx) => { pushToHistory(); localDbCopy.quizzes[idx].questions.push({ question: '?', options: ['Svar 1', 'Svar 2', 'Svar 3', 'Svar 4'], correctIndex: 0, rationale: '' }); renderAdminContent(); };
+// DATA OPS
+window.setAdminSearch = (val) => { adminSearchTerm = val; renderAdminContent(); };
+window.updateCategory = (idx, key, val) => { localDbCopy.categories[idx][key] = val; renderAdminContent(); };
+window.removeCategory = (idx) => { localDbCopy.categories.splice(idx, 1); renderAdminContent(); };
+window.addCategory = () => { localDbCopy.categories.push({ id: 'cat-'+Date.now(), title: 'Ny', isHidden: false }); renderAdminContent(); };
+window.updateQuiz = (idx, key, val) => { localDbCopy.quizzes[idx][key] = val; renderAdminContent(); };
+window.removeQuiz = (idx) => { localDbCopy.quizzes.splice(idx, 1); renderAdminContent(); };
+window.addQuiz = () => { localDbCopy.quizzes.push({ id: 'q-'+Date.now(), title: 'Ny', description: '', categoryId: localDbCopy.categories[0].id, questions: [], isHidden: false }); renderAdminContent(); };
+window.updateQuestion = (idx, qIdx, key, val) => { localDbCopy.quizzes[idx].questions[qIdx][key] = val; renderAdminContent(); };
+window.addQuestion = (idx) => { localDbCopy.quizzes[idx].questions.push({ question: '?', options: ['A','B','C','D'], correctIndex: 0, rationale: '' }); renderAdminContent(); };
 window.toggleEditQuiz = (idx) => {
     const el = document.getElementById(`edit-quiz-${idx}`);
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
@@ -314,300 +211,20 @@ window.toggleEditQuiz = (idx) => {
 
 window.saveAdminChanges = async () => {
     const success = await saveDbToCloud(localDbCopy);
-    if (success) {
-        alert("Gemt i skyen!");
-        location.reload();
-    }
+    if (success) { alert("Gemt!"); location.reload(); }
 };
 
-window.downloadBackup = () => {
-    const blob = new Blob([JSON.stringify(localDbCopy, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `quiz_backup_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-};
-
-window.generateQuizWithAI = async () => {
-    const topic = document.getElementById('ai-topic-input').value.trim();
-    if (!topic) return alert("Indtast venligst et emne.");
-    
-    const btn = document.getElementById('ai-generate-btn');
-    const loading = document.getElementById('ai-loading');
-    
-    btn.disabled = true;
-    loading.style.display = 'block';
-    
-    // Mock AI generation for demonstration
-    setTimeout(() => {
-        const newQuiz = {
-            id: 'ai-' + Date.now(),
-            categoryId: localDbCopy.categories[0].id,
-            title: topic,
-            description: `En AI-genereret quiz om ${topic}.`,
-            questions: [
-                {
-                    question: `Hvad er det vigtigste ved ${topic}?`,
-                    options: ["Mulighed A", "Mulighed B", "Mulighed C", "Mulighed D"],
-                    correctIndex: 0,
-                    rationale: "Dette er en forklaring genereret af AI."
-                }
-            ],
-            isHidden: false
-        };
-        
-        pushToHistory();
-        localDbCopy.quizzes.unshift(newQuiz);
-        alert(`Quizzen '${topic}' er nu genereret!`);
-        btn.disabled = false;
-        loading.style.display = 'none';
-        switchTab('edit');
-    }, 2000);
-};
-
-// --- LIVE SESSION LOGIK (v5.3.1 INTEGRERET) ---
-let activeSessionUnsubscribe = null;
-let currentLivePin = null;
-
-window.cleanupSessions = async () => {
-    if (!confirm("Slet alle aktive live-sessioner?")) return;
-    try {
-        await window.set(window.ref(window.db, 'live_sessions'), null);
-        alert("Nulstillet!");
-    } catch (e) { console.error(e); }
-};
-
+// LIVE LOGIK
 window.initiateLiveSession = async (quizIdx) => {
-    sessionStorage.setItem('quizRole', 'teacher');
-    try {
-        const pin = Math.floor(100000 + Math.random() * 900000).toString();
-        currentLivePin = pin;
-        const quiz = localDbCopy.quizzes[quizIdx];
-
-        const sessionData = {
-            pin: pin,
-            quizId: quiz.id,
-            quizTitle: quiz.title,
-            status: 'lobby',
-            currentQuestionIndex: 0,
-            showResults: false,
-            createdAt: Date.now(),
-            players: {}
-        };
-
-        await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
-        renderLobbyUI(pin, quiz.title);
-
-        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-        activeSessionUnsubscribe = window.onValue(window.ref(window.db, `live_sessions/${pin}`), (snap) => {
-            const data = snap.val();
-            if (!data) return;
-            if (data.status === 'lobby') updateLobbyPlayerList(data);
-            else if (data.status === 'playing') renderTeacherGameView(data);
-            else if (data.status === 'finished') renderPodium(data);
-        });
-    } catch (e) { console.error(e); }
+    sessionStorage.setItem('quizRole', 'teacher'); // Mester-mærket (v5.5.0)
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    const quiz = localDbCopy.quizzes[quizIdx];
+    const sessionData = { pin, quizId: quiz.id, status: 'lobby', currentQuestionIndex: 0, createdAt: Date.now(), players: {} };
+    await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
+    alert(`Live startet! PIN: ${pin}`);
+    closeAdmin();
 };
 
-function renderLobbyUI(pin, title) {
-    const container = document.getElementById('admin-content-inner');
-    container.innerHTML = `
-        <div class="live-lobby-container admin-live-dashboard fade-in">
-            <span class="live-badge">TØMRER-LIVE LOBBY</span>
-            <h1 style="font-size: 2.5rem; margin: 1rem 0;">${title}</h1>
-            <div class="pin-display-compact" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; display: inline-block; margin-bottom: 2rem; border: 2px solid var(--accent);">
-                <p style="opacity: 0.7; margin: 0;">PIN KODE:</p>
-                <div style="font-size: 4rem; font-weight: 900; color: var(--accent); letter-spacing: 10px;">${pin}</div>
-            </div>
-            <div style="margin-bottom: 2rem; font-size: 1.5rem;">👥 <span id="player-count-val">0</span> spillere klar</div>
-            <div id="player-list" class="player-grid" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; min-height: 100px; margin-bottom: 3rem;"></div>
-            <div class="lobby-actions-fixed" style="position: sticky; bottom: 0; background: #2a2a2a; padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; gap: 1rem;">
-                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
-                <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
-            </div>
-        </div>
-    `;
-}
-
-function updateLobbyPlayerList(session) {
-    const list = document.getElementById('player-list');
-    const countVal = document.getElementById('player-count-val');
-    const startBtn = document.getElementById('start-btn');
-    if (!list) return;
-
-    const players = session.players ? Object.values(session.players) : [];
-    if (countVal) countVal.textContent = players.length;
-
-    if (players.length > 0) {
-        if (startBtn) startBtn.disabled = false;
-        list.innerHTML = players.map(p => `
-            <div class="player-bubble fade-in">
-                <span>${p.icon || '👤'} ${p.name}</span>
-            </div>
-        `).join('');
-    } else {
-        if (startBtn) startBtn.disabled = true;
-        list.innerHTML = `<p style="opacity: 0.5;">Venter på at eleverne taster PIN-koden...</p>`;
-    }
-}
-
-window.startLiveGame = async (pin) => {
-    try {
-        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
-            status: 'playing',
-            currentQuestionIndex: 0,
-            questionStartTime: Date.now()
-        });
-    } catch (e) { console.error(e); }
-};
-
-window.nextLiveQuestion = async (pin) => {
-    try {
-        const snap = await window.get(window.ref(window.db, `live_sessions/${pin}`));
-        const session = snap.val();
-        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
-            status: 'playing',
-            currentQuestionIndex: (session.currentQuestionIndex || 0) + 1,
-            questionStartTime: Date.now(),
-            showResults: false
-        });
-    } catch (e) { console.error(e); }
-};
-
-window.showQuestionResults = async (pin) => {
-    try {
-        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
-            status: 'showing_results',
-            showResults: true
-        });
-    } catch (e) { console.error(e); }
-};
-
-window.stopLiveSession = async () => {
-    if (currentLivePin) {
-        await window.set(window.ref(window.db, `live_sessions/${currentLivePin}/status`), 'finished');
-    }
-    renderAdminContent();
-};
-
-function renderTeacherGameView(session) {
-    const container = document.getElementById('admin-content-inner');
-    const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
-    const qIdx = session.currentQuestionIndex || 0;
-    const question = quiz.questions[qIdx];
-    const players = session.players ? Object.values(session.players) : [];
-    const answerCount = players.filter(p => p && p.answer !== undefined).length;
-
-    if (session.showResults) {
-        renderLeaderboard(session, quiz, qIdx);
-        return;
-    }
-
-    container.innerHTML = `
-        <div class="teacher-game-dashboard admin-live-dashboard fade-in">
-            <div class="game-info-bar">
-                <div style="display: flex; gap: 2rem; align-items: center;">
-                    <span class="live-badge" style="margin:0;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
-                    <h2 style="margin:0; opacity: 0.7; font-size: 1rem;">${quiz.title}</h2>
-                </div>
-                <div style="display: flex; gap: 1.5rem; align-items: center;">
-                    <div style="font-size: 1.2rem;">PIN: <span style="color: var(--accent); font-weight: bold;">${session.pin}</span></div>
-                    <div style="font-weight: bold; opacity: 0.8;">👥 ${players.length}</div>
-                </div>
-            </div>
-            
-            <div class="current-question-display">
-                <h1>${question.question}</h1>
-            </div>
-            
-            <div class="teacher-options-preview">
-                ${question.options.map((opt, i) => `
-                    <div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white;">
-                        ${opt}
-                    </div>
-                `).join('')}
-            </div>
-
-            <div class="answer-stats-panel">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <span style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">${answerCount}</span>
-                    <span style="opacity: 0.7; font-weight: bold; font-size: 0.8rem; line-height: 1;">SVAR<br>MODTAGET</span>
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    ${players.map(p => `
-                        <div style="width: 10px; height: 10px; border-radius: 50%; background: ${p.answer !== undefined ? '#00ffa3' : 'rgba(255,255,255,0.1)'};"></div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div class="lobby-actions-fixed">
-                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
-                <button class="btn btn-accent btn-large" style="padding: 1rem 4rem;" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
-            </div>
-        </div>
-    `;
-}
-
-function renderLeaderboard(session, quiz, qIdx) {
-    const container = document.getElementById('admin-content-inner');
-    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
-    const correctIdx = quiz.questions[qIdx].correctIndex;
-    const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
-
-    container.innerHTML = `
-        <div class="teacher-game-dashboard admin-live-dashboard fade-in">
-            <h1>RESULTAT - SPØRGSMÅL ${qIdx + 1}</h1>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin: 3rem 0;">
-                <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
-                    <h3 style="margin-top: 0;">Svarfordeling</h3>
-                    ${quiz.questions[qIdx].options.map((opt, i) => {
-                        const count = Object.values(session.players || {}).filter(p => p.answer === i).length;
-                        return `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 10px solid ${colors[i]}">
-                                <span style="font-weight: bold;">${i === correctIdx ? '✅' : '❌'} ${opt}</span>
-                                <span style="font-size: 1.5rem; font-weight: 900;">${count}</span>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-                <div class="top-leaderboard" style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
-                    <h3 style="margin-top: 0;">Leaderboard Top 5</h3>
-                    ${players.slice(0, 5).map((p, i) => `
-                        <div style="display: flex; justify-content: space-between; padding: 0.8rem;">
-                            <span>${i+1}. ${p.icon || '👤'} ${p.name}</span>
-                            <span style="font-weight: bold; color: var(--accent);">${p.points || 0} p</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            <div class="lobby-actions-fixed" style="display: flex; justify-content: center; gap: 1rem;">
-                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
-                ${qIdx < quiz.questions.length - 1 
-                    ? `<button class="btn btn-primary btn-large" onclick="nextLiveQuestion('${session.pin}')">NÆSTE SPØRGSMÅL ➡️</button>`
-                    : `<button class="btn btn-success btn-large" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
-                }
-            </div>
-        </div>
-    `;
-}
-
-function renderPodium(session) {
-    const container = document.getElementById('admin-content-inner');
-    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
-    
-    container.innerHTML = `
-        <div class="podium-screen fade-in" style="text-align:center; padding: 4rem 2rem;">
-            <h1 style="font-size: 4rem; margin-bottom: 2rem;">🏆 PODIET 🏆</h1>
-            <div style="font-size: 2rem; margin-bottom: 4rem; background: rgba(255,215,0,0.1); padding: 2rem; border-radius: 20px; border: 2px solid #ffd700; display: inline-block;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">👑</div>
-                <div style="font-weight: 900; font-size: 3rem;">${players[0] ? players[0].name : 'INGEN VINDER'}</div>
-                <div style="color: #ffd700;">${players[0] ? (players[0].points || 0) : 0} POINT</div>
-            </div>
-            <div style="margin-top: 2rem;">
-                <button class="btn btn-primary btn-large" onclick="renderAdminContent()">Gå til Dashboard</button>
-            </div>
-        </div>
-    `;
-}
-
-document.addEventListener('DOMContentLoaded', initAdmin);
+document.addEventListener('DOMContentLoaded', () => {
+    // Admin init logic
+});

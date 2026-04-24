@@ -54,6 +54,38 @@
         </div>
     </div>
 
+    <!-- AI Creation Modal (v5.5.0 Restored) -->
+    <div id="ai-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>✨ Skab med AI</h2>
+                <button class="btn-icon" onclick="closeAIModal()">✖</button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; text-align: center;">
+                <p style="margin-bottom: 2rem; opacity: 0.8;">Indtast et emne, så skaber AI'en en unik quiz til dig.</p>
+                <input type="text" id="ai-topic-input" placeholder="F.eks. 'Sikkerhed på stilladser'..." style="width: 100%; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
+                <button class="btn btn-primary btn-large" id="ai-generate-btn" onclick="generateQuizWithAI()">Generer Quiz 🚀</button>
+                <div id="ai-loading" style="display: none; margin-top: 2rem;">
+                    <div class="loader" style="margin: 0 auto 1rem;">⌛</div>
+                    <p>AI'en tænker... (ca. 10-20 sekunder)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logbog Modal (v5.5.0 Restored) -->
+    <div id="log-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>📜 System Logbog</h2>
+                <button class="btn-icon" onclick="closeLogModal()">✖</button>
+            </div>
+            <div class="modal-body" id="log-content" style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+                <!-- Log indlæses her -->
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/database.js"></script>
     <script src="js/memory.js"></script>
