@@ -40,15 +40,18 @@ function initQuiz() {
 function renderQuizPage(quiz) {
     document.getElementById('quiz-title').textContent = quiz.title;
     
-    // Set mood image if available (v5.7.7)
+    // Set mood image and ghost title (v5.7.8)
     const moodImg = document.getElementById('quiz-mood-bg');
     if (moodImg) {
         const imageUrl = quiz.imageUrl || "";
+        moodImg.innerHTML = `<h1>${quiz.title}</h1>`; // Ghost title
+        
         if (imageUrl) {
-            moodImg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${imageUrl}')`;
+            moodImg.style.backgroundImage = `url('${imageUrl}')`;
             moodImg.style.backgroundSize = 'cover';
             moodImg.style.backgroundPosition = 'center';
         } else {
+            moodImg.style.backgroundImage = 'none';
             moodImg.style.background = '#1a1a1a';
         }
     }

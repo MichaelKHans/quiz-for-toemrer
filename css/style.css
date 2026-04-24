@@ -294,9 +294,53 @@ h1 {
 }
 
 /* Quiz Interface */
+.split-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.split-image {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background-color: #1a1a1a;
+}
+
+.split-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(26,26,26,0.8) 0%, transparent 100%);
+}
+
+.split-image h1 {
+    position: relative;
+    z-index: 2;
+    font-size: 4rem;
+    font-weight: 800;
+    text-align: left;
+    width: 100%;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.split-content {
+    flex: 1;
+    background: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+}
+
 .quiz-container {
     max-width: 700px;
-    margin: 0 auto;
+    margin: 0;
+    padding: 2rem;
+    flex: 1;
 }
 
 .question-box {
