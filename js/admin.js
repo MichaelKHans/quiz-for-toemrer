@@ -1,11 +1,11 @@
 /**
- * admin.js - v5.6.4 Question Accordion & UI Polish
+ * admin.js - v5.7.0 Classroom Edition (Etape 1)
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.6.4";
+const APP_VERSION = "v5.7.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -37,16 +37,16 @@ window.setLiveVolume = (val) => {
 
 const UPDATE_LOG = [
     {
+        version: "v5.7.0",
+        date: "2026-04-24",
+        title: "🏫 Classroom Edition (Etape 1)",
+        desc: "Optimeret lobby med 'Chips'-layout til 30+ elever. Forberedt systemet til partial updates for at undgå skærm-blink ved elev-svar."
+    },
+    {
         version: "v5.6.4",
         date: "2026-04-24",
         title: "↕️ Spørgsmåls-Accordion",
-        desc: "Implementeret fold-ud/sammen funktion for spørgsmål i editoren, så lange lister er lettere at overskue."
-    },
-    {
-        version: "v5.6.3",
-        date: "2026-04-24",
-        title: "👁️ FontAwesome & Farve-fix",
-        desc: "Rigtige ikoner og fixet tekst-synlighed i alle felter."
+        desc: "Fold-ud/sammen funktion for spørgsmål i editoren."
     }
 ];
 
@@ -56,6 +56,8 @@ let redoStack = [];
 let adminSearchTerm = ""; 
 let currentLivePin = null;
 let activeSessionUnsubscribe = null;
+let lastUIRenderStatus = null; // Til at styre re-rendering
+let lastQuestionIdx = -1;
 
 window.tryLogin = function() {
     if (sessionStorage.getItem('quiz_admin_authed')) {
@@ -206,21 +208,17 @@ function getCategoryTitle(id) {
     return cat ? cat.title : "Ingen";
 }
 
-// ACCORDION LOGIC (v5.6.4)
+// ACCORDION LOGIC
 window.toggleAccordion = (header) => {
     const body = header.nextElementSibling;
     const arrow = header.querySelector('.accordion-arrow');
     const isHidden = body.style.display === 'none';
-    
-    // Close others? (Optional, but let's keep it simple as requested)
     body.style.display = isHidden ? 'block' : 'none';
     arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-    
-    // Header styling
     header.style.background = isHidden ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)';
 };
 
-// AI WORKFLOW (v5.6.0)
+// AI WORKFLOW
 window.openAIModal = () => document.getElementById('ai-modal').style.display = 'flex';
 window.closeAIModal = () => document.getElementById('ai-modal').style.display = 'none';
 
@@ -308,24 +306,48 @@ window.saveAdminChanges = async () => {
     if (success) { alert("Alle ændringer er nu gemt i skyen!"); location.reload(); }
 };
 
-// --- LIVE LOGIK ---
+// --- LIVE LOGIK (v5.7.0 Optimeret) ---
 window.initiateLiveSession = async (quizIdx) => {
     sessionStorage.setItem('quizRole', 'teacher');
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     currentLivePin = pin;
     const quiz = localDbCopy.quizzes[quizIdx];
     const sessionData = { pin, quizId: quiz.id, quizTitle: quiz.title, status: 'lobby', currentQuestionIndex: 0, createdAt: Date.now(), players: {} };
+
     try {
         await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
-        renderLobbyUI(pin, quiz.title);
+        lastUIRenderStatus = null; // Reset render state
+        
         if (activeSessionUnsubscribe) activeSessionUnsubscribe();
         activeSessionUnsubscribe = window.onValue(window.ref(window.db, `live_sessions/${pin}`), (snap) => {
             const data = snap.val();
             if (!data) return;
-            if (data.status === 'lobby') updateLobbyPlayerList(data);
-            else if (data.status === 'playing') renderTeacherGameView(data);
-            else if (data.status === 'showing_results') renderLeaderboard(data);
-            else if (data.status === 'finished') renderPodium(data);
+            
+            // Partial Update Logic (v5.7.0)
+            if (data.status === 'lobby') {
+                if (lastUIRenderStatus !== 'lobby') {
+                    renderLobbyUI(pin, quiz.title);
+                    lastUIRenderStatus = 'lobby';
+                }
+                updateLobbyPlayerList(data);
+            } else if (data.status === 'playing') {
+                if (lastUIRenderStatus !== 'playing' || lastQuestionIdx !== data.currentQuestionIndex) {
+                    renderTeacherGameView(data);
+                    lastUIRenderStatus = 'playing';
+                    lastQuestionIdx = data.currentQuestionIndex;
+                }
+                updateAnswerCounter(data);
+            } else if (data.status === 'showing_results') {
+                if (lastUIRenderStatus !== 'showing_results') {
+                    renderLeaderboard(data);
+                    lastUIRenderStatus = 'showing_results';
+                }
+            } else if (data.status === 'finished') {
+                if (lastUIRenderStatus !== 'finished') {
+                    renderPodium(data);
+                    lastUIRenderStatus = 'finished';
+                }
+            }
         });
     } catch (e) { console.error(e); }
 };
@@ -336,7 +358,7 @@ function renderLobbyUI(pin, title) {
         <div class="live-lobby-container admin-live-dashboard fade-in">
             <span class="live-badge">TØMRER-LIVE LOBBY</span>
             <h1 style="font-size: 2.5rem; margin: 1rem 0;">${title}</h1>
-            <div class="pin-display-compact" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; display: inline-block; margin-bottom: 2rem; border: 2px solid var(--accent);">
+            <div class="pin-display-compact">
                 <p style="opacity: 0.7; margin: 0;">PIN KODE:</p>
                 <div style="font-size: 4rem; font-weight: 900; color: var(--accent); letter-spacing: 10px;">${pin}</div>
             </div>
@@ -357,12 +379,14 @@ function updateLobbyPlayerList(session) {
     if (!list) return;
     const players = session.players ? Object.values(session.players) : [];
     if (countVal) countVal.textContent = players.length;
+    
+    // Brug chips i stedet for bubbles for bedre pladsudnyttelse (v5.7.0)
     if (players.length > 0) {
         if (startBtn) startBtn.disabled = false;
-        list.innerHTML = players.map(p => `<div class="player-bubble fade-in"><span>${p.icon || '👤'} ${p.name}</span></div>`).join('');
+        list.innerHTML = players.map(p => `<div class="player-chip"><span>${p.icon || '👤'} ${p.name}</span></div>`).join('');
     } else {
         if (startBtn) startBtn.disabled = true;
-        list.innerHTML = `<p style="opacity: 0.5;">Venter på at eleverne taster PIN-koden...</p>`;
+        list.innerHTML = `<p style="opacity: 0.5;">Venter på elever...</p>`;
     }
 }
 
@@ -375,8 +399,7 @@ function renderTeacherGameView(session) {
     const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
     const qIdx = session.currentQuestionIndex || 0;
     const question = quiz.questions[qIdx];
-    const players = session.players ? Object.values(session.players) : [];
-    const answerCount = players.filter(p => p && p.answer !== undefined).length;
+    
     container.innerHTML = `
         <div class="teacher-game-dashboard admin-live-dashboard fade-in">
             <div class="game-info-bar">
@@ -384,14 +407,15 @@ function renderTeacherGameView(session) {
                     <span class="live-badge" style="margin:0;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
                     <h2 style="margin:0; opacity: 0.7; font-size: 1rem;">${quiz.title}</h2>
                 </div>
-                <div style="font-size: 1.2rem;">PIN: <span style="color: var(--accent); font-weight: bold;">${session.pin}</span> | 👥 ${players.length}</div>
+                <div style="font-size: 1.2rem;">PIN: <span style="color: var(--accent); font-weight: bold;">${session.pin}</span></div>
             </div>
             <div class="current-question-display"><h1>${question.question}</h1></div>
             <div class="teacher-options-preview">
                 ${question.options.map((opt, i) => `<div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white;">${opt}</div>`).join('')}
             </div>
-            <div class="answer-stats-panel">
-                <span style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">${answerCount} / ${players.length} SVAR MODTAGET</span>
+            <div class="answer-stats-panel" style="text-align:center;">
+                <span id="answer-counter" class="answer-count-big">0</span>
+                <p style="font-weight:bold; opacity: 0.6;">SVAR MODTAGET</p>
             </div>
             <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd</button>
@@ -399,6 +423,19 @@ function renderTeacherGameView(session) {
             </div>
         </div>
     `;
+}
+
+function updateAnswerCounter(session) {
+    const counterEl = document.getElementById('answer-counter');
+    if (!counterEl) return;
+    const players = session.players ? Object.values(session.players) : [];
+    const answerCount = players.filter(p => p && p.answer !== undefined).length;
+    
+    if (counterEl.textContent !== answerCount.toString()) {
+        counterEl.textContent = answerCount;
+        counterEl.classList.add('answer-count-bump');
+        setTimeout(() => counterEl.classList.remove('answer-count-bump'), 200);
+    }
 }
 
 window.showQuestionResults = async (pin) => {
