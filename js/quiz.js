@@ -1,5 +1,5 @@
-// js/quiz.js - v5.5.0 Master Restoration
-const APP_VERSION = "v5.5.0";
+// js/quiz.js - v5.7.7 Mood Image Support
+const APP_VERSION = "v5.7.7";
 
 function initQuiz() {
     const params = new URLSearchParams(window.location.search);
@@ -40,11 +40,17 @@ function initQuiz() {
 function renderQuizPage(quiz) {
     document.getElementById('quiz-title').textContent = quiz.title;
     
-    // Set mood image if available
+    // Set mood image if available (v5.7.7)
     const moodImg = document.getElementById('quiz-mood-bg');
     if (moodImg) {
-        const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/1a1a1a/ffffff?text=${encodeURIComponent(quiz.title)}`;
-        moodImg.style.backgroundImage = `url('${imageUrl}')`;
+        const imageUrl = quiz.imageUrl || "";
+        if (imageUrl) {
+            moodImg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${imageUrl}')`;
+            moodImg.style.backgroundSize = 'cover';
+            moodImg.style.backgroundPosition = 'center';
+        } else {
+            moodImg.style.background = '#1a1a1a';
+        }
     }
 
     startQuizFlow(quiz);
