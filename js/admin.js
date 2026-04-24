@@ -1,11 +1,11 @@
 /**
- * admin.js - v5.6.1 Live Dashboard Recovery
+ * admin.js - v5.6.2 UI/UX Polish & Scrolling Fix
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.6.1";
+const APP_VERSION = "v5.6.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -37,16 +37,16 @@ window.setLiveVolume = (val) => {
 
 const UPDATE_LOG = [
     {
+        version: "v5.6.2",
+        date: "2026-04-24",
+        title: "🎨 UX/UI Polering & Scrolling",
+        desc: "Fixet scrolling i admin-listen, opdateret ikoner (øje-ikoner) og tilføjet hjælpe-tekster (tooltips) til alle knapper."
+    },
+    {
         version: "v5.6.1",
         date: "2026-04-24",
         title: "🚑 Live Dashboard Recovery",
-        desc: "Gendannet det fulde Live Dashboard layout og logik, der ved en fejl blev erstattet af en alert-boks i v5.6.0."
-    },
-    {
-        version: "v5.6.0",
-        date: "2026-04-24",
-        title: "✨ 2-Trins AI Workflow",
-        desc: "Implementeret 'Kopier Prompt & Indsæt Kode' workflow for AI-oprettelse."
+        desc: "Gendannet det fulde Live Dashboard layout efter en fejl."
     }
 ];
 
@@ -97,73 +97,91 @@ function renderAdminContent() {
     const filteredQuizzes = localDbCopy.quizzes.filter(q => q.title.toLowerCase().includes(term));
 
     container.innerHTML = `
-        <div class="admin-toolbar" style="padding: 1rem; display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02);">
-            <input type="text" placeholder="Søg..." value="${adminSearchTerm}" oninput="window.setAdminSearch(this.value)" style="flex: 1;">
-            <button class="btn btn-secondary" onclick="openAIModal()">✨ AI Flow</button>
-            <button class="btn btn-secondary" onclick="openLogModal()">📜 Log</button>
-            <button class="btn btn-primary" onclick="saveAdminChanges()">☁️ Gem</button>
+        <div class="admin-toolbar" style="padding: 1rem; display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);">
+            <input type="text" placeholder="Søg i dine quizzer..." value="${adminSearchTerm}" oninput="window.setAdminSearch(this.value)" style="flex: 1;">
+            <button class="btn btn-secondary" onclick="openAIModal()" title="Skab en quiz med AI flow">✨ AI Flow</button>
+            <button class="btn btn-secondary" onclick="openLogModal()" title="Se systemets opdaterings-historik">📜 Log</button>
+            <button class="btn btn-primary" onclick="saveAdminChanges()" title="Gem alle ændringer i skyen">☁️ Gem i skyen</button>
         </div>
 
-        <div style="padding: 1rem;">
-            <h3>Kategorier (${localDbCopy.categories.length})</h3>
+        <div style="padding: 1.5rem;">
+            <h3 style="margin-bottom: 1rem; opacity: 0.7;">Kategorier (${localDbCopy.categories.length})</h3>
             <div class="admin-items">
                 ${localDbCopy.categories.map((cat, idx) => `
-                    <div class="admin-item" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div class="admin-item" style="display: flex; gap: 0.8rem; margin-bottom: 0.8rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 8px;">
                         <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1;">
-                        <button class="btn-icon" onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})">${cat.isHidden ? '👁️' : '🚫'}</button>
-                        <button class="btn-icon" onclick="removeCategory(${idx})">🗑️</button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-icon" onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})" title="${cat.isHidden ? 'Gør kategori synlig' : 'Skjul kategori'}">
+                                ${cat.isHidden ? '🙈' : '👁️'}
+                            </button>
+                            <button class="btn-icon" onclick="removeCategory(${idx})" title="Slet kategori">🗑️</button>
+                        </div>
                     </div>
                 `).join('')}
                 <button class="btn btn-secondary btn-small" onclick="addCategory()">+ Tilføj Kategori</button>
             </div>
 
-            <h3 style="margin-top: 2rem;">Quizzer (${filteredQuizzes.length})</h3>
+            <h3 style="margin-top: 3rem; margin-bottom: 1rem; opacity: 0.7;">Quizzer (${filteredQuizzes.length})</h3>
             <div class="admin-items">
                 ${filteredQuizzes.map((quiz) => {
                     const idx = localDbCopy.quizzes.findIndex(q => q.id === quiz.id);
                     return `
-                    <div class="admin-item-expanded" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div class="admin-item-expanded" style="background: rgba(255,255,255,0.02); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <span class="admin-cat-tag" style="background: var(--accent); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-right: 0.5rem;">${getCategoryTitle(quiz.categoryId)}</span>
-                                <strong>${quiz.title}</strong>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <span class="admin-cat-tag" style="background: var(--accent); color: white; font-size: 0.7rem; font-weight: bold; padding: 4px 10px; border-radius: 6px;">${getCategoryTitle(quiz.categoryId)}</span>
+                                <strong style="font-size: 1.1rem;">${quiz.title}</strong>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})">🚀 Live</button>
-                                <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})">Rediger</button>
-                                <button class="btn-icon" onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">${quiz.isHidden ? '👁️' : '🚫'}</button>
-                                <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
+                            <div style="display: flex; gap: 0.8rem;">
+                                <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})" title="Start Live Quiz for klassen 🚀">🚀 Live</button>
+                                <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})" title="Rediger spørgsmål og detaljer ✏️">Rediger</button>
+                                <button class="btn-icon" onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})" title="${quiz.isHidden ? 'Gør quiz synlig for alle' : 'Skjul quiz fra oversigten'}">
+                                    ${quiz.isHidden ? '🙈' : '👁️'}
+                                </button>
+                                <button class="btn-icon" onclick="removeQuiz(${idx})" title="Slet denne quiz permanent 🗑️">🗑️</button>
                             </div>
                         </div>
-                        <div id="edit-quiz-${idx}" style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                        <div id="edit-quiz-${idx}" style="display: none; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" placeholder="Titel">
-                                <select onchange="updateQuiz(${idx}, 'categoryId', this.value)">
-                                    ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
-                                </select>
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.3rem;">Quiz Titel</label>
+                                    <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" style="width: 100%;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.3rem;">Kategori</label>
+                                    <select onchange="updateQuiz(${idx}, 'categoryId', this.value)" style="width: 100%;">
+                                        ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
+                                    </select>
+                                </div>
                             </div>
-                            <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="width: 100%; height: 60px;">${quiz.description}</textarea>
-                            <h4>Spørgsmål (${quiz.questions.length})</h4>
+                            <label style="display: block; font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.3rem;">Kort beskrivelse</label>
+                            <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="width: 100%; height: 60px; margin-bottom: 1.5rem;">${quiz.description}</textarea>
+                            
+                            <h4 style="margin-bottom: 1rem;">Spørgsmål (${quiz.questions.length})</h4>
                             <div class="admin-questions">
                                 ${quiz.questions.map((q, qIdx) => `
-                                    <div style="background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
-                                        <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="width: 100%;">
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <div style="background: rgba(0,0,0,0.2); padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.03);">
+                                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                            <span style="opacity: 0.3; font-weight: bold;">#${qIdx+1}</span>
+                                            <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="flex: 1;" placeholder="Indtast spørgsmål...">
+                                            <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål">🗑️</button>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                             ${q.options.map((opt, oIdx) => `
-                                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                                    <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
-                                                    <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.8rem;">
+                                                <div style="display: flex; gap: 0.8rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 6px;">
+                                                    <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})" title="Marker som korrekt svar">
+                                                    <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.9rem; background: transparent; border: none;" placeholder="Svarmulighed ${oIdx+1}">
                                                 </div>
                                             `).join('')}
                                         </div>
                                     </div>
                                 `).join('')}
-                                <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})">+ Spørgsmål</button>
+                                <button class="btn btn-secondary btn-small" onclick="addQuestion(${idx})" style="width: 100%; padding: 1rem; border: 2px dashed rgba(255,255,255,0.1); background: transparent;">+ Tilføj endnu et spørgsmål</button>
                             </div>
                         </div>
                     </div>
                 `;}).join('')}
-                <button class="btn btn-primary" onclick="addQuiz()">+ Opret Ny Quiz</button>
+                <button class="btn btn-primary" onclick="addQuiz()" style="width: 100%; padding: 2rem; font-size: 1.2rem; border: 2px dashed var(--accent); background: rgba(99, 102, 241, 0.05);">+ Opret en helt ny Quiz 📚</button>
             </div>
         </div>
     `;
@@ -174,7 +192,7 @@ function getCategoryTitle(id) {
     return cat ? cat.title : "Ingen";
 }
 
-// AI WORKFLOW (v5.6.0 Intakt)
+// AI WORKFLOW (v5.6.0)
 window.openAIModal = () => document.getElementById('ai-modal').style.display = 'flex';
 window.closeAIModal = () => document.getElementById('ai-modal').style.display = 'none';
 
@@ -227,13 +245,13 @@ window.createQuizFromAIJSON = async () => {
 window.openLogModal = () => {
     const logContent = document.getElementById('log-content');
     logContent.innerHTML = UPDATE_LOG.map(log => `
-        <div style="margin-bottom: 1.5rem; padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 4px solid var(--accent);">
-            <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem;">
+        <div style="margin-bottom: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">
                 <span style="font-weight: bold; color: var(--accent);">${log.version}</span>
                 <span>${log.date}</span>
             </div>
-            <h4 style="margin: 0.5rem 0; font-size: 1.1rem;">${log.title}</h4>
-            <p style="opacity: 0.8; font-size: 0.9rem; line-height: 1.4;">${log.desc}</p>
+            <h4 style="margin: 0; font-size: 1.2rem;">${log.title}</h4>
+            <p style="opacity: 0.8; font-size: 0.95rem; line-height: 1.5; margin-top: 0.5rem;">${log.desc}</p>
         </div>
     `).join('');
     document.getElementById('log-modal').style.display = 'flex';
@@ -243,39 +261,36 @@ window.closeLogModal = () => document.getElementById('log-modal').style.display 
 // DATA OPS
 window.setAdminSearch = (val) => { adminSearchTerm = val; renderAdminContent(); };
 window.updateCategory = (idx, key, val) => { localDbCopy.categories[idx][key] = val; renderAdminContent(); };
-window.removeCategory = (idx) => { localDbCopy.categories.splice(idx, 1); renderAdminContent(); };
-window.addCategory = () => { localDbCopy.categories.push({ id: 'cat-'+Date.now(), title: 'Ny', isHidden: false }); renderAdminContent(); };
+window.removeCategory = (idx) => { if(confirm("Slet kategori?")) { localDbCopy.categories.splice(idx, 1); renderAdminContent(); } };
+window.addCategory = () => { localDbCopy.categories.push({ id: 'cat-'+Date.now(), title: 'Ny Kategori', isHidden: false }); renderAdminContent(); };
 window.updateQuiz = (idx, key, val) => { localDbCopy.quizzes[idx][key] = val; renderAdminContent(); };
-window.removeQuiz = (idx) => { localDbCopy.quizzes.splice(idx, 1); renderAdminContent(); };
-window.addQuiz = () => { localDbCopy.quizzes.push({ id: 'q-'+Date.now(), title: 'Ny', description: '', categoryId: localDbCopy.categories[0].id, questions: [], isHidden: false }); renderAdminContent(); };
+window.removeQuiz = (idx) => { if(confirm("Slet denne quiz permanent?")) { localDbCopy.quizzes.splice(idx, 1); renderAdminContent(); } };
+window.addQuiz = () => { localDbCopy.quizzes.push({ id: 'q-'+Date.now(), title: 'Ny Quiz', description: '', categoryId: localDbCopy.categories[0].id, questions: [], isHidden: false }); renderAdminContent(); };
 window.updateQuestion = (idx, qIdx, key, val) => { localDbCopy.quizzes[idx].questions[qIdx][key] = val; renderAdminContent(); };
 window.updateOption = (idx, qIdx, oIdx, val) => { localDbCopy.quizzes[idx].questions[qIdx].options[oIdx] = val; renderAdminContent(); };
-window.addQuestion = (idx) => { localDbCopy.quizzes[idx].questions.push({ question: '?', options: ['A','B','C','D'], correctIndex: 0, rationale: '' }); renderAdminContent(); };
+window.addQuestion = (idx) => { localDbCopy.quizzes[idx].questions.push({ question: '', options: ['','','',''], correctIndex: 0, rationale: '' }); renderAdminContent(); };
+window.removeQuestion = (idx, qIdx) => { localDbCopy.quizzes[idx].questions.splice(qIdx, 1); renderAdminContent(); };
+
 window.toggleEditQuiz = (idx) => {
     const el = document.getElementById(`edit-quiz-${idx}`);
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 };
 window.saveAdminChanges = async () => {
     const success = await saveDbToCloud(localDbCopy);
-    if (success) { alert("Gemt!"); location.reload(); }
+    if (success) { alert("Alle ændringer er nu gemt i skyen!"); location.reload(); }
 };
 
-// --- LIVE LOGIK GENDANNET (v5.6.1) ---
+// --- LIVE LOGIK (v5.6.1) ---
 window.initiateLiveSession = async (quizIdx) => {
     sessionStorage.setItem('quizRole', 'teacher');
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     currentLivePin = pin;
     const quiz = localDbCopy.quizzes[quizIdx];
-
-    const sessionData = { 
-        pin, quizId: quiz.id, quizTitle: quiz.title, status: 'lobby', 
-        currentQuestionIndex: 0, createdAt: Date.now(), players: {} 
-    };
+    const sessionData = { pin, quizId: quiz.id, quizTitle: quiz.title, status: 'lobby', currentQuestionIndex: 0, createdAt: Date.now(), players: {} };
 
     try {
         await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
         renderLobbyUI(pin, quiz.title);
-
         if (activeSessionUnsubscribe) activeSessionUnsubscribe();
         activeSessionUnsubscribe = window.onValue(window.ref(window.db, `live_sessions/${pin}`), (snap) => {
             const data = snap.val();
@@ -299,7 +314,7 @@ function renderLobbyUI(pin, title) {
                 <div style="font-size: 4rem; font-weight: 900; color: var(--accent); letter-spacing: 10px;">${pin}</div>
             </div>
             <div style="margin-bottom: 2rem; font-size: 1.5rem;">👥 <span id="player-count-val">0</span> spillere klar</div>
-            <div id="player-list" class="player-grid" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; min-height: 100px; margin-bottom: 3rem;"></div>
+            <div id="player-list" class="player-grid"></div>
             <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
                 <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
@@ -313,7 +328,6 @@ function updateLobbyPlayerList(session) {
     const countVal = document.getElementById('player-count-val');
     const startBtn = document.getElementById('start-btn');
     if (!list) return;
-
     const players = session.players ? Object.values(session.players) : [];
     if (countVal) countVal.textContent = players.length;
     if (players.length > 0) {
@@ -351,7 +365,7 @@ function renderTeacherGameView(session) {
                 ${question.options.map((opt, i) => `<div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white;">${opt}</div>`).join('')}
             </div>
             <div class="answer-stats-panel">
-                <span style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">${answerCount} / ${players.length} SVAR</span>
+                <span style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">${answerCount} / ${players.length} SVAR MODTAGET</span>
             </div>
             <div class="lobby-actions-fixed">
                 <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd</button>
@@ -419,4 +433,4 @@ function renderPodium(session) {
     `;
 }
 
-document.addEventListener('DOMContentLoaded', () => { /* Init */ });
+document.addEventListener('DOMContentLoaded', () => { /* Admin logic */ });

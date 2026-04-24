@@ -1496,31 +1496,32 @@ body.admin-mode {
     background: #1a1a1a !important;
 }
 
+/* v5.6.2 Admin UX/UI Fixes */
 #admin-content-inner {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important; /* Live dashboard handles its own scroll */
+    overflow-y: auto !important; /* Allow scroll for regular admin list */
     padding: 0 !important;
+    max-height: 100vh;
 }
 
-/* Fix double scrollbars in Admin tabs */
-.tab-content {
-    display: none;
-    flex: 1;
-    overflow-y: auto !important; /* Allow only this to scroll */
-    padding-bottom: 5rem;
+/* Ensure Live Dashboard stays fixed and non-scrollable */
+#admin-content-inner:has(.admin-live-dashboard) {
+    overflow: hidden !important;
 }
 
-.tab-content.active {
-    display: flex;
-    flex-direction: column;
-}
-
-.live-lobby-container, .teacher-game-dashboard {
-    height: 100% !important;
-    width: 100% !important;
+.admin-live-dashboard {
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
     display: flex !important;
+    flex-direction: column !important;
+}
+
+.admin-item-header div[style*="display: flex"] {
+    gap: 0.8rem !important; /* Space between buttons */
+}
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;
