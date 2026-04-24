@@ -1613,3 +1613,12 @@ body.admin-mode {
     justify-content: center;
     align-content: flex-start;
 }
+/* v5.4.3 Visual Polish & Role Safety */
+.admin-live-dashboard #live-join-btn {
+    display: none !important;
+}
+
+/* Remove thin lines from leaderboard */
+.top-leaderboard div {
+    border-bottom: none !important;
+}

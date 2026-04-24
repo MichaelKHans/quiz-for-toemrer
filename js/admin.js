@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.2";
+const APP_VERSION = "v5.4.3";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -140,6 +140,10 @@ window.redo = function() {
 };
 
 function renderAdminContent() {
+    // Add isUserAdmin to ensure consistency
+    if (!window.isUserAdmin) {
+        window.isUserAdmin = () => true; // Inside admin.js, we are admin
+    }
     const container = document.getElementById('admin-content-inner');
     if (!container) return;
     const scrollPos = container.scrollTop;
@@ -350,7 +354,7 @@ window.initiateLiveSession = async (quizIdx) => {
 function renderLobbyUI(pin, title) {
     const container = document.getElementById('admin-content-inner');
     container.innerHTML = `
-        <div class="live-lobby-container fade-in" style="padding: 2rem; text-align: center;">
+        <div class="live-lobby-container admin-live-dashboard fade-in">
             <span class="live-badge">TØMRER-LIVE LOBBY</span>
             <h1 style="font-size: 2.5rem; margin: 1rem 0;">${title}</h1>
             <div class="pin-display-compact" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px; display: inline-block; margin-bottom: 2rem; border: 2px solid var(--accent);">
@@ -442,7 +446,7 @@ function renderTeacherGameView(session) {
     }
 
     container.innerHTML = `
-        <div class="teacher-game-dashboard fade-in">
+        <div class="teacher-game-dashboard admin-live-dashboard fade-in">
             <div class="game-info-bar">
                 <div style="display: flex; gap: 2rem; align-items: center;">
                     <span class="live-badge" style="margin:0;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
@@ -493,7 +497,7 @@ function renderLeaderboard(session, quiz, qIdx) {
     const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
 
     container.innerHTML = `
-        <div class="teacher-game-dashboard fade-in" style="padding: 2rem;">
+        <div class="teacher-game-dashboard admin-live-dashboard fade-in">
             <h1>RESULTAT - SPØRGSMÅL ${qIdx + 1}</h1>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin: 3rem 0;">
                 <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
@@ -508,10 +512,10 @@ function renderLeaderboard(session, quiz, qIdx) {
                         `;
                     }).join('')}
                 </div>
-                <div style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
+                <div class="top-leaderboard" style="background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 15px;">
                     <h3 style="margin-top: 0;">Leaderboard Top 5</h3>
                     ${players.slice(0, 5).map((p, i) => `
-                        <div style="display: flex; justify-content: space-between; padding: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; justify-content: space-between; padding: 0.8rem;">
                             <span>${i+1}. ${p.icon || '👤'} ${p.name}</span>
                             <span style="font-weight: bold; color: var(--accent);">${p.points || 0} p</span>
                         </div>

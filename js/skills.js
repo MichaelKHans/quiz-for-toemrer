@@ -1,8 +1,15 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.2";
+const APP_VERSION = "v5.4.3";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
+
+// Global Rolle-check (v5.4.3)
+window.isUserAdmin = () => {
+    return window.location.href.includes('admin') || 
+           !!document.getElementById('admin-panel') || 
+           !!document.getElementById('admin-modal');
+};
 
 async function loadDatabase() {
     try {
@@ -20,6 +27,8 @@ let lastQuestionIndex = -1;
 let currentStatus = 'lobby';
 
 window.startJoinProcess = () => {
+    if (window.isUserAdmin()) return; // Sikkerhed: Admin må ikke joine
+
     const old = document.querySelector('.pin-modal-overlay');
     if (old) old.remove();
 
@@ -119,19 +128,21 @@ function initHardLink() {
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
         const sessions = snap.val();
         
-        const hasActiveSession = sessions && Object.values(sessions).some(s => s && (s.status === 'lobby' || s.status === 'playing'));
         const joinBtn = document.getElementById('live-join-btn');
+        
+        // --- ROLLE-CHECK (v5.4.3) ---
+        if (window.isUserAdmin()) {
+            if (joinBtn) joinBtn.style.setProperty('display', 'none', 'important');
+            return; 
+        }
+
+        const hasActiveSession = sessions && Object.values(sessions).some(s => s && (s.status === 'lobby' || s.status === 'playing'));
         if (joinBtn) joinBtn.style.display = hasActiveSession ? 'block' : 'none';
 
         if (!sessions) {
             if (document.body.classList.contains('kahoot-mode')) location.reload();
             return;
         }
-
-        const isAdmin = document.getElementById('admin-modal') || 
-                        document.querySelector('.admin-trigger') ||
-                        window.location.href.includes('admin');
-        if (isAdmin) return;
 
         if (activeLivePin) {
             const session = sessions[activeLivePin];
