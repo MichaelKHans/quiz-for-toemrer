@@ -1623,6 +1623,92 @@ body.admin-mode {
     from { transform: scale(1); text-shadow: 0 0 20px rgba(255,215,0,0.4); }
     to { transform: scale(1.1); text-shadow: 0 0 50px rgba(255,215,0,0.8); }
 }
+
+/* v5.7.0 Student Side Styles */
+.student-game-container {
+    padding: 1rem;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.student-answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1rem;
+    flex: 1;
+}
+
+.answer-btn-mobile {
+    border: none;
+    border-radius: 15px;
+    font-size: 2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+    transition: all 0.1s;
+}
+
+.answer-btn-mobile:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.btn-label {
+    background: rgba(255,255,255,0.2);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 900;
+}
+
+.student-result-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: white;
+    text-align: center;
+}
+
+.result-success { background-color: #10b981; }
+.result-error { background-color: #e21b3c; }
+
+.result-icon { font-size: 5rem; margin-bottom: 1rem; }
+.result-points-card {
+    background: rgba(0,0,0,0.2);
+    padding: 2rem;
+    border-radius: 20px;
+    margin-top: 1rem;
+    min-width: 200px;
+}
+
+.total-points {
+    font-size: 3rem;
+    font-weight: 900;
+}
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;
