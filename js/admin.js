@@ -148,6 +148,20 @@ function renderAdminContent() {
                             </div>
                             <label style="display: block; font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.3rem;">Kort beskrivelse</label>
                             <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="width: 100%; height: 60px; margin-bottom: 1.5rem;">${quiz.description}</textarea>
+
+                            <!-- Quiz Cover Billede (v5.7.4) -->
+                            <div class="quiz-image-editor" style="margin-bottom: 2rem; background: rgba(99, 102, 241, 0.05); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                                <label style="display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; color: #818cf8;">🖼️ Quiz Coverbillede (URL)</label>
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <input type="text" value="${quiz.imageUrl || ''}" onchange="updateQuiz(${idx}, 'imageUrl', this.value)" placeholder="Indsæt URL til coverbillede..." style="flex: 1;">
+                                    ${quiz.imageUrl ? `<button class="btn btn-secondary btn-small" onclick="updateQuiz(${idx}, 'imageUrl', '')">Fjern</button>` : ''}
+                                </div>
+                                ${quiz.imageUrl ? `
+                                    <div style="margin-top: 1rem; width: 100%; max-height: 150px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                        <img src="${quiz.imageUrl}" style="width: 100%; height: 150px; object-fit: cover;">
+                                    </div>
+                                ` : '<p style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.5rem;">Intet coverbillede valgt. Systemet bruger standard-ikonet.</p>'}
+                            </div>
                             
                             <h4 style="margin-bottom: 1rem;">Spørgsmål (${quiz.questions.length})</h4>
                             <div class="admin-questions">
@@ -163,28 +177,10 @@ function renderAdminContent() {
                                             <i class="fa-solid fa-chevron-down accordion-arrow" style="opacity: 0.4; transition: transform 0.3s;"></i>
                                         </div>
                                         <div class="accordion-body" style="display: none; padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
-                                            <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+                                            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
                                                 <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="flex: 1;" placeholder="Indtast spørgsmål...">
                                                 <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål"><i class="fa-solid fa-trash-can"></i></button>
                                             </div>
-
-                                            <!-- Gendannet Billed-værktøj (v5.7.3) -->
-                                            <div class="image-editor-section" style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                                <label style="display: block; font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">Spørgsmåls-billede (URL)</label>
-                                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                                    <input type="text" id="img-url-${idx}-${qIdx}" value="${q.image || ''}" placeholder="https://eksempel.dk/billede.jpg" style="flex: 1; font-size: 0.85rem;">
-                                                    <button class="btn btn-secondary btn-small" onclick="updateQuestion(${idx}, ${qIdx}, 'image', document.getElementById('img-url-${idx}-${qIdx}').value)">Gem Billede</button>
-                                                </div>
-                                                ${q.image ? `
-                                                    <div style="margin-top: 1rem; position: relative; width: 120px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-                                                        <img src="${q.image}" style="width: 100%; height: 100%; object-fit: cover;">
-                                                        <button onclick="updateQuestion(${idx}, ${qIdx}, 'image', '')" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); border: none; color: white; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">✖</button>
-                                                    </div>
-                                                ` : `
-                                                    <div style="margin-top: 0.5rem; font-size: 0.7rem; opacity: 0.4;">Intet billede tilknyttet</div>
-                                                `}
-                                            </div>
-
                                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                                 ${q.options.map((opt, oIdx) => `
                                                     <div style="display: flex; gap: 0.8rem; align-items: center; background: rgba(255,255,255,0.03); padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">

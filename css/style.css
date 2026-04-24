@@ -1854,6 +1854,26 @@ body.admin-mode {
     border-bottom: none !important;
 }
 
+.quiz-card-image {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+}
+
+.quiz-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.quiz-card:hover .quiz-card-image img {
+    transform: scale(1.05);
+}
+
 #version-tag {
     position: fixed;
     bottom: 10px;

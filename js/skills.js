@@ -81,6 +81,11 @@ function renderQuizGrid() {
         
         return `
             <div class="quiz-card fade-in ${isCompleted ? 'completed' : ''}" onclick="window.startQuiz('${quiz.id}')">
+                ${quiz.imageUrl ? `
+                    <div class="quiz-card-image">
+                        <img src="${quiz.imageUrl}" alt="${quiz.title}" loading="lazy">
+                    </div>
+                ` : ''}
                 <div class="quiz-card-header">
                     <span class="category-tag">${getCategoryTitle(quiz.categoryId)}</span>
                     ${isCompleted ? '<span class="status-tag">Gennemført ✅</span>' : ''}
