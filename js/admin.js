@@ -1,11 +1,11 @@
 /**
- * admin.js - v5.6.2 UI/UX Polish & Scrolling Fix
+ * admin.js - v5.6.3 UI/UX Icon Fix & Text Visibility
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
  */
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.6.2";
+const APP_VERSION = "v5.6.3";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -37,16 +37,16 @@ window.setLiveVolume = (val) => {
 
 const UPDATE_LOG = [
     {
-        version: "v5.6.2",
+        version: "v5.6.3",
         date: "2026-04-24",
-        title: "🎨 UX/UI Polering & Scrolling",
-        desc: "Fixet scrolling i admin-listen, opdateret ikoner (øje-ikoner) og tilføjet hjælpe-tekster (tooltips) til alle knapper."
+        title: "👁️ FontAwesome Ikoner & Farve-fix",
+        desc: "Implementeret rigtige FontAwesome ikoner (øje-ikoner) og fixet 'sort-på-sort' teksten i alle input-felter."
     },
     {
-        version: "v5.6.1",
+        version: "v5.6.2",
         date: "2026-04-24",
-        title: "🚑 Live Dashboard Recovery",
-        desc: "Gendannet det fulde Live Dashboard layout efter en fejl."
+        title: "🎨 UX/UI Polering",
+        desc: "Fixet scrolling og tilføjet tooltips."
     }
 ];
 
@@ -99,9 +99,9 @@ function renderAdminContent() {
     container.innerHTML = `
         <div class="admin-toolbar" style="padding: 1rem; display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);">
             <input type="text" placeholder="Søg i dine quizzer..." value="${adminSearchTerm}" oninput="window.setAdminSearch(this.value)" style="flex: 1;">
-            <button class="btn btn-secondary" onclick="openAIModal()" title="Skab en quiz med AI flow">✨ AI Flow</button>
-            <button class="btn btn-secondary" onclick="openLogModal()" title="Se systemets opdaterings-historik">📜 Log</button>
-            <button class="btn btn-primary" onclick="saveAdminChanges()" title="Gem alle ændringer i skyen">☁️ Gem i skyen</button>
+            <button class="btn btn-secondary" onclick="openAIModal()" title="Skab en quiz med AI flow"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Flow</button>
+            <button class="btn btn-secondary" onclick="openLogModal()" title="Se systemets opdaterings-historik"><i class="fa-solid fa-clock-rotate-left"></i> Log</button>
+            <button class="btn btn-primary" onclick="saveAdminChanges()" title="Gem alle ændringer i skyen"><i class="fa-solid fa-cloud-arrow-up"></i> Gem i skyen</button>
         </div>
 
         <div style="padding: 1.5rem;">
@@ -112,9 +112,9 @@ function renderAdminContent() {
                         <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1;">
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn-icon" onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})" title="${cat.isHidden ? 'Gør kategori synlig' : 'Skjul kategori'}">
-                                ${cat.isHidden ? '🙈' : '👁️'}
+                                <i class="fa-solid ${cat.isHidden ? 'fa-eye-slash' : 'fa-eye'}"></i>
                             </button>
-                            <button class="btn-icon" onclick="removeCategory(${idx})" title="Slet kategori">🗑️</button>
+                            <button class="btn-icon" onclick="removeCategory(${idx})" title="Slet kategori"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 `).join('')}
@@ -133,12 +133,12 @@ function renderAdminContent() {
                                 <strong style="font-size: 1.1rem;">${quiz.title}</strong>
                             </div>
                             <div style="display: flex; gap: 0.8rem;">
-                                <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})" title="Start Live Quiz for klassen 🚀">🚀 Live</button>
-                                <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})" title="Rediger spørgsmål og detaljer ✏️">Rediger</button>
+                                <button class="btn btn-accent btn-small" onclick="initiateLiveSession(${idx})" title="Start Live Quiz for klassen 🚀"><i class="fa-solid fa-rocket"></i> Live</button>
+                                <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})" title="Rediger spørgsmål og detaljer ✏️"><i class="fa-solid fa-pen-to-square"></i> Rediger</button>
                                 <button class="btn-icon" onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})" title="${quiz.isHidden ? 'Gør quiz synlig for alle' : 'Skjul quiz fra oversigten'}">
-                                    ${quiz.isHidden ? '🙈' : '👁️'}
+                                    <i class="fa-solid ${quiz.isHidden ? 'fa-eye-slash' : 'fa-eye'}"></i>
                                 </button>
-                                <button class="btn-icon" onclick="removeQuiz(${idx})" title="Slet denne quiz permanent 🗑️">🗑️</button>
+                                <button class="btn-icon" onclick="removeQuiz(${idx})" title="Slet denne quiz permanent 🗑️"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
                         <div id="edit-quiz-${idx}" style="display: none; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
@@ -164,13 +164,13 @@ function renderAdminContent() {
                                         <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                                             <span style="opacity: 0.3; font-weight: bold;">#${qIdx+1}</span>
                                             <input type="text" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)" style="flex: 1;" placeholder="Indtast spørgsmål...">
-                                            <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål">🗑️</button>
+                                            <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})" title="Fjern dette spørgsmål"><i class="fa-solid fa-trash-can"></i></button>
                                         </div>
                                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                             ${q.options.map((opt, oIdx) => `
                                                 <div style="display: flex; gap: 0.8rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 6px;">
                                                     <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})" title="Marker som korrekt svar">
-                                                    <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.9rem; background: transparent; border: none;" placeholder="Svarmulighed ${oIdx+1}">
+                                                    <input type="text" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)" style="flex:1; font-size: 0.9rem; background: transparent; border: none; color: white;" placeholder="Svarmulighed ${oIdx+1}">
                                                 </div>
                                             `).join('')}
                                         </div>

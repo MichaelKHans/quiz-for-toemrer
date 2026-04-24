@@ -1522,6 +1522,22 @@ body.admin-mode {
 .admin-item-header div[style*="display: flex"] {
     gap: 0.8rem !important; /* Space between buttons */
 }
+
+/* Fix Sort-på-Sort i Admin (v5.6.3) */
+#admin-modal input, 
+#admin-modal textarea, 
+#admin-modal select {
+    color: #ffffff !important;
+    background-color: #2a2a35 !important;
+    border: 1px solid #4a4a5a !important;
+    padding: 10px !important;
+    border-radius: 6px;
+}
+
+#admin-modal input::placeholder, 
+#admin-modal textarea::placeholder {
+    color: rgba(255,255,255,0.4);
+}
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;
