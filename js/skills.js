@@ -1,6 +1,6 @@
 import { getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.3.1";
+const APP_VERSION = "v5.4.0";
 let myPlayerId = localStorage.getItem('kahoot_player_id') || 'p' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kahoot_player_id', myPlayerId);
 
@@ -14,9 +14,10 @@ async function loadDatabase() {
     return window.QUIZ_DATABASE || { quizzes: [], categories: [] };
 }
 
-// --- HARD-LINK LIVE SYSTEM v5.3.0 ---
+// --- HARD-LINK LIVE SYSTEM v5.4.0 ---
 let activeLivePin = null;
 let lastQuestionIndex = -1;
+let currentStatus = 'lobby';
 
 window.startJoinProcess = () => {
     const old = document.querySelector('.pin-modal-overlay');
@@ -102,6 +103,7 @@ window.showProfileModal = (pin) => {
 };
 
 function renderWaitingScreen(name, icon) {
+    document.body.className = 'kahoot-mode';
     document.body.innerHTML = `
         <div class="kahoot-waiting">
             <div style="font-size: 5rem;">${icon}</div>
@@ -117,7 +119,6 @@ function initHardLink() {
     window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
         const sessions = snap.val();
         
-        // 1. Styr synlighed af "Deltag" knappen
         const hasActiveSession = sessions && Object.values(sessions).some(s => s && (s.status === 'lobby' || s.status === 'playing'));
         const joinBtn = document.getElementById('live-join-btn');
         if (joinBtn) joinBtn.style.display = hasActiveSession ? 'block' : 'none';
@@ -127,13 +128,11 @@ function initHardLink() {
             return;
         }
 
-        // 2. EMERGENCY ADMIN CHECK
         const isAdmin = document.getElementById('admin-modal') || 
                         document.querySelector('.admin-trigger') ||
                         window.location.href.includes('admin');
         if (isAdmin) return;
 
-        // 3. Automatisk UI-skift og spørgsmåls-lytter
         if (activeLivePin) {
             const session = sessions[activeLivePin];
             if (session) {
@@ -142,9 +141,14 @@ function initHardLink() {
                         lastQuestionIndex = session.currentQuestionIndex;
                         renderStudentGameView(session);
                     }
+                } else if (session.status === 'showing_results') {
+                    if (currentStatus !== 'showing_results') {
+                        renderStudentResultView(session);
+                    }
                 } else if (session.status === 'finished') {
                     location.reload();
                 }
+                currentStatus = session.status;
             }
         }
     });
@@ -165,7 +169,6 @@ function renderStudentGameView(session) {
 window.submitLiveAnswer = async (char, index) => {
     if (!activeLivePin) return;
     
-    // Deaktiver knapper
     const btns = document.querySelectorAll('.kahoot-grid button');
     btns.forEach(b => { b.disabled = true; b.style.opacity = "0.2"; });
 
@@ -177,7 +180,6 @@ window.submitLiveAnswer = async (char, index) => {
         const qIdx = session.currentQuestionIndex;
         const isCorrect = index === quiz.questions[qIdx].correctIndex;
         
-        // Kahoot-scoring (0-1000 point)
         const timeLimit = 20;
         const now = Date.now();
         const startTime = session.questionStartTime || now;
@@ -187,7 +189,7 @@ window.submitLiveAnswer = async (char, index) => {
 
         const updates = {};
         updates[`players/${myPlayerId}/answer`] = index;
-        updates[`players/${myPlayerId}/lastAnswerTime`] = now;
+        updates[`players/${myPlayerId}/lastAnswerCorrect`] = isCorrect;
         updates[`players/${myPlayerId}/points`] = (session.players[myPlayerId].points || 0) + pointsAwarded;
         
         await window.update(window.ref(window.db, `live_sessions/${activeLivePin}`), updates);
@@ -201,6 +203,29 @@ window.submitLiveAnswer = async (char, index) => {
         `;
     } catch (e) { console.error("Submit error:", e); }
 };
+
+function renderStudentResultView(session) {
+    const player = session.players[myPlayerId];
+    if (!player) return;
+
+    const isCorrect = player.lastAnswerCorrect === true;
+    const bg = isCorrect ? '#26890c' : '#e21b3c';
+    const icon = isCorrect ? '✅' : '❌';
+    const text = isCorrect ? 'RIGTIGT!' : 'FORKERT!';
+
+    document.body.style.backgroundColor = bg;
+    document.body.innerHTML = `
+        <div class="kahoot-result-screen fade-in" style="background: ${bg}; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 2rem;">
+            <div style="font-size: 8rem; margin-bottom: 1rem;">${icon}</div>
+            <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 2rem;">${text}</h1>
+            <div style="background: rgba(0,0,0,0.2); padding: 2rem; border-radius: 20px; width: 100%; max-width: 300px;">
+                <p style="opacity: 0.8; margin-bottom: 0.5rem; font-weight: bold;">DIN SCORE</p>
+                <div style="font-size: 3.5rem; font-weight: 900;">${player.points || 0}</div>
+            </div>
+            <p style="margin-top: 3rem; opacity: 0.7;">Kig op på storskærmen!</p>
+        </div>
+    `;
+}
 
 // --- STANDARD DASHBOARD LOGIK ---
 let currentCategory = 'all';

@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.3.1";
+const APP_VERSION = "v5.4.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -91,6 +91,7 @@ async function showAdminPanel() {
         </div>
     `;
     document.getElementById('admin-modal').style.display = 'flex';
+    document.body.classList.add('admin-mode');
     
     const titleEl = document.querySelector('#admin-modal h2');
     if (titleEl) titleEl.textContent = `Tømrer Quiz - Panel (Underviser) - ${APP_VERSION}`;
@@ -115,6 +116,7 @@ async function showAdminPanel() {
 
 window.closeAdmin = function() {
     document.getElementById('admin-modal').style.display = 'none';
+    document.body.classList.remove('admin-mode');
 };
 
 function pushToHistory() {
@@ -402,6 +404,7 @@ window.nextLiveQuestion = async (pin) => {
         const snap = await window.get(window.ref(window.db, `live_sessions/${pin}`));
         const session = snap.val();
         await window.update(window.ref(window.db, `live_sessions/${pin}`), {
+            status: 'playing',
             currentQuestionIndex: (session.currentQuestionIndex || 0) + 1,
             questionStartTime: Date.now(),
             showResults: false
@@ -411,7 +414,10 @@ window.nextLiveQuestion = async (pin) => {
 
 window.showQuestionResults = async (pin) => {
     try {
-        await window.set(window.ref(window.db, `live_sessions/${pin}/showResults`), true);
+        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
+            status: 'showing_results',
+            showResults: true
+        });
     } catch (e) { console.error(e); }
 };
 

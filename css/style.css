@@ -1468,3 +1468,40 @@ body.live-mode-active .container {
     }
 }
 
+/* v5.4.0 Fixes */
+body.admin-mode #live-join-btn {
+    display: none !important;
+}
+
+.live-lobby-container, .teacher-game-dashboard {
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    padding: 1.5rem !important;
+}
+
+.teacher-game-dashboard h1 {
+    font-size: 1.8rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.teacher-game-dashboard h2 {
+    font-size: 1.1rem !important;
+}
+
+.answer-distribution {
+    background: rgba(255,255,255,0.03);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.top-leaderboard {
+    background: rgba(255,255,255,0.03);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+@media (max-width: 900px) {
+    .teacher-game-dashboard > div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
