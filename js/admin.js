@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.4.1";
+const APP_VERSION = "v5.4.2";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
