@@ -1739,12 +1739,17 @@ body.admin-mode {
     font-size: 3rem;
     font-weight: 900;
 }
+
+.admin-live-dashboard {
+    display: flex !important;
     flex-direction: column !important;
     padding: 3vh 3vw !important;
     overflow: hidden !important;
     background: #1a1a1a !important;
     max-width: none !important;
     max-height: none !important;
+    min-height: 100%;
+    text-align: center;
 }
 
 .game-info-bar {
@@ -1825,12 +1830,13 @@ body.admin-mode {
 }
 
 .pin-display-compact {
-    transform: scale(1.8);
-    margin: 6vh 0 !important;
+    margin: 2rem auto !important;
     background: rgba(255,255,255,0.05);
-    padding: 1.5rem 3rem;
+    padding: 2rem;
     border-radius: 20px;
     border: 2px solid var(--accent);
+    display: inline-block;
+    min-width: 300px;
 }
 
 .player-grid {
