@@ -5,7 +5,7 @@
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.2.1";
+const APP_VERSION = "v5.3.0";
 const ADMIN_PASSWORD = "tømrer123";
 
 // Live Audio System (Teacher side)
@@ -35,153 +35,12 @@ window.setLiveVolume = (val) => {
     liveAudio.incorrect.volume = val;
 };
 
-const UPDATE_LOG = [
-    {
-        version: "v4.4.5",
-        date: "2026-04-23",
-        title: "🎨 Design Oprydning (v4.4.5)",
-        desc: "Fjernet forældede CSS-klasser (.card-mood-bg) og strømlinet dashboard-designet."
-    },
-    {
-        version: "v4.3.2",
-        date: "2026-04-22",
-        title: "📸 Katte-FIX & URL Optimering (v4.3.2)",
-        desc: "Løst problem med for mange søgeord (AND-logik), der tvang katte frem. Nu bruges færre, men mere præcise ord samt korrekt URL-kodning."
-    },
-    {
-        version: "v4.3.1",
-        date: "2026-04-22",
-        title: "🤖 AI-Scenarier & Billed-synergi (v4.3.1)",
-        desc: "Tilføjet felt til specifikke krav/scenarier i AI-generatoren. AI'en vælger nu både danske og engelske søgeord, der matcher emnet perfekt."
-    },
-    {
-        version: "v4.3.0",
-        date: "2026-04-22",
-        title: "📸 Katte-sikring & Robust Billedsøgning (v4.3.0)",
-        desc: "Implementeret automatiske sikkerheds-tags og fallbacks for at undgå 'katte-billeder' ved svære søgeord."
-    },
-    {
-        version: "v4.2.0",
-        date: "2026-04-22",
-        title: "📸 Dansk Billed-søgning (v4.2.0)",
-        desc: "Tilføjet et nyt værktøj i editoren: 'Søgeord (Dansk)'. Skriv på dansk, og systemet oversætter automatisk til engelsk via en indbygget fagordbog over tømrer-begreber."
-    },
-    {
-        version: "v4.1.0",
-        date: "2026-04-22",
-        title: "☁️ Universal Cloud-synkronisering (v4.1.0)",
-        desc: "Løst problemet med synkronisering mellem computere. Alt indhold (spørgsmål og billeder) hentes nu direkte fra skyen hver gang, hvilket eliminerer fejl pga. lokal hukommelse."
-    },
-    {
-        version: "v4.0.0",
-        date: "2026-04-21",
-        title: "💎 UX Stabilisering & Kontrast-fix (v4.0.0)",
-        desc: "Endelig løsning på 'hoppende' sider i admin-panelet. Panelet husker nu din scroll-position, og slette-knapperne er gjort tydelige."
-    },
-    {
-        version: "v3.9.5",
-        date: "2026-04-21",
-        title: "💾 Image Lock Funktion (v3.9.5)",
-        desc: "Du kan nu gemme et bestemt billede permanent ved hjælp af den nye 'Gem dette billede' knap i editoren."
-    },
-    {
-        version: "v3.9.0",
-        date: "2026-04-21",
-        title: "🛡️ Netværks-sikret Billedvisning (v3.9.0)",
-        desc: "Implementeret en Proxy-tjeneste (Weserv), der henter billeder udenom dit lokale netværks blokering. Dette skulle endelig løse de sorte bokse."
-    },
-    {
-        version: "v3.8.0",
-        date: "2026-04-21",
-        title: "🌍 Globalt Billed-skift (v3.8.0)",
-        desc: "Migreret fra LoremFlickr til Unsplash Source. Dette løser problemet hvor visse netværk blokerede for billeder."
-    },
-    {
-        version: "v3.7.0",
-        date: "2026-04-21",
-        title: "🛡️ Stabiliseret Billed-motor (v3.7.0)",
-        desc: "Genskabt billedvisning ved at rette URL-formatering og tilføje support for danske tegn. Fixet preview-vindue i admin-panelet."
-    },
-    {
-        version: "v3.6.0",
-        date: "2026-04-21",
-        title: "🚀 Ultimativ Billed-fix (v3.6.0)",
-        desc: "Løst en kritisk fejl i kodningen af søgeord. Billeder burde nu være tilbage på alle sider og i admin-panelet."
-    },
-    {
-        version: "v3.5.0",
-        date: "2026-04-21",
-        title: "🌟 Endelig Stabilisering",
-        desc: "Genskabt den oprindelige stabile billedvisning med moderne forbedringer. Understøtter nu alle danske tegn i søgninger."
-    },
-    {
-        version: "v3.4.5",
-        date: "2026-04-21",
-        title: "💎 Diamant-sikring af Billeder",
-        desc: "Billed-motoren er nu gjort ekstremt robust. Den rydder automatisk op i søgeord og bruger kun de mest stabile tags for at sikre, at der altid er billeder."
-    },
-    {
-        version: "v3.4.2",
-        date: "2026-04-21",
-        title: "🛡️ Stabilisering af Billed-motor",
-        desc: "Endelig fix af billeder! Jeg har fjernet de filtre der blokerede for visning og forbedret rensningen af søgeord."
-    },
-    {
-        version: "v3.4.1",
-        date: "2026-04-21",
-        title: "📸 Stabilisering af Billeder",
-        desc: "Rettet en fejl hvor nogle billeder ikke blev vist, og optimeret AI'en til at finde mere relevante billeder."
-    },
-    {
-        version: "v3.4.0",
-        date: "2026-04-21",
-        title: "🧠 Avanceret AI & Fejlrettelse",
-        desc: "AI'en er nu opgraderet til at lave spørgsmål på svendeprøve-niveau med realistiske svarmuligheder. Desuden er import-funktionen gjort robust, så den automatisk fixer fejl i AI-koden."
-    },
-    {
-        version: "v3.3.1",
-        date: "2026-04-21",
-        title: "Tvungen Versions-opdatering",
-        desc: "Denne opdatering sikrer, at alle brugere ser de nyeste funktioner og den korrekte logbog med det samme uden cache-problemer."
-    },
-    {
-        version: "v3.3.0",
-        date: "2026-04-21",
-        title: "Cloud-synk & Dashboard Design",
-        desc: "Systemet kører nu 100% i skyen (Firebase). Desuden har alle quiz-kort på forsiden fået flotte baggrundsbilleder i hjørnerne."
-    },
-    {
-        version: "v3.2.5",
-        date: "2024-04-21",
-        title: "🧠 Intelligent Billed-søgning",
-        desc: "Systemet har fået en 'hjerne', der forstår danske fagord. Den oversætter nu automatisk ord som 'Skimmel' og 'Tagspær' til engelsk, så du altid får relevante billeder uden at skulle tænke over det."
-    },
-    {
-        version: "v3.2.0",
-        date: "2024-04-20",
-        title: "📸 Billed-lås & Preview",
-        desc: "Du kan nu se billedet direkte i editoren og bruge 'Refresh'-knappen til at finde det perfekte match. Når du gemmer, bliver billedet låst fast til quizzen."
-    },
-    {
-        version: "v3.1.5",
-        date: "2024-04-19",
-        title: "✨ AI-genveje & Hurtig-start",
-        desc: "Vi har tilføjet genveje til AI-assistenten overalt, så du lynhurtigt kan skabe nyt indhold uden at skulle klikke rundt i menuerne."
-    },
-    {
-        version: "v3.1.0",
-        date: "2024-04-18",
-        title: "💅 Premium Glow Design",
-        desc: "Hele systemet har fået en visuel overhaling med 'glassmorphism' og grønne glow-effekter, der gør det mere behageligt at arbejde i."
-    }
-];
-
 let localDbCopy = null;
 let historyStack = [];
 let redoStack = [];
-let activeQuizIdx = null; // HUSKER hvilken quiz der er åben
-let activeQuestionsIdx = null; // HUSKER hvilken quiz der har spørgsmål udfoldet
-let adminSearchTerm = ""; // Søgeterm i admin
+let activeQuizIdx = null; 
+let activeQuestionsIdx = null; 
+let adminSearchTerm = ""; 
 
 function initAdmin() {
     // Vi behøver ikke åbne panelet automatisk ved load
@@ -192,7 +51,6 @@ window.tryLogin = function() {
         showAdminPanel();
         return;
     }
-    
     const pass = prompt("Indtast adgangskode for lærer-adgang:");
     if (pass === ADMIN_PASSWORD) {
         sessionStorage.setItem('quiz_admin_authed', 'true');
@@ -211,29 +69,21 @@ async function showAdminPanel() {
         </div>
     `;
     document.getElementById('admin-modal').style.display = 'flex';
-    
-    // Opdater overskrift med version
     const titleEl = document.querySelector('#admin-modal h2');
     if (titleEl) titleEl.textContent = `Tømrer Quiz - Panel (Underviser) - ${APP_VERSION}`;
     
     try {
-        const cloudDb = await window.getDbFromCloud();
+        const cloudDb = await getDbFromCloud();
         if (cloudDb) {
             localDbCopy = cloudDb;
-            console.log("Admin: Data hentet fra Firebase.");
         } else {
-            // STOP systemet frem for at indlæse en tom database!
-            alert("KRITISK FEJL: Kunne ikke hente data fra skyen. Databasen er tom. Luk panelet og prøv igen.");
+            alert("KRITISK FEJL: Kunne ikke hente data fra skyen.");
             return; 
         }
     } catch (error) {
-        console.error("Admin: Fejl ved hentning fra skyen:", error);
-        alert("KRITISK FEJL: Forbindelsen til skyen fejlede. Luk panelet og prøv igen.");
+        alert("KRITISK FEJL: Forbindelsen til skyen fejlede.");
         return; 
     }
-
-    historyStack = [];
-    redoStack = [];
     renderAdminContent();
 }
 
@@ -241,625 +91,56 @@ window.closeAdmin = function() {
     document.getElementById('admin-modal').style.display = 'none';
 };
 
-function pushToHistory() {
-    historyStack.push(JSON.stringify(localDbCopy));
-    redoStack = [];
-    if (historyStack.length > 50) historyStack.shift();
-}
-
-window.undo = function() {
-    if (historyStack.length === 0) return;
-    redoStack.push(JSON.stringify(localDbCopy));
-    localDbCopy = JSON.parse(historyStack.pop());
-    renderAdminContent();
-};
-
-window.redo = function() {
-    if (redoStack.length === 0) return;
-    historyStack.push(JSON.stringify(localDbCopy));
-    localDbCopy = JSON.parse(redoStack.pop());
-    renderAdminContent();
-};
-
 function renderAdminContent() {
     const container = document.getElementById('admin-content-inner');
     if (!container) return;
-    const scrollPos = container.scrollTop;
-    const quizCount = localDbCopy.quizzes.length;
-    
-    // Filtrer quizzer baseret på søgning
-    const term = adminSearchTerm.toLowerCase();
-    const filteredQuizzes = localDbCopy.quizzes.filter(q => {
-        const catTitle = getCategoryTitle(q.categoryId).toLowerCase();
-        return q.title.toLowerCase().includes(term) || catTitle.includes(term);
-    });
     
     let html = `
-        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 1rem;">
+        <div class="admin-tabs" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 1rem;">
             <div>
-                <button class="tab-btn active" id="btn-tab-edit" onclick="switchTab('edit')">Rediger Indhold (${quizCount})</button>
-                <button class="tab-btn" id="btn-tab-ai" onclick="switchTab('ai')">✨ Skab med AI</button>
-                <button class="tab-btn" id="btn-tab-log" onclick="switchTab('log')">📜 Logbog</button>
+                <button class="tab-btn active">Rediger Indhold</button>
+                <button class="btn btn-accent btn-small" onclick="cleanupSessions()">🧹 Nulstil alle Live-sessioner</button>
             </div>
-            <button class="btn btn-primary btn-small" style="background: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow);" onmousedown="setTimeout(() => saveAdminChanges(), 150)">☁️ Gem alle ændringer</button>
+            <button class="btn btn-primary" onclick="saveAdminChanges()">☁️ Gem i skyen</button>
         </div>
 
-        <div id="tab-edit" class="tab-content active">
-            <div class="admin-toolbar" style="flex-wrap: wrap; gap: 1rem;">
-                <div style="flex: 1; min-width: 250px;">
-                    <input type="text" placeholder="🔍 Søg i quizzer (titel eller kategori)..." 
-                           value="${adminSearchTerm}" 
-                           oninput="window.setAdminSearch(this.value)"
-                           style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: #fff;">
-                </div>
-                <div class="admin-history-btns">
-                    <button class="btn btn-secondary btn-small" onclick="undo()" ${historyStack.length === 0 ? 'disabled' : ''} title="Fortryd (Ctrl+Z)">↩️ Fortryd</button>
-                    <button class="btn btn-secondary btn-small" onclick="redo()" ${redoStack.length === 0 ? 'disabled' : ''} title="Gendan (Ctrl+Y)">↪️ Gendan</button>
-                </div>
-                <div class="admin-backup-btns">
-                    <button class="btn btn-secondary btn-small" onclick="downloadBackup()" title="Gem fysisk backup på PC">💾 Gem Backup</button>
-                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('backup-upload').click()" title="Indlæs backup fra PC">📂 Indlæs Backup</button>
-                    <input type="file" id="backup-upload" style="display:none;" onchange="handleBackupUpload(event)">
-                </div>
-                <div class="admin-export-btns">
-                    <button class="btn btn-primary btn-small" onclick="exportDatabase()">Eksportér database.js</button>
-                </div>
-            </div>
-            
-            <div class="admin-actions-secondary" style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button class="btn btn-accent btn-small" onclick="cleanupSessions()" title="Slet alle live-sessioner i Firebase">🧹 Nulstil alle Live-sessioner</button>
-                <button class="btn btn-secondary btn-small" onclick="resetToStandard()">Nulstil til Standard-indhold</button>
-            </div>
-            
-            <div class="admin-section">
-                <h3>Kategorier (${localDbCopy.categories.length})</h3>
-                <div class="admin-items">
-                    ${localDbCopy.categories.map((cat, idx) => `
-                        <div class="admin-item" style="display: flex; align-items: center; gap: 0.5rem; background: ${cat.isHidden ? 'rgba(255,0,0,0.05)' : 'rgba(255,255,255,0.03)'};">
-                            <span class="status-badge ${cat.isHidden ? 'status-hidden' : 'status-visible'}" style="min-width: 90px; text-align: center;">
-                                ${cat.isHidden ? '🚫 Skjult' : '👁️ Synlig'}
-                            </span>
-                            <input type="text" value="${cat.title}" onchange="updateCategory(${idx}, 'title', this.value)" style="flex: 1; font-weight: bold;">
-                            <button class="btn ${cat.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
-                                    onclick="updateCategory(${idx}, 'isHidden', ${!cat.isHidden})"
-                                    title="${cat.isHidden ? 'Gør kategorien synlig for elever' : 'Skjul kategorien (og alle dens quizzer) for elever'}">
-                                ${cat.isHidden ? 'Vis' : 'Skjul'}
-                            </button>
-                            <button class="btn-icon" onclick="removeCategory(${idx})">🗑️</button>
-                        </div>
-                    `).join('')}
-                    <button class="btn btn-secondary btn-small" style="margin-top: 1rem;" onclick="addCategory()">+ Tilføj Kategori</button>
-                    <button class="btn btn-accent btn-small" style="margin-top: 1rem; margin-left: 0.5rem;" onclick="cleanupSessions()">🧹 Nulstil alle Live-sessioner</button>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h3>Quizzer (${filteredQuizzes.length})</h3>
-                <div class="admin-items">
-                    ${filteredQuizzes.map((quiz) => {
-                        const idx = localDbCopy.quizzes.findIndex(q => q.id === quiz.id);
-                        const rawKeywords = quiz.moodKeywords || "";
-                        let displayKeywords = rawKeywords;
-                        if (!displayKeywords) {
-                            const titleMatch = quiz.title.match(/\(([^)]+)\)/);
-                            displayKeywords = titleMatch ? titleMatch[1] : quiz.title;
-                        }
-                        const translateFn = window.translateKeywords || ((s) => s);
-                        const translated = translateFn(displayKeywords);
-                        // Brug det faste billede, eller vis en pladsholder indtil læreren trykker "Nyt Billede"
-                        const previewUrl = quiz.moodImageUrl || `https://placehold.co/800x600/2a2a2a/ffffff?text=Klik+paa+Nyt+Billede`;
-                        
-                        return `
-                        <div class="admin-item-expanded">
-                            <div class="admin-item-header">
-                                <div>
-                                    <span class="admin-cat-tag">${getCategoryTitle(quiz.categoryId)}</span>
-                                    <span class="status-badge ${quiz.isHidden ? 'status-hidden' : 'status-visible'}">
-                                        ${quiz.isHidden ? '🚫 Skjult' : '👁️ Synlig'}
-                                    </span>
-                                    <strong>${quiz.title}</strong>
-                                </div>
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <button class="btn btn-accent btn-small" style="background: #6366f1;" onclick="initiateLiveSession(${idx})" title="Start en live-session for klassen">🚀 Start Live</button>
-                                    <button class="btn ${quiz.isHidden ? 'btn-success' : 'btn-secondary'} btn-small" 
-                                            onclick="updateQuiz(${idx}, 'isHidden', ${!quiz.isHidden})">
-                                        ${quiz.isHidden ? 'Gør Synlig' : 'Skjul'}
-                                    </button>
-                                    <button class="btn btn-secondary btn-small" onclick="toggleEditQuiz(${idx})">Rediger</button>
-                                    <button class="btn-icon" onclick="removeQuiz(${idx})">🗑️</button>
-                                </div>
-                            </div>
-                            <div id="edit-quiz-${idx}" class="edit-form" style="display:none; padding: 1.2rem; border-top: 1px solid var(--card-border);">
-                                <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
-                                    <!-- VENSTRE KOLONNE: INFO -->
-                                    <div>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.8rem;">
-                                            <div>
-                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Quiz Titel</label>
-                                                <input type="text" value="${quiz.title}" onchange="updateQuiz(${idx}, 'title', this.value)" style="padding: 0.4rem 0.6rem;">
-                                            </div>
-                                            <div>
-                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Kategori</label>
-                                                <select onchange="updateQuiz(${idx}, 'categoryId', this.value)" style="padding: 0.4rem 0.6rem;">
-                                                    ${localDbCopy.categories.map(c => `<option value="${c.id}" ${c.id === quiz.categoryId ? 'selected' : ''}>${c.title}</option>`).join('')}
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Beskrivelse (Kort)</label>
-                                        <textarea onchange="updateQuiz(${idx}, 'description', this.value)" style="min-height: 50px; padding: 0.5rem; font-size: 0.85rem; margin-bottom: 0.8rem;">${quiz.description}</textarea>
-                                        
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                            <div>
-                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Søgeord (Dansk → Auto-Engelsk)</label>
-                                                <input type="text" value="${quiz.moodKeywordsDanish || ''}" placeholder="f.eks. tagspær" onchange="translateAndSetKeywords(${idx}, this.value)" style="padding: 0.4rem 0.6rem;">
-                                            </div>
-                                            <div>
-                                                <label style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.2rem; display: block;">Aktive Engelske Keywords</label>
-                                                <input type="text" value="${quiz.moodKeywords || ''}" onchange="updateQuiz(${idx}, 'moodKeywords', this.value)" style="padding: 0.4rem 0.6rem; opacity: 0.8;">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- HØJRE KOLONNE: BILLEDE & URL -->
-                                    <div style="background: rgba(255,255,255,0.03); padding: 0.8rem; border-radius: 10px; border: 1px solid var(--card-border);">
-                                        <div class="mood-preview-container" style="position:relative; margin-bottom: 0.6rem; background: #000; border-radius: 6px; overflow: hidden; border: 1px solid var(--accent);">
-                                            <img src="${previewUrl}" id="preview-img-${idx}" style="width: 100%; height: 110px; object-fit: cover;">
-                                            <div style="display: flex; gap: 0.2rem; padding: 0.3rem; background: rgba(0,0,0,0.6);">
-                                                <button class="btn btn-secondary btn-small" style="flex: 1; font-size: 0.7rem; padding: 0.3rem;" onclick="refreshImage(${idx})">🔄 Nyt</button>
-                                                <button class="btn btn-success btn-small" style="flex: 1.2; font-size: 0.7rem; padding: 0.3rem;" onclick="lockImage(${idx})">💾 Gem</button>
-                                            </div>
-                                        </div>
-                                        <label style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 0.2rem; display: block;">Direkte Billed-URL (Overstyr)</label>
-                                        <input type="text" placeholder="https://..." value="${quiz.moodImageUrl || ''}" onchange="updateQuiz(${idx}, 'moodImageUrl', this.value)" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.2);">
-                                    </div>
-                                </div>
-
-                                <!-- SPØRGSMÅL (Collapsible) -->
-                                <div style="margin-top: 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <h4 style="margin:0; font-size: 1rem;">Spørgsmål (${quiz.questions.length})</h4>
-                                        <button class="btn ${activeQuestionsIdx === idx ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="toggleQuestions(${idx})">
-                                            ${activeQuestionsIdx === idx ? 'Skjul Spørgsmål 🔼' : 'Rediger Spørgsmål 🔽'}
-                                        </button>
-                                    </div>
-
-                                    <div id="questions-container-${idx}" style="display: ${activeQuestionsIdx === idx ? 'block' : 'none'}; margin-top: 1rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
-                                        <button class="btn btn-secondary btn-small" style="margin-bottom: 1rem;" onclick="addQuestion(${idx})">+ Tilføj Spørgsmål</button>
-                                        <div class="admin-questions">
-                                            ${quiz.questions.map((q, qIdx) => `
-                                                <div class="admin-question-edit">
-                                                    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
-                                                        <strong>Spørgsmål ${qIdx + 1}</strong>
-                                                        <button class="btn-icon" onclick="removeQuestion(${idx}, ${qIdx})">Fjern 🗑️</button>
-                                                    </div>
-                                                    <input type="text" placeholder="Spørgsmål" value="${q.question}" onchange="updateQuestion(${idx}, ${qIdx}, 'question', this.value)">
-                                                    <div class="admin-options-edit">
-                                                        ${q.options.map((opt, oIdx) => `
-                                                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                                                <input type="radio" name="correct-${idx}-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="updateQuestion(${idx}, ${qIdx}, 'correctIndex', ${oIdx})">
-                                                                <input type="text" placeholder="Svarmulighed ${oIdx+1}" value="${opt}" onchange="updateOption(${idx}, ${qIdx}, ${oIdx}, this.value)">
-                                                            </div>
-                                                        `).join('')}
-                                                    </div>
-                                                    <label>Rationale (forklaring der vises efter svar)</label>
-                                                    <textarea onchange="updateQuestion(${idx}, ${qIdx}, 'rationale', this.value)">${q.rationale}</textarea>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;}).join('')}
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button class="btn btn-primary" onclick="addQuiz()">+ Opret Ny Quiz Manuelt</button>
-                        <button class="btn btn-secondary" onclick="switchTab('ai')">✨ Skab med AI (Genvej)</button>
+        <div class="admin-section">
+            <h3>Quizzer (${localDbCopy.quizzes.length})</h3>
+            <div class="admin-items">
+                ${localDbCopy.quizzes.map((quiz, idx) => `
+                    <div class="admin-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.03); margin-bottom: 0.5rem; border-radius: 8px;">
+                        <strong>${quiz.title}</strong>
+                        <button class="btn btn-accent" onclick="initiateLiveSession(${idx})">🚀 Start Live</button>
                     </div>
-                </div>
+                `).join('')}
             </div>
-        </div>
-
-        <div id="tab-ai" class="tab-content">
-            <div class="ai-assistant-container">
-                <div class="ai-step">
-                    <h3>Trin 1: Fortæl AI hvad du vil have</h3>
-                    <p class="step-guide">Skriv emnet for din nye quiz nedenfor. AI'en vil foreslå både spørgsmål og passende tekniske søgeord til billeder.</p>
-                    <div class="ai-input-group" style="flex-direction: column; align-items: stretch; gap: 0.5rem;">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="text" id="ai-topic" placeholder="Hovedemne (f.eks. Faldsikring)" style="flex: 2;">
-                            <select id="ai-category" style="flex: 1;">
-                                ${localDbCopy.categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('')}
-                            </select>
-                            <button class="btn btn-secondary btn-small" onclick="quickAddCategory()" title="Opret ny kategori her">+ Ny kat.</button>
-                        </div>
-                        <textarea id="ai-requirements" placeholder="Specifikke ønsker eller scenarier... (f.eks. 'Fokusér på regler for stillads over 2 meter' eller 'Lav et scenarie om en byggeplads i regnvejr')" style="min-height: 80px;"></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="generateAiPrompt()">✨ Opret AI-Kommando</button>
-                </div>
-
-                <div id="ai-prompt-result" class="ai-step" style="display:none;">
-                    <h3>Trin 2: Kopier og kør i ChatGPT</h3>
-                    <p class="step-guide">Kopier teksten, kør den hos AI'en, og kopier koden tilbage herover.</p>
-                    <div class="prompt-box">
-                        <pre id="prompt-text"></pre>
-                        <button class="btn btn-secondary btn-small" onclick="copyPrompt()">📋 Kopier Tekst</button>
-                    </div>
-                </div>
-
-                <div class="ai-step">
-                    <h3>Trin 3: Indsæt svaret fra AI her</h3>
-                    <textarea id="ai-import-json" placeholder="Indsæt koden fra AI her..." style="min-height: 200px;"></textarea>
-                    <button class="btn btn-primary" onclick="importAiQuiz()">🚀 Opret Quiz Nu</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-log" class="tab-content">
-            <div class="logbog-container">
-                <h3>Opdaterings-historik</h3>
-                <p class="step-guide">Her kan du følge med i de nyeste funktioner og forbedringer i Tømrer Quiz.</p>
-                <div class="log-entries">
-                    ${UPDATE_LOG.map(log => `
-                        <div class="log-entry">
-                            <div class="log-header">
-                                <span class="log-version">${log.version}</span>
-                                <span class="log-date">${log.date}</span>
-                            </div>
-                            <h4>${log.title}</h4>
-                            <p>${log.desc}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-        
-        <div class="admin-footer">
-            <button class="btn btn-secondary" onclick="closeAdmin()">Gå tilbage (Annuller)</button>
-            <button class="btn btn-primary" onmousedown="setTimeout(() => saveAdminChanges(), 150)">Gem alle ændringer i skyen ☁️</button>
         </div>
     `;
-    
     container.innerHTML = html;
-    
-    // Genskab åben quiz hvis muligt
-    if (activeQuizIdx !== null) {
-        const el = document.getElementById(`edit-quiz-${activeQuizIdx}`);
-        if (el) el.style.display = 'block';
-    }
-
-    // Genskab scroll position ROBUST (vent til browseren er klar)
-    requestAnimationFrame(() => {
-        container.scrollTop = scrollPos;
-    });
 }
-
-// --- NY PIXABAY BILLEDSØGNING ---
-const PIXABAY_API_KEY = "33031971-903622639880d24a7febb7bc5";
-
-async function fetchPixabayImage(keywords) {
-    if (!keywords) return null;
-    
-    // Rens keywords for at gøre søgningen bedre
-    const cleanKeywords = keywords.replace(/,/g, ' ').trim();
-    const url = `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(cleanKeywords)}&image_type=photo&orientation=horizontal&safesearch=true&per_page=20`;
-    
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.hits && data.hits.length > 0) {
-            // Vælg et tilfældigt billede blandt de bedste resultater for at give variation
-            const randomHit = data.hits[Math.floor(Math.random() * data.hits.length)];
-            return randomHit.webformatURL; // Dette er det permanente, låste link!
-        }
-        return null; // Ingen billeder fundet
-    } catch (error) {
-        console.error("Fejl ved hentning fra Pixabay:", error);
-        return null;
-    }
-}
-
-window.refreshImage = async (idx) => {
-    const quiz = localDbCopy.quizzes[idx];
-    
-    // Find søgeord (brug engelske tags, da Pixabay er bedst til det)
-    const keywords = quiz.moodKeywords || quiz.title;
-    
-    // Vis brugeren at vi arbejder
-    const btn = event.target;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = "⏳ Søger...";
-    btn.disabled = true;
-
-    // Hent permanent billede fra Pixabay
-    const newImageUrl = await fetchPixabayImage(keywords);
-    
-    pushToHistory();
-    
-    if (newImageUrl) {
-        quiz.moodImageUrl = newImageUrl; // Gem den ægte URL direkte i databasen!
-    } else {
-        alert("Pixabay kunne ikke finde nogle billeder for: " + keywords + ".\nPrøv at ændre søgeordene.");
-    }
-
-    btn.innerHTML = oldText;
-    btn.disabled = false;
-    renderAdminContent();
-};
-// --------------------------------
-
-window.translateAndSetKeywords = (idx, danishVal) => {
-    pushToHistory();
-    localDbCopy.quizzes[idx].moodKeywordsDanish = danishVal;
-    
-    // Brug den globale translateKeywords funktion fra skills.js
-    const englishVal = window.translateKeywords(danishVal);
-    localDbCopy.quizzes[idx].moodKeywords = englishVal;
-    
-    // VI SLETTER IKKE LÆNGERE BILLEDET AUTOMATISK HER.
-    // Læreren bestemmer selv, hvornår der skal hentes et nyt billede ved at trykke "Nyt Billede".
-    
-    renderAdminContent();
-};
-
-window.quickAddCategory = () => {
-    const title = prompt("Hvad skal den nye kategori hedde?");
-    if (title && title.trim()) {
-        const id = title.toLowerCase().trim().replace(/\s+/g, '-');
-        if (localDbCopy.categories.find(c => c.id === id)) {
-            alert("Denne kategori findes allerede.");
-            return;
-        }
-        pushToHistory();
-        localDbCopy.categories.push({ id, title: title.trim() });
-        renderAdminContent();
-        window.switchTab('ai');
-        document.getElementById('ai-category').value = id;
-    }
-};
-
-window.switchTab = (tabId) => {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
-    const btn = document.getElementById(`btn-tab-${tabId}`);
-    const content = document.getElementById(`tab-${tabId}`);
-    if (btn) btn.classList.add('active');
-    if (content) content.classList.add('active');
-};
-
-window.generateAiPrompt = () => {
-    const topic = document.getElementById('ai-topic').value;
-    const requirements = document.getElementById('ai-requirements').value;
-    const catId = document.getElementById('ai-category').value;
-    const catTitle = localDbCopy.categories.find(c => c.id === catId).title;
-
-    if (!topic) { alert("Skriv et emne."); return; }
-
-    const prompt = `Som tømrer-ekspert og faglærer, lav en seriøs JSON quiz om "${topic}" til kategorien "${catTitle}". 
-
-${requirements ? `SPECIFIKKE KRAV/SCENARIE:\n${requirements}\n` : ''}
-
-KRAV TIL KVALITET:
-- Sværhedsgrad: Svendeprøve-niveau (teknisk funderet).
-- Spørgsmål: Skal teste forståelse, regler (f.eks. fra Træ-fakta, BR18, Arbejdstilsynet) eller praktisk udførelse.
-- Svarmuligheder: Lav 3-4 muligheder pr. spørgsmål.
-- Distraktorer (forkerte svar): Skal være yderst realistiske og teknisk plausible, ikke banale. De skal kræve faglig viden at gennemskue.
-- Rationale: Hvert spørgsmål SKAL have en 'rationale' (en kort faglig forklaring på max 2 sætninger, der bekræfter hvorfor det rigtige svar er korrekt).
-
-JSON STRUKTUR (VIGTIG):
-{
-  "id": "${topic.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}",
-  "categoryId": "${catId}",
-  "title": "${topic}",
-  "description": "Faglig quiz om ${topic}.",
-  "moodKeywords": "skriv-engelske-tags-here (f.eks. stairs,carpentry)",
-  "moodKeywordsDanish": "skriv-danske-tags-her (f.eks. trapper)",
-  "questions": [
-    {
-      "question": "Spørgsmålstekst her?",
-      "options": ["Svar 1", "Svar 2", "Svar 3"],
-      "correctIndex": 0,
-      "rationale": "Faglig forklaring her."
-    }
-  ]
-}
-
-REGLER FOR BILLED-SØGEORD:
-- find ord der matcher emnet perfekt.
-- moodKeywords: KUN engelsk. 
-- moodKeywordsDanish: KUN dansk.
-- Brug komma imellem ordene. Max 2-3 ord.
-
-SVAR KUN MED RÅ JSON.`;
-
-    document.getElementById('prompt-text').textContent = prompt;
-    document.getElementById('ai-prompt-result').style.display = 'block';
-};
-
-window.toggleQuestions = (idx) => {
-    activeQuestionsIdx = (activeQuestionsIdx === idx) ? null : idx;
-    renderAdminContent();
-};
-
-window.importAiQuiz = () => {
-    const raw = document.getElementById('ai-import-json').value;
-    try {
-        const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
-        let data = JSON.parse(cleaned);
-
-        // Robusthed: Håndter hvis AI bruger forkerte feltnavne
-        if (data.questions && Array.isArray(data.questions)) {
-            data.questions = data.questions.map(q => {
-                // Flyt 'answers' til 'options' hvis nødvendigt
-                if (!q.options && q.answers) q.options = q.answers;
-                // Flyt 'correctAnswer' til 'correctIndex' hvis nødvendigt
-                if (q.correctIndex === undefined && q.correctAnswer !== undefined) q.correctIndex = q.correctAnswer;
-                // Sørg for at 'options' eksisterer som et array for at undgå .map fejl senere
-                if (!q.options) q.options = ["Fejl: Ingen svarmuligheder fundet"];
-                if (q.correctIndex === undefined) q.correctIndex = 0;
-                if (!q.rationale) q.rationale = "";
-                return q;
-            });
-        } else {
-            throw new Error("JSON indeholder ikke et gyldigt 'questions' array.");
-        }
-
-        if (data.moodImageUrl && data.moodImageUrl.includes('loremflickr')) {
-            delete data.moodImageUrl; 
-        }
-        if (!data.moodImageLock) data.moodImageLock = Math.floor(Math.random() * 5000);
-        
-        if (!data.moodKeywordsDanish) data.moodKeywordsDanish = "";
-        
-        pushToHistory();
-        localDbCopy.quizzes.push(data);
-        alert("Quiz oprettet med succes!");
-        window.switchTab('edit');
-        renderAdminContent();
-    } catch(e) { 
-        alert("Fejl i koden: " + e.message + "\n\nTjek at du har kopieret hele koden korrekt fra ChatGPT."); 
-        console.error("AI Import Fejl:", e);
-    }
-};
-
-window.toggleEditQuiz = (idx, forceOpen = false) => {
-    const el = document.getElementById(`edit-quiz-${idx}`);
-    if (forceOpen) {
-        el.style.display = 'block';
-        activeQuizIdx = idx;
-    } else {
-        const isOpening = el.style.display === 'none';
-        el.style.display = isOpening ? 'block' : 'none';
-        activeQuizIdx = isOpening ? idx : null;
-    }
-};
-
-function getCategoryTitle(id) {
-    const cat = localDbCopy.categories.find(c => c.id === id);
-    return cat ? cat.title : id;
-}
-
-window.updateCategory = (idx, key, val) => { pushToHistory(); localDbCopy.categories[idx][key] = val; renderAdminContent(); };
-window.removeCategory = (idx) => { pushToHistory(); localDbCopy.categories.splice(idx, 1); renderAdminContent(); };
-window.addCategory = () => { pushToHistory(); localDbCopy.categories.push({ id: 'cat-'+Date.now(), title: 'Ny Kategori' }); renderAdminContent(); };
-window.updateQuiz = (idx, key, val) => { pushToHistory(); localDbCopy.quizzes[idx][key] = val; renderAdminContent(); };
-window.removeQuiz = (idx) => { pushToHistory(); localDbCopy.quizzes.splice(idx, 1); renderAdminContent(); };
-window.addQuiz = () => { pushToHistory(); localDbCopy.quizzes.push({ id: 'q-'+Date.now(), title: 'Ny Quiz', questions: [], categoryId: localDbCopy.categories[0].id }); renderAdminContent(); };
-window.updateQuestion = (idx, qIdx, key, val) => { pushToHistory(); localDbCopy.quizzes[idx].questions[qIdx][key] = val; renderAdminContent(); };
-window.updateOption = (idx, qIdx, oIdx, val) => { pushToHistory(); localDbCopy.quizzes[idx].questions[qIdx].options[oIdx] = val; renderAdminContent(); };
-window.removeQuestion = (idx, qIdx) => { pushToHistory(); localDbCopy.quizzes[idx].questions.splice(qIdx, 1); renderAdminContent(); };
-window.addQuestion = (idx) => { pushToHistory(); localDbCopy.quizzes[idx].questions.push({ question: '?', options: ['A','B','C'], correctIndex: 0, rationale: '' }); renderAdminContent(); };
 
 window.saveAdminChanges = async () => {
     const success = await saveDbToCloud(localDbCopy);
     if (success) {
-        alert("Gemt i skyen! Alle lærere og elever kan nu se ændringerne.");
-        location.reload();
-    } else {
-        alert("Fejl: Kunne ikke gemme i skyen. Tjek din internetforbindelse.");
-    }
-};
-
-window.resetToStandard = async () => {
-    if (confirm("Vil du nulstille til standard-indholdet fra skyen?")) {
-        localStorage.removeItem('quiz_hub_admin_data');
+        alert("Gemt!");
         location.reload();
     }
 };
 
-window.copyPrompt = () => { navigator.clipboard.writeText(document.getElementById('prompt-text').textContent); alert("Kopieret!"); };
-
-window.downloadBackup = () => {
-    const blob = new Blob([JSON.stringify(localDbCopy, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `quiz_backup_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-};
-
-window.handleBackupUpload = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        localDbCopy = JSON.parse(ev.target.result);
-        renderAdminContent();
-        alert("Backup indlæst!");
-    };
-    reader.readAsText(file);
-};
-
-window.exportDatabase = () => {
-    const code = `window.QUIZ_DATABASE = ${JSON.stringify(localDbCopy, null, 2)};`;
-    const blob = new Blob([code], { type: 'text/javascript' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'database.js';
-    a.click();
-};
-
-// FJERN DUPLIKERET REFRESHIMAGE OG BRUG DEN KONSOLIDEREDE FOROVEN
-
-window.lockImage = function(idx) {
-    const imgEl = document.getElementById(`preview-img-${idx}`);
-    if (!imgEl) return;
-    
-    pushToHistory();
-    const quiz = localDbCopy.quizzes[idx];
-    quiz.moodImageUrl = imgEl.src;
-    
-    // Vis feedback
-    const btn = event.target;
-    const oldText = btn.innerHTML;
-    btn.innerHTML = "✅ Gemt!";
-    btn.style.backgroundColor = "var(--success)";
-    
-    saveDbToCloud(localDbCopy);
-    
-    setTimeout(() => {
-        btn.innerHTML = oldText;
-        btn.style.backgroundColor = "";
-        renderAdminContent();
-    }, 1500);
-};
-
-window.setAdminSearch = (val) => {
-    adminSearchTerm = val;
-    renderAdminContent();
-};
-
-document.addEventListener('keydown', (e) => {
-    if (document.getElementById('admin-modal').style.display === 'flex') {
-        if (e.ctrlKey && e.key === 'z') { e.preventDefault(); window.undo(); }
-        if (e.ctrlKey && e.key === 'y') { e.preventDefault(); window.redo(); }
-    }
-});
-
-// Vi skal holde styr på lytteren for at kunne afbryde den
+// --- LIVE SESSION LOGIK ---
 let activeSessionUnsubscribe = null;
 let currentLivePin = null;
 
 window.cleanupSessions = async () => {
-    if (!confirm("Vil du SLETTE alle live-sessioner fra databasen? Dette kan ikke fortrydes og fjerner straks 'Deltag' knappen for alle elever.")) return;
-    
+    if (!confirm("Nulstil alle sessioner?")) return;
     try {
-        console.log("Forsøger at slette alle sessioner i Firebase...");
-        const liveRef = window.ref(window.db, 'live_sessions');
-        await window.set(liveRef, null); 
-        alert("Live-sessioner er nulstillet!");
-    } catch (e) {
-        console.error("Fejl ved rydning:", e);
-        alert("Fejl ved rydning: " + e.message);
-    }
+        await window.set(window.ref(window.db, 'live_sessions'), null);
+        alert("Nulstillet!");
+    } catch (e) { console.error(e); }
 };
 
 window.initiateLiveSession = async (quizIdx) => {
     try {
-        console.log("Forsøger at rydde op og oprette ny session i Firebase...");
-        const liveRef = window.ref(window.db, 'live_sessions');
-        await window.set(liveRef, null);
-
         const pin = Math.floor(100000 + Math.random() * 900000).toString();
         currentLivePin = pin;
         const quiz = localDbCopy.quizzes[quizIdx];
@@ -869,31 +150,24 @@ window.initiateLiveSession = async (quizIdx) => {
             quizId: quiz.id,
             quizTitle: quiz.title,
             status: 'lobby',
-            currentQuestion: 0,
-            createdAt: window.serverTimestamp(),
+            currentQuestionIndex: 0,
+            showResults: false,
+            createdAt: Date.now(),
             players: {}
         };
 
+        await window.set(window.ref(window.db, `live_sessions/${pin}`), sessionData);
         renderLobbyUI(pin, quiz.title);
 
-        if (window.createLiveSession) {
-            await window.createLiveSession(pin, sessionData);
-            if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-            activeSessionUnsubscribe = window.listenToSession(pin, (data) => {
-                if (!data) return;
-                if (data.status === 'lobby') {
-                    updateLobbyPlayerList(data);
-                } else if (data.status === 'playing') {
-                    renderTeacherGameView(data);
-                } else if (data.status === 'finished') {
-                    renderPodium(data);
-                }
-            });
-        }
-    } catch (e) {
-        console.error("Fejl ved start af Live Quiz:", e);
-        alert("Kunne ikke starte Live Quiz. Tjek konsollen.");
-    }
+        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
+        activeSessionUnsubscribe = window.onValue(window.ref(window.db, `live_sessions/${pin}`), (snap) => {
+            const data = snap.val();
+            if (!data) return;
+            if (data.status === 'lobby') updateLobbyPlayerList(data);
+            else if (data.status === 'playing') renderTeacherGameView(data);
+            else if (data.status === 'finished') renderPodium(data);
+        });
+    } catch (e) { console.error(e); }
 };
 
 function renderLobbyUI(pin, title) {
@@ -901,29 +175,15 @@ function renderLobbyUI(pin, title) {
     container.innerHTML = `
         <div class="live-lobby-container fade-in">
             <div class="lobby-header">
-                <div style="display: flex; flex-direction: column;">
-                    <span class="live-badge" style="margin:0; width: fit-content; scale: 0.8;">TØMRER-LIVE</span>
-                    <h1 title="${title}">${title}</h1>
-                </div>
+                <h1>${title}</h1>
                 <div class="pin-display-compact">
-                    <p>PIN:</p>
-                    <div class="pin-code-compact">${pin}</div>
+                    <p>PIN: <span style="font-size: 2rem; color: var(--accent);">${pin}</span></p>
                 </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <button class="btn btn-secondary btn-small" onclick="toggleLiveMusic()">${liveAudio.isMuted ? '🔇' : '🔊'}</button>
-                    <input type="range" min="0" max="1" step="0.1" value="${liveAudio.volume}" onchange="setLiveVolume(this.value)" style="width: 60px;">
-                </div>
-                <div class="player-status" style="font-size: 1.2rem; font-weight: bold; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 8px;">
-                    👥 <span id="player-count-val">0</span>
-                </div>
+                <div class="player-status">👥 <span id="player-count-val">0</span> spillere</div>
             </div>
-            <div class="lobby-main">
-                <div id="player-list" class="player-grid">
-                    <p class="waiting-msg">Venter på spillere...</p>
-                </div>
-            </div>
+            <div id="player-list" class="player-grid"></div>
             <div class="lobby-actions-fixed">
-                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
+                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd</button>
                 <button class="btn btn-success btn-large" id="start-btn" onclick="startLiveGame('${pin}')" disabled>START QUIZ 🚀</button>
             </div>
         </div>
@@ -940,50 +200,51 @@ function updateLobbyPlayerList(session) {
     if (countVal) countVal.textContent = players.length;
 
     if (players.length > 0) {
-        if (startBtn) {
-            startBtn.disabled = false;
-            startBtn.style.opacity = "1";
-            startBtn.style.cursor = "pointer";
-        }
+        if (startBtn) startBtn.disabled = false;
         list.innerHTML = players.map(p => `
-            <div class="player-bubble fade-in">
-                <span class="player-icon-small">${p.icon || '👤'}</span>
-                <span>${p.name}</span>
+            <div class="player-bubble">
+                <span>${p.icon || '👤'} ${p.name}</span>
             </div>
         `).join('');
     } else {
-        if (startBtn) {
-            startBtn.disabled = true;
-            startBtn.style.opacity = "0.5";
-        }
-        list.innerHTML = `<p class="waiting-msg">Venter på spillere...</p>`;
+        if (startBtn) startBtn.disabled = true;
+        list.innerHTML = `<p>Venter på spillere...</p>`;
     }
 }
 
 window.startLiveGame = async (pin) => {
-    console.log("Starter spil for PIN:", pin);
     try {
-        await window.set(window.ref(window.db, `live_sessions/${pin}/status`), 'playing');
-        await window.set(window.ref(window.db, `live_sessions/${pin}/questionStartTime`), window.serverTimestamp());
-    } catch (e) {
-        console.error("Start game error:", e);
-    }
+        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
+            status: 'playing',
+            currentQuestionIndex: 0,
+            questionStartTime: Date.now()
+        });
+    } catch (e) { console.error(e); }
+};
+
+window.nextLiveQuestion = async (pin) => {
+    try {
+        const snap = await window.get(window.ref(window.db, `live_sessions/${pin}`));
+        const session = snap.val();
+        await window.update(window.ref(window.db, `live_sessions/${pin}`), {
+            currentQuestionIndex: (session.currentQuestionIndex || 0) + 1,
+            questionStartTime: Date.now(),
+            showResults: false
+        });
+    } catch (e) { console.error(e); }
+};
+
+window.showQuestionResults = async (pin) => {
+    try {
+        await window.set(window.ref(window.db, `live_sessions/${pin}/showResults`), true);
+    } catch (e) { console.error(e); }
 };
 
 window.stopLiveSession = async () => {
     if (currentLivePin) {
-        try {
-            await window.set(window.ref(window.db, `live_sessions/${currentLivePin}/status`), 'finished');
-            if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-            currentLivePin = null;
-            renderAdminContent();
-        } catch (e) {
-            console.error("Error stopping session:", e);
-        }
-    } else {
-        if (activeSessionUnsubscribe) activeSessionUnsubscribe();
-        renderAdminContent();
+        await window.set(window.ref(window.db, `live_sessions/${currentLivePin}/status`), 'finished');
     }
+    location.reload();
 };
 
 function renderTeacherGameView(session) {
@@ -994,117 +255,72 @@ function renderTeacherGameView(session) {
     const players = session.players ? Object.values(session.players) : [];
     const answerCount = players.filter(p => p && p.answer !== undefined).length;
 
-    const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
-    const symbols = ['▲', '◆', '●', '■'];
-    const letters = ['A', 'B', 'C', 'D'];
-    const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
-
-    // Start musik hvis ikke mutet
-    if (!liveAudio.isMuted) liveAudio.music.play().catch(() => {});
+    if (session.showResults) {
+        renderLeaderboard(session, quiz, qIdx);
+        return;
+    }
 
     container.innerHTML = `
         <div class="teacher-game-dashboard fade-in">
-            <div class="game-info-bar">
-                <div style="display: flex; gap: 2rem; align-items: center;">
-                    <span class="live-badge" style="margin:0; scale: 0.8;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
-                    <h2 style="margin:0; font-size: 1.2rem;">${quiz.title}</h2>
-                </div>
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <button class="btn btn-secondary btn-small" onclick="toggleLiveMusic()">${liveAudio.isMuted ? '🔇' : '🔊'}</button>
-                    <div class="pin-display-compact" style="padding: 0.3rem 0.8rem; scale: 0.8;">
-                        <p>PIN:</p>
-                        <div class="pin-code-compact" style="font-size: 1.4rem;">${session.pin}</div>
+            <h2>SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</h2>
+            <h1>${question.question}</h1>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem 0;">
+                ${question.options.map((opt, i) => `
+                    <div style="background: ${['#e21b3c', '#1368ce', '#d89e00', '#26890c'][i]}; color: white; padding: 1.5rem; border-radius: 12px; font-weight: bold;">
+                        ${opt}
                     </div>
-                    <div class="player-status" style="font-size: 1rem; font-weight: bold;">👥 ${players.length}</div>
-                </div>
+                `).join('')}
             </div>
-            
-            <div class="current-question-display" style="display: flex; flex-direction: column;">
-                <h1 style="font-size: 1.8rem; margin-bottom: 1rem; line-height: 1.2;">${question.question}</h1>
-                <div class="teacher-options-preview" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
-                    ${question.options.map((opt, i) => `
-                        <div style="background: ${colors[i]}; color: white; padding: 0.8rem; border-radius: 8px; display: flex; align-items: center; gap: 1rem; font-weight: bold; font-size: 0.9rem;">
-                            <span style="font-size: 1.2rem;">${symbols[i]}</span>
-                            <span>${opt}</span>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="image-box" style="flex-grow: 1; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); position: relative; min-height: 200px;">
-                    <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;">
-                </div>
+            <div style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">SVAR: ${answerCount} / ${players.length}</div>
+            <div class="lobby-actions-fixed">
+                <button class="btn btn-accent btn-large" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
             </div>
-            
-            <div class="answer-stats-panel">
-                <div style="text-align: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
-                    <div style="font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1;">${answerCount}</div>
-                    <div style="font-size: 0.8rem; opacity: 0.7;">SVAR MODTAGET</div>
-                </div>
-                
-                <div class="player-stats-list">
-                    <h4 style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 0.5rem; text-transform: uppercase;">Spiller-status</h4>
-                    ${players.map(p => `
-                        <div class="player-stat-row">
-                            <span>${p.name}</span>
-                            <span class="stat-status ${p.answers && p.answers[qIdx] ? 'answered' : ''}"></span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
+        </div>
+    `;
+}
 
-            <div class="lobby-actions-fixed" style="grid-column: 1 / -1;">
-                <button class="btn btn-secondary btn-small" onclick="stopLiveSession()">Afbryd</button>
+function renderLeaderboard(session, quiz, qIdx) {
+    const container = document.getElementById('admin-content-inner');
+    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
+    const correctIdx = quiz.questions[qIdx].correctIndex;
+
+    container.innerHTML = `
+        <div class="teacher-game-dashboard fade-in">
+            <h1>RESULTAT - SPØRGSMÅL ${qIdx + 1}</h1>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h3>Svarfordeling</h3>
+                    ${quiz.questions[qIdx].options.map((opt, i) => `
+                        <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                            <span>${i === correctIdx ? '✅' : '❌'} ${opt}</span>
+                            <span>${Object.values(session.players || {}).filter(p => p.answer === i).length}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div>
+                    <h3>Leaderboard</h3>
+                    ${players.slice(0, 5).map((p, i) => `
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>${i+1}. ${p.name}</span>
+                            <span>${p.points || 0} p</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="lobby-actions-fixed">
                 ${qIdx < quiz.questions.length - 1 
-                    ? `<button class="btn btn-primary" style="padding: 0.6rem 2rem;" onclick="nextLiveQuestion('${session.pin}', ${qIdx})">NÆSTE SPØRGSMÅL ➡️</button>`
-                    : `<button class="btn btn-success" style="padding: 0.6rem 2rem;" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
+                    ? `<button class="btn btn-primary" onclick="nextLiveQuestion('${session.pin}')">NÆSTE SPØRGSMÅL ➡️</button>`
+                    : `<button class="btn btn-success" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
                 }
             </div>
         </div>
     `;
 }
 
-window.nextLiveQuestion = async (pin, currentIdx) => {
-    const liveRef = window.ref(window.db, `live_sessions/${pin}`);
-    await window.set(window.ref(window.db, `live_sessions/${pin}/currentQuestionIndex`), currentIdx + 1);
-    await window.set(window.ref(window.db, `live_sessions/${pin}/questionStartTime`), window.serverTimestamp());
-};
-
 function renderPodium(session) {
     const container = document.getElementById('admin-content-inner');
     const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
-    
-    container.innerHTML = `
-        <div class="podium-screen fade-in" style="text-align:center; padding: 4rem 2rem;">
-            <span class="live-badge">RESULTATER</span>
-            <h1 style="font-size: 4rem; margin-bottom: 4rem;">🏆 PODIET 🏆</h1>
-            
-            <div class="podium-container">
-                ${players[1] ? `
-                <div class="podium-step step-2">
-                    <div class="step-name">${players[1].name}</div>
-                    <div class="step-label">2</div>
-                    <div style="margin-top: 1rem;">${players[1].points || 0}p</div>
-                </div>` : ''}
-                
-                ${players[0] ? `
-                <div class="podium-step step-1">
-                    <div class="step-name" style="font-size: 1.5rem; top: -50px;">👑 ${players[0].name}</div>
-                    <div class="step-label">1</div>
-                    <div style="margin-top: 1rem; font-weight: bold;">${players[0].points || 0}p</div>
-                </div>` : ''}
-                
-                ${players[2] ? `
-                <div class="podium-step step-3">
-                    <div class="step-name">${players[2].name}</div>
-                    <div class="step-label">3</div>
-                    <div style="margin-top: 1rem;">${players[2].points || 0}p</div>
-                </div>` : ''}
-            </div>
-            
-            <div style="margin-top: 5rem;">
-                <button class="btn btn-primary btn-large" onclick="renderAdminContent()">Afslut og gå tilbage</button>
-            </div>
-        </div>
-    `;
+    container.innerHTML = `<h1>🏆 PODIET 🏆</h1><h2>1. ${players[0] ? players[0].name : '-'}</h2><button onclick="location.reload()">Færdig</button>`;
 }
 
 document.addEventListener('DOMContentLoaded', initAdmin);

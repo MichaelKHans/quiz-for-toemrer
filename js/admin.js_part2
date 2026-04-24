@@ -1,0 +1,179 @@
+function renderTeacherGameView(session) {
+    const container = document.getElementById('admin-content-inner');
+    const quiz = localDbCopy.quizzes.find(q => q.id === session.quizId);
+    const qIdx = session.currentQuestionIndex || 0;
+    const question = quiz.questions[qIdx];
+    const players = session.players ? Object.values(session.players) : [];
+    const answerCount = players.filter(p => p && p.answer !== undefined).length;
+
+    const imageUrl = quiz.moodImageUrl || `https://placehold.co/1200x800/2a2a2a/ffffff?text=${encodeURIComponent(quiz.title)}`;
+    const symbols = ['▲', '◆', '●', '■'];
+    const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+
+    if (!liveAudio.isMuted) liveAudio.music.play().catch(() => {});
+
+    // Hvis vi viser resultater for dette spørgsmål
+    if (session.showResults) {
+        renderLeaderboard(session, quiz, qIdx);
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="teacher-game-dashboard fade-in">
+            <div class="game-info-bar">
+                <div style="display: flex; gap: 2rem; align-items: center;">
+                    <span class="live-badge" style="margin:0; scale: 0.8;">SPØRGSMÅL ${qIdx + 1}/${quiz.questions.length}</span>
+                    <h2 style="margin:0; font-size: 1.2rem;">${quiz.title}</h2>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-secondary btn-small" onclick="toggleLiveMusic()">${liveAudio.isMuted ? '🔇' : '🔊'}</button>
+                    <div class="pin-display-compact" style="padding: 0.3rem 0.8rem; scale: 0.8;">
+                        <p>PIN:</p>
+                        <div class="pin-code-compact" style="font-size: 1.4rem;">${session.pin}</div>
+                    </div>
+                    <div class="player-status" style="font-size: 1rem; font-weight: bold;">👥 ${players.length}</div>
+                </div>
+            </div>
+            
+            <div class="current-question-display">
+                <h1 style="font-size: 2.2rem; margin-bottom: 2rem; line-height: 1.2; text-align: center;">${question.question}</h1>
+                <div class="image-box" style="width: 100%; max-height: 400px; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent); margin-bottom: 2rem;">
+                    <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="teacher-options-preview" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    ${question.options.map((opt, i) => `
+                        <div style="background: ${colors[i]}; color: white; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; gap: 1.5rem; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                            <span style="font-size: 2rem;">${symbols[i]}</span>
+                            <span>${opt}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="answer-stats-panel">
+                <div style="text-align: center; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 4rem; font-weight: 900; color: var(--accent); line-height: 1;">${answerCount}</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem; font-weight: bold;">SVAR MODTAGET</div>
+                </div>
+                
+                <div class="player-stats-list">
+                    <h4 style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Spiller-status</h4>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        ${players.map(p => `
+                            <div class="player-stat-row" style="background: rgba(255,255,255,0.03); padding: 0.5rem 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                <span>${p.icon || '👤'} ${p.name}</span>
+                                <span style="width: 12px; height: 12px; border-radius: 50%; background: ${p.answer !== undefined ? '#00ffa3' : 'rgba(255,255,255,0.1)'}; box-shadow: ${p.answer !== undefined ? '0 0 10px #00ffa3' : 'none'};"></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-actions-fixed" style="grid-column: 1 / -1; justify-content: center; gap: 2rem;">
+                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
+                <button class="btn btn-accent btn-large" style="padding: 1rem 3rem;" onclick="showQuestionResults('${session.pin}')">VIS RESULTATER 📊</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderLeaderboard(session, quiz, qIdx) {
+    const container = document.getElementById('admin-content-inner');
+    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
+    const correctIdx = quiz.questions[qIdx].correctIndex;
+    const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+
+    container.innerHTML = `
+        <div class="teacher-game-dashboard fade-in" style="grid-template-columns: 1fr;">
+            <div class="game-info-bar">
+                <h2 style="margin:0;">RESULTAT - SPØRGSMÅL ${qIdx + 1}</h2>
+                <div class="live-badge">LEADERBOARD</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 2rem;">
+                <div class="answer-distribution">
+                    <h3 style="margin-bottom: 2rem; opacity: 0.7;">Svarfordeling</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        ${quiz.questions[qIdx].options.map((opt, i) => {
+                            const count = Object.values(session.players || {}).filter(p => p.answer === i).length;
+                            const pct = Object.values(session.players || {}).length > 0 ? (count / Object.values(session.players || {}).length) * 100 : 0;
+                            return `
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 40px; height: 40px; background: ${colors[i]}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative;">
+                                        ${i === correctIdx ? '<span style="position:absolute; top:-10px; right:-10px; font-size:1.5rem;">✅</span>' : ''}
+                                        ${i}
+                                    </div>
+                                    <div style="flex-grow: 1; height: 30px; background: rgba(255,255,255,0.1); border-radius: 15px; overflow: hidden;">
+                                        <div style="width: ${pct}%; height: 100%; background: ${colors[i]}; transition: width 1s ease-out;"></div>
+                                    </div>
+                                    <div style="width: 40px; font-weight: bold;">${count}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="top-leaderboard">
+                    <h3 style="margin-bottom: 2rem; opacity: 0.7;">Top Stilling</h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        ${players.slice(0, 5).map((p, i) => `
+                            <div class="player-stat-row" style="background: ${i===0?'rgba(255,215,0,0.1)':'rgba(255,255,255,0.05)'}; padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; border: 1px solid ${i===0?'#ffd700':'transparent'}">
+                                <span style="font-weight: bold;">${i+1}. ${p.icon || '👤'} ${p.name}</span>
+                                <span style="font-weight: bold; color: var(--accent);">${p.points || 0} p</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-actions-fixed" style="justify-content: center; gap: 2rem;">
+                <button class="btn btn-secondary" onclick="stopLiveSession()">Afbryd Session</button>
+                ${qIdx < quiz.questions.length - 1 
+                    ? `<button class="btn btn-primary btn-large" style="padding: 1rem 3rem;" onclick="nextLiveQuestion('${session.pin}')">NÆSTE SPØRGSMÅL ➡️</button>`
+                    : `<button class="btn btn-success btn-large" style="padding: 1rem 3rem;" onclick="stopLiveSession()">AFSLUT QUIZ 🏁</button>`
+                }
+            </div>
+        </div>
+    `;
+}
+
+function renderPodium(session) {
+    const container = document.getElementById('admin-content-inner');
+    const players = Object.values(session.players || {}).sort((a,b) => b.points - a.points);
+    
+    container.innerHTML = `
+        <div class="podium-screen fade-in" style="text-align:center; padding: 4rem 2rem;">
+            <span class="live-badge">RESULTATER</span>
+            <h1 style="font-size: 4rem; margin-bottom: 4rem;">🏆 PODIET 🏆</h1>
+            
+            <div class="podium-container">
+                ${players[1] ? `
+                <div class="podium-step step-2">
+                    <div class="step-name">${players[1].name}</div>
+                    <div class="step-label">2</div>
+                    <div style="margin-top: 1rem;">${players[1].points || 0}p</div>
+                </div>` : ''}
+                
+                ${players[0] ? `
+                <div class="podium-step step-1">
+                    <div class="step-name" style="font-size: 1.5rem; top: -50px;">👑 ${players[0].name}</div>
+                    <div class="step-label">1</div>
+                    <div style="margin-top: 1rem; font-weight: bold;">${players[0].points || 0}p</div>
+                </div>` : ''}
+                
+                ${players[2] ? `
+                <div class="podium-step step-3">
+                    <div class="step-name">${players[2].name}</div>
+                    <div class="step-label">3</div>
+                    <div style="margin-top: 1rem;">${players[2].points || 0}p</div>
+                </div>` : ''}
+            </div>
+            
+            <div style="margin-top: 5rem;">
+                <button class="btn btn-primary btn-large" onclick="renderAdminContent()">Afslut og gå tilbage</button>
+            </div>
+        </div>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', initAdmin);
