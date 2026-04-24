@@ -1,52 +1,41 @@
 /**
- * admin.js - v5.7.0 Classroom Edition (Etape 2)
+ * admin.js - v5.7.1 Crash Fix & Trin 1 Implementation
  * Håndterer administration, redigering og sikkerhed (Undo/Backup).
+ * AKUT FIX: Lyde fjernet for at undgå 404/Crash.
  */
 
 import { saveDbToCloud, getDbFromCloud } from './firebase-service.js';
 
-const APP_VERSION = "v5.7.0";
+const APP_VERSION = "v5.7.1";
 const ADMIN_PASSWORD = "tømrer123";
 
-// Live Audio System (Teacher side)
+// Live Audio System - FJERNET for at undgå crash (v5.7.1)
 const liveAudio = {
-    music: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/live_bg.mp3'),
-    correct: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/correct.mp3'),
-    incorrect: new Audio('https://michaelkhans.github.io/quiz-for-toemrer/audio/incorrect.mp3'),
-    isMuted: false,
-    volume: 0.5
+    music: { pause: () => {}, play: () => Promise.resolve() },
+    correct: { play: () => Promise.resolve() },
+    incorrect: { play: () => Promise.resolve() },
+    isMuted: true,
+    volume: 0
 };
-liveAudio.music.loop = true;
 
 window.toggleLiveMusic = () => {
-    liveAudio.isMuted = !liveAudio.isMuted;
-    if (liveAudio.isMuted) {
-        liveAudio.music.pause();
-    } else {
-        liveAudio.music.play().catch(e => console.log("Audio play blocked"));
-    }
-    renderAdminContent();
+    alert("Lyd er midlertidigt deaktiveret.");
 };
 
-window.setLiveVolume = (val) => {
-    liveAudio.volume = val;
-    liveAudio.music.volume = val;
-    liveAudio.correct.volume = val;
-    liveAudio.incorrect.volume = val;
-};
+window.setLiveVolume = (val) => {};
 
 const UPDATE_LOG = [
     {
-        version: "v5.7.0",
+        version: "v5.7.1",
         date: "2026-04-24",
-        title: "🏫 Classroom Edition (Etape 2)",
-        desc: "Implementeret automatisk skift til resultater, fremhævning af korrekte svar for læreren og A-D labels for tilgængelighed."
+        title: "🚑 Akut Nedbruds-fix + Trin 1",
+        desc: "Fjernet lyd-filer der blokerede appen. Implementeret Trin 1: A-D labels, Lobby Chips og Admin UI forbedringer."
     },
     {
-        version: "v5.6.4",
+        version: "v5.7.0",
         date: "2026-04-24",
-        title: "↕️ Spørgsmåls-Accordion",
-        desc: "Fold-ud/sammen funktion for spørgsmål i editoren."
+        title: "🏫 Classroom Edition",
+        desc: "Optimeret lobby og partial updates."
     }
 ];
 
@@ -75,6 +64,7 @@ window.tryLogin = function() {
 
 async function showAdminPanel() {
     const container = document.getElementById('admin-content-inner');
+    if (!container) return;
     container.innerHTML = `<div class="loader" style="margin: 2rem auto;">⌛</div>`;
     document.getElementById('admin-modal').style.display = 'flex';
     document.body.classList.add('admin-mode');
@@ -225,7 +215,7 @@ window.closeAIModal = () => document.getElementById('ai-modal').style.display = 
 window.copyAIPrompt = () => {
     const topic = document.getElementById('ai-topic-input').value.trim() || "[EMNE]";
     const scenario = document.getElementById('ai-scenario-input').value.trim() || "Ingen specielle krav.";
-    const prompt = `Du er en ekspert i tømrerfaget. Lav en quiz om ${topic}. Tag højde for disse krav: ${scenario}. Du SKAL returnere svaret udelukkende som rå JSON uden markdown-formatering. Formatet skal være præcis sådan her:
+    const prompt = `Du er en ekspert i tømrerfaget. Lav en quiz om ${topic}. Tag højde for disse krav: ${scenario}. Du SKAL returnere svaret udelulykkende som rå JSON uden markdown-formatering. Formatet skal være præcis sådan her:
 { 
   "title": "${topic}", 
   "category": "Tømrerfag", 
@@ -306,7 +296,7 @@ window.saveAdminChanges = async () => {
     if (success) { alert("Alle ændringer er nu gemt i skyen!"); location.reload(); }
 };
 
-// --- LIVE LOGIK (v5.7.0 Optimeret) ---
+// --- LIVE LOGIK (v5.7.1 Crash Fixed) ---
 window.initiateLiveSession = async (quizIdx) => {
     sessionStorage.setItem('quizRole', 'teacher');
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
@@ -323,7 +313,7 @@ window.initiateLiveSession = async (quizIdx) => {
             const data = snap.val();
             if (!data) return;
             
-            // Auto-advance logic (v5.7.0 Etape 2)
+            // Auto-advance logic (v5.7.0)
             const players = data.players ? Object.values(data.players) : [];
             const answerCount = players.filter(p => p && p.answer !== undefined).length;
             if (data.status === 'playing' && players.length > 0 && answerCount === players.length) {
@@ -450,13 +440,11 @@ function renderTeacherGameView(session) {
         </div>
     `;
     
-    // Hvis vi viser resultater, sørg for at baggrunden ændrer sig lidt
-    if (isShowingResults) {
+    if (isShowingResults && document.querySelector('.teacher-game-dashboard')) {
         document.querySelector('.teacher-game-dashboard').style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
     }
 }
 
-// Hjælpefunktion til at tvinge leaderboard visning fra knappen
 window.renderLeaderboardUI = async () => {
     const snap = await window.get(window.ref(window.db, `live_sessions/${currentLivePin}`));
     const data = snap.val();
@@ -515,7 +503,6 @@ window.nextLiveQuestion = async (pin) => {
     const snap = await window.get(window.ref(window.db, `live_sessions/${pin}`));
     const session = snap.val();
     
-    // Nulstil svar for alle spillere (v5.7.0 Etape 2)
     const updates = {};
     if (session.players) {
         Object.keys(session.players).forEach(pId => {

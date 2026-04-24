@@ -1,5 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 
+input, textarea, select {
+    color: #ffffff !important;
+    background-color: #2a2a35 !important;
+    border: 1px solid #4a4a5a;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+
 :root {
     --bg-color: hsl(220, 25%, 8%);
     --card-bg: hsla(220, 25%, 15%, 0.7);
