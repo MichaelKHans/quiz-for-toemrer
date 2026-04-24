@@ -1700,15 +1700,33 @@ body.admin-mode {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 99999;
     color: white;
     text-align: center;
+    transition: all 0.3s ease;
 }
 
-.result-success { background-color: #10b981; }
-.result-error { background-color: #e21b3c; }
+.result-success { 
+    background-color: #10b981; 
+    background-image: radial-gradient(circle at center, #10b981 0%, #064e3b 100%);
+}
+.result-error { 
+    background-color: #e21b3c; 
+    background-image: radial-gradient(circle at center, #e21b3c 0%, #7f1d1d 100%);
+}
 
-.result-icon { font-size: 5rem; margin-bottom: 1rem; }
+.result-icon { 
+    font-size: 8rem; 
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));
+    animation: iconBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
 .result-points-card {
     background: rgba(0,0,0,0.2);
     padding: 2rem;
